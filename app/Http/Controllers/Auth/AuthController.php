@@ -42,12 +42,6 @@ class AuthController extends Controller
 
     $email = strtolower(trim($request->email));
 
-    if (!str_ends_with($email, "@gmail.com")) {
-      return back()
-        ->withInput()
-        ->with("error", "Only Gmail accounts are allowed.");
-    }
-
     $shopId = $this->createShopByEmail($email);
 
     User::create([
@@ -73,18 +67,12 @@ class AuthController extends Controller
 
     $email = strtolower(trim($request->email));
 
-    if (!str_ends_with($email, "@gmail.com")) {
-      return back()
-        ->withInput()
-        ->with("error", "Only Gmail accounts are allowed.");
-    }
-
     $user = User::query()->where("email", $email)->first();
 
     if (!$user) {
       return back()
         ->withInput()
-        ->with("error", "This Gmail is not registered. Please sign up first.");
+        ->with("error", "This email is not registered. Please sign up first.");
     }
 
     if (!Hash::check($request->password, $user->password)) {
@@ -133,12 +121,6 @@ class AuthController extends Controller
       $email = strtolower(trim($googleUser->getEmail()));
       $mode = session("google_auth_mode", "login");
 
-      if (!str_ends_with($email, "@gmail.com")) {
-        return redirect()
-          ->route("login")
-          ->with("error", "Only Gmail accounts are allowed.");
-      }
-
       $existingUser = User::query()->where("email", $email)->first();
 
       if ($mode === "login") {
@@ -168,7 +150,7 @@ class AuthController extends Controller
       if ($existingUser) {
         return redirect()
           ->route("login")
-          ->with("success", "This Gmail is already registered. Please login.");
+          ->with("success", "This email is already registered. Please login.");
       }
 
       $shopId = $this->createShopByEmail($email);
