@@ -14,203 +14,227 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    public function showLogin()
-    {
-        if (Auth::check()) {
-            return redirect('/shop/dashboard');
-        }
-
-        return view('auth.login');
+  public function showLogin()
+  {
+    if (Auth::check()) {
+      return redirect($this->redirectByRole(Auth::user()->role));
     }
 
-    public function showSignup()
-    {
-        if (Auth::check()) {
-            return redirect('/shop/dashboard');
-        }
+    return view("auth.login");
+  }
 
-        return view('auth.signup');
+  public function showSignup()
+  {
+    if (Auth::check()) {
+      return redirect($this->redirectByRole(Auth::user()->role));
     }
 
-    public function register(Request $request)
-    {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
-        ]);
+    return view("auth.signup");
+  }
 
-        $email = strtolower(trim($request->email));
+  public function register(Request $request)
+  {
+    $request->validate([
+      "name" => ["required", "string", "max:255"],
+      "email" => ["required", "email", "max:255", "unique:users,email"],
+      "password" => ["required", "string", "min:6", "confirmed"],
+    ]);
 
-        if (!str_ends_with($email, '@gmail.com')) {
-            return back()->withInput()->with('error', 'Only Gmail accounts are allowed.');
-        }
+    $email = strtolower(trim($request->email));
 
-        $shopId = $this->createShopByEmail($email);
+    if (!str_ends_with($email, "@gmail.com")) {
+      return back()
+        ->withInput()
+        ->with("error", "Only Gmail accounts are allowed.");
+    }
 
-        User::create([
-            'name' => $request->name,
-            'email' => $email,
-            'password' => Hash::make($request->password),
-            'shop_id' => $shopId,
-            'role' => 'shop',
-            'registered_via_google' => false,
-        ]);
+    $shopId = $this->createShopByEmail($email);
 
+    User::create([
+      "name" => $request->name,
+      "email" => $email,
+      "password" => Hash::make($request->password),
+      "shop_id" => $shopId,
+      "role" => "shop",
+      "registered_via_google" => false,
+    ]);
+
+    return redirect()
+      ->route("login")
+      ->with("success", "Successful sign up, go to login.");
+  }
+
+  public function manualLogin(Request $request)
+  {
+    $request->validate([
+      "email" => ["required", "email", "max:255"],
+      "password" => ["required", "string", "min:6"],
+    ]);
+
+    $email = strtolower(trim($request->email));
+
+    if (!str_ends_with($email, "@gmail.com")) {
+      return back()
+        ->withInput()
+        ->with("error", "Only Gmail accounts are allowed.");
+    }
+
+    $user = User::query()->where("email", $email)->first();
+
+    if (!$user) {
+      return back()
+        ->withInput()
+        ->with("error", "This Gmail is not registered. Please sign up first.");
+    }
+
+    if (!Hash::check($request->password, $user->password)) {
+      return back()->withInput()->with("error", "Incorrect password.");
+    }
+
+    if (!$user->shop_id) {
+      $user->shop_id = $this->createShopByEmail($email);
+      $user->role = "shop";
+      $user->save();
+    }
+
+    Auth::login($user, true);
+    $request->session()->regenerate();
+
+    return redirect($this->redirectByRole($user->role));
+  }
+
+  private function redirectByRole(string $role): string
+  {
+    return match ($role) {
+      "admin" => "/admin/dashboard",
+      "shop" => "/shop/dashboard",
+      default => "/motorist",
+    };
+  }
+
+  public function redirectToGoogleLogin()
+  {
+    session(["google_auth_mode" => "login"]);
+
+    return Socialite::driver("google")->redirect();
+  }
+
+  public function redirectToGoogleSignup()
+  {
+    session(["google_auth_mode" => "signup"]);
+
+    return Socialite::driver("google")->redirect();
+  }
+
+  public function handleGoogleCallback(Request $request)
+  {
+    try {
+      $googleUser = Socialite::driver("google")->user();
+      $email = strtolower(trim($googleUser->getEmail()));
+      $mode = session("google_auth_mode", "login");
+
+      if (!str_ends_with($email, "@gmail.com")) {
         return redirect()
-            ->route('login')
-            ->with('success', 'Successful sign up, go to login.');
-    }
+          ->route("login")
+          ->with("error", "Only Gmail accounts are allowed.");
+      }
 
-    public function manualLogin(Request $request)
-    {
-        $request->validate([
-            'email' => ['required', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:6'],
+      $existingUser = User::query()->where("email", $email)->first();
+
+      if ($mode === "login") {
+        if (!$existingUser) {
+          return redirect()
+            ->route("signup")
+            ->with(
+              "error",
+              "This Gmail is not registered. Please sign up first."
+            );
+        }
+
+        $existingUser->update([
+          "google_id" => $googleUser->getId(),
+          "google_token" => $googleUser->token ?? null,
+          "google_refresh_token" =>
+            $googleUser->refreshToken ?? $existingUser->google_refresh_token,
+          "registered_via_google" => true,
         ]);
 
-        $email = strtolower(trim($request->email));
-
-        if (!str_ends_with($email, '@gmail.com')) {
-            return back()->withInput()->with('error', 'Only Gmail accounts are allowed.');
-        }
-
-        $user = User::query()->where('email', $email)->first();
-
-        if (!$user) {
-            return back()->withInput()->with('error', 'This Gmail is not registered. Please sign up first.');
-        }
-
-        if (!Hash::check($request->password, $user->password)) {
-            return back()->withInput()->with('error', 'Incorrect password.');
-        }
-
-        if (!$user->shop_id) {
-            $user->shop_id = $this->createShopByEmail($email);
-            $user->role = 'shop';
-            $user->save();
-        }
-
-        Auth::login($user, true);
+        Auth::login($existingUser, true);
         $request->session()->regenerate();
 
-        return redirect('/shop/dashboard');
+        return redirect($this->redirectByRole($existingUser->role));
+      }
+
+      if ($existingUser) {
+        return redirect()
+          ->route("login")
+          ->with("success", "This Gmail is already registered. Please login.");
+      }
+
+      $shopId = $this->createShopByEmail($email);
+
+      User::create([
+        "name" => $googleUser->getName() ?: explode("@", $email)[0],
+        "email" => $email,
+        "password" => Hash::make($googleUser->getId() . $email),
+        "shop_id" => $shopId,
+        "role" => "shop",
+        "registered_via_google" => true,
+        "google_id" => $googleUser->getId(),
+        "google_token" => $googleUser->token ?? null,
+        "google_refresh_token" => $googleUser->refreshToken ?? null,
+      ]);
+
+      return redirect()
+        ->route("login")
+        ->with("success", "Successful sign up, go to login.");
+    } catch (\Exception $e) {
+      return redirect()->route("login")->with("error", $e->getMessage());
+    }
+  }
+
+  private function createShopByEmail(string $email): int
+  {
+    $email = strtolower(trim($email));
+
+    if (Schema::hasColumn("shops", "email")) {
+      $existingShop = DB::table("shops")->where("email", $email)->first();
+
+      if ($existingShop) {
+        return (int) $existingShop->id;
+      }
     }
 
-    public function redirectToGoogleLogin()
-    {
-        session(['google_auth_mode' => 'login']);
+    $data = [
+      "shop_name" => explode("@", $email)[0] . "'s Shop",
+      "phone" => null,
+      "location" => "Olongapo City",
+      "address" => "Olongapo City",
+      "latitude" => 14.8386,
+      "longitude" => 120.2842,
+      "status" => "closed",
+      "created_at" => now(),
+      "updated_at" => now(),
+    ];
 
-        return Socialite::driver('google')->redirect();
+    if (Schema::hasColumn("shops", "email")) {
+      $data["email"] = $email;
     }
 
-    public function redirectToGoogleSignup()
-    {
-        session(['google_auth_mode' => 'signup']);
-
-        return Socialite::driver('google')->redirect();
+    if (Schema::hasColumn("shops", "rating")) {
+      $data["rating"] = 5.0;
     }
 
-    public function handleGoogleCallback(Request $request)
-    {
-        try {
-            $googleUser = Socialite::driver('google')->user();
-            $email = strtolower(trim($googleUser->getEmail()));
-            $mode = session('google_auth_mode', 'login');
+    return (int) DB::table("shops")->insertGetId($data);
+  }
 
-            if (!str_ends_with($email, '@gmail.com')) {
-                return redirect()->route('login')->with('error', 'Only Gmail accounts are allowed.');
-            }
+  public function logout(Request $request)
+  {
+    Auth::logout();
 
-            $existingUser = User::query()->where('email', $email)->first();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
 
-            if ($mode === 'login') {
-                if (!$existingUser) {
-                    return redirect()->route('signup')->with('error', 'This Gmail is not registered. Please sign up first.');
-                }
-
-                $existingUser->update([
-                    'google_id' => $googleUser->getId(),
-                    'google_token' => $googleUser->token ?? null,
-                    'google_refresh_token' => $googleUser->refreshToken ?? $existingUser->google_refresh_token,
-                    'registered_via_google' => true,
-                ]);
-
-                Auth::login($existingUser, true);
-                $request->session()->regenerate();
-
-                return redirect('/shop/dashboard');
-            }
-
-            if ($existingUser) {
-                return redirect()->route('login')->with('success', 'This Gmail is already registered. Please login.');
-            }
-
-            $shopId = $this->createShopByEmail($email);
-
-            User::create([
-                'name' => $googleUser->getName() ?: explode('@', $email)[0],
-                'email' => $email,
-                'password' => Hash::make($googleUser->getId() . $email),
-                'shop_id' => $shopId,
-                'role' => 'shop',
-                'registered_via_google' => true,
-                'google_id' => $googleUser->getId(),
-                'google_token' => $googleUser->token ?? null,
-                'google_refresh_token' => $googleUser->refreshToken ?? null,
-            ]);
-
-            return redirect()
-                ->route('login')
-                ->with('success', 'Successful sign up, go to login.');
-
-        } catch (\Exception $e) {
-            return redirect()->route('login')->with('error', $e->getMessage());
-        }
-    }
-
-    private function createShopByEmail(string $email): int
-    {
-        $email = strtolower(trim($email));
-
-        if (Schema::hasColumn('shops', 'email')) {
-            $existingShop = DB::table('shops')->where('email', $email)->first();
-
-            if ($existingShop) {
-                return (int) $existingShop->id;
-            }
-        }
-
-        $data = [
-            'shop_name' => explode('@', $email)[0] . "'s Shop",
-            'phone' => null,
-            'location' => 'Olongapo City',
-            'address' => 'Olongapo City',
-            'latitude' => 14.8386,
-            'longitude' => 120.2842,
-            'status' => 'closed',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
-
-        if (Schema::hasColumn('shops', 'email')) {
-            $data['email'] = $email;
-        }
-
-        if (Schema::hasColumn('shops', 'rating')) {
-            $data['rating'] = 5.0;
-        }
-
-        return (int) DB::table('shops')->insertGetId($data);
-    }
-
-    public function logout(Request $request)
-    {
-        Auth::logout();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/')->with('success', 'You have been logged out.');
-    }
+    return redirect("/")->with("success", "You have been logged out.");
+  }
 }

@@ -10,45 +10,66 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+  /** @use HasFactory<UserFactory> */
+  use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'google_id',
-        'google_token',
-        'google_refresh_token',
-        'shop_id',
-        'role',
+  const ROLE_ADMIN = "admin";
+  const ROLE_SHOP = "shop";
+  const ROLE_USER = "user";
+
+  /**
+   * The attributes that are mass assignable.
+   *
+   * @var list<string>
+   */
+  protected $fillable = [
+    "name",
+    "email",
+    "password",
+    "google_id",
+    "google_token",
+    "google_refresh_token",
+    "shop_id",
+    "role",
+  ];
+
+  public function isAdmin(): bool
+  {
+    return $this->role === self::ROLE_ADMIN;
+  }
+
+  public function isShop(): bool
+  {
+    return $this->role === self::ROLE_SHOP;
+  }
+
+  public function isUser(): bool
+  {
+    return $this->role === self::ROLE_USER;
+  }
+
+  public function hasRole(string|array $roles): bool
+  {
+    return in_array($this->role, (array) $roles);
+  }
+
+  /**
+   * The attributes that should be hidden for serialization.
+   *
+   * @var list<string>
+   */
+  protected $hidden = ["password", "remember_token"];
+
+  /**
+   * Get the attributes that should be cast.
+   *
+   * @return array<string, string>
+   */
+  protected function casts(): array
+  {
+    return [
+      "email_verified_at" => "datetime",
+      "password" => "hashed",
     ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+  }
 }
