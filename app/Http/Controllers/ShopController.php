@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DispatchStatusUpdated;
 use App\Models\MechanicProfile;
 use App\Models\DispatchMechanic;
 use App\Models\User;
@@ -264,7 +265,9 @@ class ShopController extends Controller
         "updated_at" => now(),
       ]);
 
-    return back();
+    broadcast(new DispatchStatusUpdated($id, "accepted"));
+
+    return response()->json(["success" => true, "status" => "accepted"]);
   }
 
   public function decline(int $id)
@@ -277,7 +280,9 @@ class ShopController extends Controller
         "updated_at" => now(),
       ]);
 
-    return back();
+    broadcast(new DispatchStatusUpdated($id, "declined"));
+
+    return response()->json(["success" => true, "status" => "declined"]);
   }
 
   public function updateRequestStatus(Request $request, int $id)
@@ -312,6 +317,8 @@ class ShopController extends Controller
       ->where("id", $id)
       ->where("shop_id", $this->getCurrentShopId())
       ->update($updateData);
+
+    broadcast(new DispatchStatusUpdated($id, $validated["status"]));
 
     return response()->json([
       "success" => true,

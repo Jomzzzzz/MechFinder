@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DispatchRequestCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -125,6 +126,22 @@ class MotoristController extends Controller
       "created_at" => now(),
       "updated_at" => now(),
     ]);
+
+    broadcast(
+      new DispatchRequestCreated((int) $validated["shop_id"], [
+        "id" => $id,
+        "issue_type" => $validated["issue_type"],
+        "owner_name" => $validated["owner_name"],
+        "contact_number" => $validated["contact_number"],
+        "vehicle_make_model" => $validated["vehicle_make_model"] ?? null,
+        "vehicle_variant_color" => $validated["vehicle_variant_color"] ?? null,
+        "plate_temp_number" => $validated["plate_temp_number"] ?? null,
+        "description" => $validated["description"] ?? null,
+        "location" => $validated["location"] ?? null,
+        "status" => "requested",
+        "created_at" => now()->toDateTimeString(),
+      ])
+    )->toOthers();
 
     return response()->json([
       "success" => true,
