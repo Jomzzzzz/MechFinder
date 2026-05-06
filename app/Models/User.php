@@ -15,7 +15,8 @@ class User extends Authenticatable
 
   const ROLE_ADMIN = "admin";
   const ROLE_SHOP = "shop";
-  const ROLE_USER = "user";
+  const ROLE_MECHANIC = "mechanic";
+  const ROLE_MOTORIST = "motorist";
 
   /**
    * The attributes that are mass assignable.
@@ -43,14 +44,29 @@ class User extends Authenticatable
     return $this->role === self::ROLE_SHOP;
   }
 
-  public function isUser(): bool
+  public function isMechanic(): bool
   {
-    return $this->role === self::ROLE_USER;
+    return $this->role === self::ROLE_MECHANIC;
+  }
+
+  public function isMotorist(): bool
+  {
+    return $this->role === self::ROLE_MOTORIST;
   }
 
   public function hasRole(string|array $roles): bool
   {
     return in_array($this->role, (array) $roles);
+  }
+
+  public function mechanicProfile()
+  {
+    return $this->hasOne(MechanicProfile::class);
+  }
+
+  public function ownedShop()
+  {
+    return $this->hasOne(Shop::class, "owner_id");
   }
 
   /**

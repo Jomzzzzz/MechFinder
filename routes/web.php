@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\MotoristController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\MechanicController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,23 +28,19 @@ Route::post("/login", [AuthController::class, "manualLogin"])->name(
   "login.post"
 );
 
+// Motorist signup
 Route::get("/signup", [AuthController::class, "showSignup"])->name("signup");
-Route::post("/signup", [AuthController::class, "register"])->name(
+Route::post("/signup", [AuthController::class, "registerMotorist"])->name(
   "signup.post"
 );
 
-Route::get("/auth/google/login", [
-  AuthController::class,
-  "redirectToGoogleLogin",
-])->name("auth.google.login");
-Route::get("/auth/google/signup", [
-  AuthController::class,
-  "redirectToGoogleSignup",
-])->name("auth.google.signup");
-Route::get("/auth/google/callback", [
-  AuthController::class,
-  "handleGoogleCallback",
-])->name("auth.google.callback");
+// Shop signup
+Route::get("/signup/shop", [AuthController::class, "showShopSignup"])->name(
+  "signup.shop"
+);
+Route::post("/signup/shop", [AuthController::class, "registerShop"])->name(
+  "signup.shop.post"
+);
 
 Route::post("/logout", [AuthController::class, "logout"])->name("logout");
 
@@ -52,6 +49,7 @@ Route::post("/logout", [AuthController::class, "logout"])->name("logout");
 | ADMIN ROUTES - role:admin only
 |--------------------------------------------------------------------------
 */
+
 Route::prefix("admin")
   ->middleware(["auth", "role:admin"])
   ->group(function () {
@@ -82,6 +80,7 @@ Route::prefix("admin")
 | SHOP ROUTES - role:shop or admin
 |--------------------------------------------------------------------------
 */
+
 Route::prefix("shop")
   ->middleware(["auth", "role:shop,admin"])
   ->group(function () {
@@ -89,7 +88,6 @@ Route::prefix("shop")
     Route::get("/dashboard", [ShopController::class, "dashboard"])->name(
       "shop.dashboard"
     );
-
     Route::get("/requests", [ShopController::class, "requests"])->name(
       "shop.requests"
     );
@@ -104,6 +102,22 @@ Route::prefix("shop")
       "shop.settings"
     );
 
+    // Mechanic management
+    Route::get("/mechanics", [ShopController::class, "mechanics"])->name(
+      "shop.mechanics"
+    );
+    Route::post("/mechanics", [ShopController::class, "storeMechanic"])->name(
+      "shop.mechanics.store"
+    );
+    Route::delete("/mechanics/{id}", [
+      ShopController::class,
+      "deleteMechanic",
+    ])->name("shop.mechanics.delete");
+    Route::post("/request/{id}/dispatch", [
+      ShopController::class,
+      "dispatchMechanic",
+    ])->name("shop.dispatch-mechanic");
+
     Route::post("/accept/{id}", [ShopController::class, "accept"])->name(
       "shop.accept"
     );
@@ -114,7 +128,6 @@ Route::prefix("shop")
       ShopController::class,
       "updateRequestStatus",
     ])->name("shop.update-status");
-
     Route::get("/dashboard-data", [
       ShopController::class,
       "fetchRequests",
@@ -123,7 +136,6 @@ Route::prefix("shop")
       ShopController::class,
       "dashboardMapData",
     ])->name("shop.dashboard-map-data");
-
     Route::post("/settings/update", [ShopController::class, "update"])->name(
       "shop.update"
     );
@@ -135,7 +147,28 @@ Route::prefix("shop")
 
 /*
 |--------------------------------------------------------------------------
-| MOTORIST ROUTES - public (guest/user)
+| MECHANIC ROUTES - role:mechanic only
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix("mechanic")
+  ->middleware(["auth", "role:mechanic"])
+  ->group(function () {
+    Route::get("/", [MechanicController::class, "dashboard"])->name(
+      "mechanic.dashboard"
+    );
+    Route::get("/dashboard", [MechanicController::class, "dashboard"]);
+    Route::get("/profile", [MechanicController::class, "profile"])->name(
+      "mechanic.profile"
+    );
+    Route::post("/profile", [MechanicController::class, "updateProfile"])->name(
+      "mechanic.profile.update"
+    );
+  });
+
+/*
+|--------------------------------------------------------------------------
+| MOTORIST ROUTES - public (guest/motorist)
 |--------------------------------------------------------------------------
 */
 
@@ -147,7 +180,6 @@ Route::prefix("motorist")->group(function () {
   Route::get("/shop/{id}", [MotoristController::class, "showShop"])->name(
     "motorist.shop.show"
   );
-
   Route::post("/dispatch", [MotoristController::class, "storeDispatch"])->name(
     "motorist.dispatch.store"
   );
@@ -167,12 +199,7 @@ Route::prefix("motorist")->group(function () {
 */
 
 Route::prefix("api")->group(function () {
-  /*
-    |--------------------------------------------------------------------------
-    | MOTORIST API - public
-    |--------------------------------------------------------------------------
-    */
-
+  // Motorist API - public
   Route::get("/motorist/shops", [MotoristController::class, "apiShops"])->name(
     "api.motorist.shops"
   );
@@ -180,7 +207,6 @@ Route::prefix("api")->group(function () {
     MotoristController::class,
     "createDispatchRequest",
   ])->name("api.dispatch.create");
-
   Route::get("/chat/{dispatchId}", [
     MotoristController::class,
     "getMessages",
@@ -188,11 +214,9 @@ Route::prefix("api")->group(function () {
   Route::post("/messages", [MotoristController::class, "sendMessage"])->name(
     "api.motorist.messages.send"
   );
-
   Route::post("/reviews", [MotoristController::class, "submitReview"])->name(
     "api.motorist.reviews.submit"
   );
-
   Route::get("/motorist/shops-for-messaging", [
     MotoristController::class,
     "getShopsForMessaging",
@@ -206,17 +230,11 @@ Route::prefix("api")->group(function () {
     "sendShopMessage",
   ])->name("api.motorist.send-shop-message");
 
-  /*
-    |--------------------------------------------------------------------------
-    | SHOP API - role:shop or admin
-    |--------------------------------------------------------------------------
-    */
-
+  // Shop API - role:shop or admin
   Route::middleware(["auth", "role:shop,admin"])->group(function () {
     Route::get("/shop/status", [ShopController::class, "getStatus"])->name(
       "api.shop.status"
     );
-
     Route::get("/shop/messages/{dispatchId}", [
       ShopController::class,
       "getMessages",
