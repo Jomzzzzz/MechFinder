@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop Login - MechFinder</title>
+    <title>MechFinder | Login</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -12,24 +11,23 @@
         body {
             font-family: Inter, Arial, sans-serif;
             background:
-                linear-gradient(rgba(15,15,15,.72), rgba(15,15,15,.72)),
+                linear-gradient(rgba(15,15,15,.90), rgba(15,15,15,.94)),
                 url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80');
             background-size: cover;
             background-position: center;
         }
 
-        .glass-card {
-            background: rgba(255,255,255,0.96);
-            box-shadow: 0 30px 80px rgba(0,0,0,.35);
+        * {
+            letter-spacing: -0.01em;
         }
 
-        .left-panel {
-    background:
-        linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.18)),
-        url('https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1200&q=80');
-    background-size: cover;
-    background-position: center;
-}
+        .clean-title {
+            letter-spacing: -0.04em;
+        }
+
+        .clean-text {
+            line-height: 1.75;
+        }
 
         input::-ms-reveal,
         input::-ms-clear {
@@ -44,82 +42,177 @@
     </style>
 </head>
 
-<body class="flex justify-center items-center px-4 py-10 min-h-screen">
+<body class="min-h-screen flex items-center justify-center px-4 py-8 text-white">
 
-    <div class="grid md:grid-cols-2 w-full max-w-6xl min-h-[720px] overflow-hidden glass-card">
+    <div class="w-full max-w-7xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#111111]/95 shadow-2xl grid lg:grid-cols-2">
 
-        <!-- LEFT SIDE -->
-        <div class="hidden relative md:flex flex-col justify-between left-panel p-10 text-white">
+        <!-- LEFT PANEL -->
+        <div class="hidden lg:flex min-h-[760px] flex-col justify-between bg-[#0f0f0f] border-r border-white/10 p-10 xl:p-14">
 
-            <div class="flex items-center gap-4">
-                <div class="flex justify-center items-center bg-white rounded-full w-12 h-12 text-black text-xl">
+            <!-- LOGO -->
+            <a href="/" class="flex items-center gap-4">
+
+                <div class="w-12 h-12 rounded-full bg-[#F7941D] flex items-center justify-center text-white text-xl font-black shadow-lg shadow-orange-500/20">
                     ⚙
                 </div>
 
                 <div>
-                    <h1 class="font-bold text-2xl">MechFinder</h1>
-                    <p class="text-white/70 text-xs">Motor Shop Portal</p>
-                </div>
-            </div>
+                    <h1 class="text-2xl font-black text-[#F7941D]">
+                        MechFinder
+                    </h1>
 
+                    <p class="text-xs text-gray-500">
+                        Motorcycle Repair Dispatch System
+                    </p>
+                </div>
+
+            </a>
+
+            <!-- CONTENT -->
             <div>
-                <h2 class="mb-4 font-black text-5xl leading-tight">
-                    Welcome Back
+
+                <span class="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full text-xs font-bold text-gray-300 mb-8">
+                    🏍 For Motorists and Shop Owners
+                </span>
+
+                <h2 class="clean-title text-4xl xl:text-5xl font-black leading-[1.05] mb-6 text-white max-w-xl">
+                    One login for repair help and shop management.
                 </h2>
 
-                <p class="max-w-md text-white/90 text-lg leading-relaxed">
-                    Manage dispatch requests, update shop availability,
-                    and connect with motorists in real-time.
+                <p class="clean-text max-w-xl text-gray-400 text-base">
+                    Access MechFinder as a motorist or shop owner.
+                    Find nearby repair shops, request roadside assistance,
+                    manage dispatch requests, and stay updated in real time.
                 </p>
 
-                <div class="flex items-center gap-2 mt-10">
-                    <div class="bg-white rounded-full w-12 h-1"></div>
-                    <div class="bg-white/70 rounded-full w-2 h-2"></div>
-                    <div class="bg-white/70 rounded-full w-2 h-2"></div>
+                <!-- FEATURE GRID -->
+                <div class="grid grid-cols-3 gap-4 mt-12">
+
+                    <!-- CARD -->
+                    <div class="bg-[#1a1a1a] border border-white/5 rounded-3xl p-5">
+
+                        <div class="text-3xl mb-4">
+                            🏍
+                        </div>
+
+                        <h3 class="font-bold text-white text-sm mb-2">
+                            Motorists
+                        </h3>
+
+                        <p class="text-gray-500 text-xs leading-relaxed">
+                            Find nearby repair shops and request roadside assistance.
+                        </p>
+
+                    </div>
+
+                    <!-- CARD -->
+                    <div class="bg-[#1a1a1a] border border-white/5 rounded-3xl p-5">
+
+                        <div class="text-3xl mb-4">
+                            🛠
+                        </div>
+
+                        <h3 class="font-bold text-white text-sm mb-2">
+                            Shop Owners
+                        </h3>
+
+                        <p class="text-gray-500 text-xs leading-relaxed">
+                            Manage requests and update repair shop availability.
+                        </p>
+
+                    </div>
+
+                    <!-- CARD -->
+                    <div class="bg-[#1a1a1a] border border-white/5 rounded-3xl p-5">
+
+                        <div class="text-3xl mb-4">
+                            💬
+                        </div>
+
+                        <h3 class="font-bold text-white text-sm mb-2">
+                            Live Updates
+                        </h3>
+
+                        <p class="text-gray-500 text-xs leading-relaxed">
+                            Chat and track dispatch progress in real-time.
+                        </p>
+
+                    </div>
+
                 </div>
+
             </div>
+
+            <!-- FOOTER -->
+            <p class="text-xs text-gray-600">
+                © 2026 MechFinder. Built for motorcycle repair services in Olongapo City.
+            </p>
 
         </div>
 
-        <!-- RIGHT SIDE -->
-        <div class="relative flex flex-col justify-center bg-white px-8 md:px-20 py-12">
+        <!-- RIGHT PANEL -->
+        <div class="relative flex items-center bg-[#111111] px-6 sm:px-8 md:px-14 lg:px-16 py-10 md:py-12">
 
-            <div class="top-8 right-8 absolute">
-                <a href="/"
-                    class="inline-flex justify-center items-center bg-black hover:bg-orange-500 px-8 py-3 rounded-full font-semibold text-white text-sm transition">
-                    Home
-                </a>
-            </div>
+            <!-- HOME -->
+            <a href="/"
+               class="absolute top-5 right-5 bg-[#1a1a1a] hover:bg-[#F7941D] border border-white/10 px-5 py-2.5 rounded-full text-xs font-bold text-white transition">
+                Home
+            </a>
 
-            <div class="mx-auto w-full max-w-md">
+            <div class="w-full max-w-md mx-auto">
 
-                <span class="inline-block mb-4 font-semibold text-orange-500 text-sm">
-                    Motorcycle Repair Dispatch System
+                <!-- MOBILE LOGO -->
+                <div class="lg:hidden mb-10">
+
+                    <a href="/" class="flex items-center gap-4">
+
+                        <div class="w-12 h-12 rounded-full bg-[#F7941D] flex items-center justify-center text-white text-xl font-black shadow-lg shadow-orange-500/20">
+                            ⚙
+                        </div>
+
+                        <div>
+                            <h1 class="text-2xl font-black text-[#F7941D]">
+                                MechFinder
+                            </h1>
+
+                            <p class="text-xs text-gray-500">
+                                Motorcycle Repair Dispatch System
+                            </p>
+                        </div>
+
+                    </a>
+
+                </div>
+
+                <!-- HEADER -->
+                <span class="inline-block mb-4 text-[#F7941D] text-xs font-black uppercase tracking-[0.2em]">
+                    Secure Access
                 </span>
 
-                <h1 class="mb-2 font-black text-[#101633] text-4xl">
-                    Shop Login
+                <h1 class="clean-title text-4xl md:text-5xl font-black mb-3 text-white">
+                    Welcome back
                 </h1>
 
-                <p class="mb-10 text-gray-500">
-                    Sign in to your motor shop account.
+                <p class="clean-text text-gray-400 mb-8 text-sm">
+                    Sign in to continue using MechFinder.
                 </p>
 
+                <!-- ERRORS -->
                 @if (session('error'))
-                    <div class="bg-red-50 mb-4 p-4 border border-red-200 rounded-xl">
-                        <p class="text-red-500 text-sm">{{ session('error') }}</p>
+                    <div class="mb-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
+                        <p class="text-red-400 text-sm">{{ session('error') }}</p>
                     </div>
                 @endif
 
                 @if (session('success'))
-                    <div class="bg-green-50 mb-4 p-4 border border-green-200 rounded-xl">
-                        <p class="text-green-500 text-sm">{{ session('success') }}</p>
+                    <div class="mb-4 rounded-2xl border border-green-500/20 bg-green-500/10 p-4">
+                        <p class="text-green-400 text-sm">{{ session('success') }}</p>
                     </div>
                 @endif
 
                 @if ($errors->any())
-                    <div class="bg-red-50 mb-4 p-4 border border-red-200 rounded-xl">
-                        <ul class="space-y-1 text-red-500 text-sm">
+                    <div class="mb-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
+                        <ul class="space-y-1 text-red-400 text-sm">
                             @foreach ($errors->all() as $error)
                                 <li>• {{ $error }}</li>
                             @endforeach
@@ -127,95 +220,122 @@
                     </div>
                 @endif
 
+                <!-- FORM -->
                 <form method="POST" action="{{ route('login.post') }}" class="space-y-5">
                     @csrf
 
+                    <!-- EMAIL -->
                     <div>
-                        <label class="block mb-2 font-semibold text-gray-700 text-sm">
+
+                        <label class="block mb-2 text-sm font-medium text-gray-300">
                             Gmail Address
                         </label>
 
                         <input type="email"
-                            name="email"
-                            value="{{ old('email') }}"
-                            required
-                            placeholder="example@gmail.com"
-                            class="bg-white px-4 py-4 border border-gray-200 focus:border-orange-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-100 w-full text-gray-700 placeholder-gray-400 transition">
+                               name="email"
+                               value="{{ old('email') }}"
+                               required
+                               placeholder="example@gmail.com"
+                               class="w-full rounded-2xl border border-white/10 bg-[#1a1a1a] px-5 py-4 text-white placeholder-gray-500 outline-none transition focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10">
+
                     </div>
 
+                    <!-- PASSWORD -->
                     <div>
-                        <label class="block mb-2 font-semibold text-gray-700 text-sm">
+
+                        <label class="block mb-2 text-sm font-medium text-gray-300">
                             Password
                         </label>
 
                         <div class="relative">
+
                             <input id="password"
-                                type="password"
-                                name="password"
-                                required
-                                placeholder="Enter your password"
-                                class="bg-white px-4 py-4 pr-12 border border-gray-200 focus:border-orange-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-100 w-full text-gray-700 placeholder-gray-400 transition">
+                                   type="password"
+                                   name="password"
+                                   required
+                                   placeholder="Enter your password"
+                                   class="w-full rounded-2xl border border-white/10 bg-[#1a1a1a] px-5 py-4 pr-12 text-white placeholder-gray-500 outline-none transition focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10">
 
                             <button type="button"
-                                onclick="togglePassword()"
-                                class="top-1/2 right-4 absolute flex justify-center items-center text-gray-400 hover:text-orange-500 -translate-y-1/2 transition">
+                                    onclick="togglePassword()"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#F7941D] transition">
 
-                                <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg"
-                                    class="w-5 h-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor">
-
-                                    <path stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <svg id="eyeOpen"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     class="w-5 h-5"
+                                     fill="none"
+                                     viewBox="0 0 24 24"
+                                     stroke="currentColor">
 
                                     <path stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5
-                                        c4.478 0 8.268 2.943 9.542 7
-                                        -1.274 4.057-5.064 7-9.542 7
-                                        -4.477 0-8.268-2.943-9.542-7z" />
+                                          stroke-linejoin="round"
+                                          stroke-width="2"
+                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+
+                                    <path stroke-linecap="round"
+                                          stroke-linejoin="round"
+                                          stroke-width="2"
+                                          d="M2.458 12C3.732 7.943 7.523 5 12 5
+                                          c4.478 0 8.268 2.943 9.542 7
+                                          -1.274 4.057-5.064 7-9.542 7
+                                          -4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
 
-                                <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg"
-                                    class="hidden w-5 h-5"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor">
+                                <svg id="eyeClosed"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     class="hidden w-5 h-5"
+                                     fill="none"
+                                     viewBox="0 0 24 24"
+                                     stroke="currentColor">
 
                                     <path stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M13.875 18.825A10.05 10.05 0 0112 19
-                                        c-4.478 0-8.268-2.943-9.542-7
-                                        a9.956 9.956 0 012.293-3.95m3.087-2.523
-                                        A9.953 9.953 0 0112 5
-                                        c4.478 0 8.268 2.943 9.542 7
-                                        a9.97 9.97 0 01-4.132 5.411M15 12
-                                        a3 3 0 11-6 0 3 3 0 016 0zm6 6L3 3" />
+                                          stroke-linejoin="round"
+                                          stroke-width="2"
+                                          d="M13.875 18.825A10.05 10.05 0 0112 19
+                                          c-4.478 0-8.268-2.943-9.542-7
+                                          a9.956 9.956 0 012.293-3.95m3.087-2.523
+                                          A9.953 9.953 0 0112 5
+                                          c4.478 0 8.268 2.943 9.542 7
+                                          a9.97 9.97 0 01-4.132 5.411M15 12
+                                          a3 3 0 11-6 0 3 3 0 016 0zm6 6L3 3" />
                                 </svg>
 
                             </button>
+
                         </div>
+
                     </div>
 
+                    <!-- BUTTON -->
                     <button type="submit"
-                        class="bg-[#202020] hover:bg-orange-500 py-4 rounded-xl w-full font-black text-white transition duration-300">
+                            class="w-full rounded-2xl bg-[#F7941D] hover:bg-orange-600 py-4 font-black text-white transition shadow-lg shadow-orange-500/20">
                         Login
                     </button>
+
                 </form>
 
-                <p class="mt-8 text-gray-500 text-sm text-center">
-                    New motor shop?
+                <!-- LINKS -->
+                <div class="mt-8 space-y-3 text-center text-sm text-gray-500">
 
-                    <a href="{{ route('signup') }}"
-                        class="font-bold text-orange-500 hover:text-orange-600 transition">
-                        Sign up
-                    </a>
-                </p>
+                    <p>
+                        New shop owner?
+
+                        <a href="{{ route('signup.shop') }}"
+                           class="font-bold text-[#F7941D] hover:text-orange-400 transition">
+                            Register your shop
+                        </a>
+                    </p>
+
+                    <p>
+                        New motorist?
+
+                        <a href="{{ route('signup') }}"
+                           class="font-bold text-[#F7941D] hover:text-orange-400 transition">
+                            Sign up
+                        </a>
+                    </p>
+
+                </div>
 
             </div>
 
@@ -244,5 +364,4 @@
     </script>
 
 </body>
-
 </html>

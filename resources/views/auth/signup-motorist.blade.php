@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,21 +11,8 @@
         body {
             font-family: Inter, Arial, sans-serif;
             background:
-                linear-gradient(rgba(15,15,15,.72), rgba(15,15,15,.72)),
+                linear-gradient(rgba(15,15,15,.88), rgba(15,15,15,.92)),
                 url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80');
-            background-size: cover;
-            background-position: center;
-        }
-
-        .glass-card {
-            background: rgba(255,255,255,0.96);
-            box-shadow: 0 30px 80px rgba(0,0,0,.35);
-        }
-
-        .left-panel {
-            background:
-                linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.15)),
-                url('https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1200&q=80');
             background-size: cover;
             background-position: center;
         }
@@ -44,70 +30,86 @@
     </style>
 </head>
 
-<body class="flex justify-center items-center px-4 py-10 min-h-screen">
+<body class="min-h-screen flex items-center justify-center px-4 py-10 text-white">
 
-    <div class="grid md:grid-cols-2 w-full max-w-6xl min-h-[760px] overflow-hidden glass-card">
+    <div class="w-full max-w-6xl grid md:grid-cols-2 overflow-hidden rounded-[2rem] border border-white/10 bg-[#1a1a1a]/95 shadow-2xl">
 
-        <!-- LEFT SIDE -->
-        <div class="hidden relative md:flex flex-col justify-between left-panel p-10 text-white">
+        <!-- LEFT PANEL -->
+        <div class="hidden md:flex min-h-[760px] flex-col justify-between p-10 bg-[#0f0f0f] border-r border-white/10">
 
             <a href="/" class="flex items-center gap-4">
-                <div class="flex justify-center items-center bg-white rounded-full w-12 h-12 text-black text-xl">
+                <div class="w-12 h-12 rounded-full bg-[#F7941D] flex items-center justify-center text-white text-xl font-black shadow-lg shadow-orange-500/30">
                     ⚙
                 </div>
 
                 <div>
-                    <h1 class="font-bold text-2xl">MechFinder</h1>
-                    <p class="text-white/70 text-xs">Motorist Portal</p>
+                    <h1 class="text-2xl font-black text-[#F7941D]">MechFinder</h1>
+                    <p class="text-xs text-gray-400">Motorist Portal</p>
                 </div>
             </a>
 
             <div>
-                <h2 class="mb-4 font-black text-5xl leading-tight">
+                <span class="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-5 py-2 text-sm font-bold text-gray-300 mb-6">
+                    🏍 Rider Assistance
+                </span>
+
+                <h2 class="text-5xl font-black leading-tight mb-5">
                     Find Help Faster
                 </h2>
 
-                <p class="max-w-md text-white/90 text-lg leading-relaxed">
+                <p class="max-w-md text-gray-300 text-lg leading-relaxed">
                     Create your account to request emergency motorcycle repair,
                     find nearby shops, and track dispatch updates.
                 </p>
 
-                <div class="flex items-center gap-2 mt-10">
-                    <div class="bg-white rounded-full w-12 h-1"></div>
-                    <div class="bg-white/70 rounded-full w-2 h-2"></div>
-                    <div class="bg-white/70 rounded-full w-2 h-2"></div>
+                <div class="grid grid-cols-3 gap-3 mt-10">
+                    <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl p-4">
+                        <div class="text-2xl mb-2">📍</div>
+                        <p class="text-xs font-bold text-gray-300">Nearby</p>
+                    </div>
+
+                    <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl p-4">
+                        <div class="text-2xl mb-2">🚨</div>
+                        <p class="text-xs font-bold text-gray-300">Dispatch</p>
+                    </div>
+
+                    <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl p-4">
+                        <div class="text-2xl mb-2">💬</div>
+                        <p class="text-xs font-bold text-gray-300">Chat</p>
+                    </div>
                 </div>
             </div>
 
+            <p class="text-xs text-gray-500">
+                Emergency motorcycle assistance for Olongapo City.
+            </p>
         </div>
 
-        <!-- RIGHT SIDE -->
-        <div class="relative flex flex-col justify-center bg-white px-8 md:px-20 py-12">
+        <!-- RIGHT PANEL -->
+        <div class="relative bg-[#111111] px-6 md:px-16 py-12 flex items-center">
 
-            <div class="top-8 right-8 absolute">
-                <a href="/"
-                    class="inline-flex justify-center items-center bg-black hover:bg-orange-500 px-8 py-3 rounded-full font-semibold text-white text-sm transition">
-                    Home
-                </a>
-            </div>
+            <a href="/"
+               class="absolute top-6 right-6 bg-[#1a1a1a] hover:bg-[#F7941D] border border-white/10 px-6 py-3 rounded-full text-sm font-bold text-white transition">
+                Home
+            </a>
 
-            <div class="mx-auto w-full max-w-md">
+            <div class="w-full max-w-md mx-auto">
 
-                <span class="inline-block mb-4 font-semibold text-orange-500 text-sm">
+                <span class="inline-block mb-4 text-[#F7941D] text-sm font-black">
                     Motorcycle Emergency Assistance
                 </span>
 
-                <h1 class="mb-2 font-black text-[#101633] text-4xl">
+                <h1 class="text-4xl font-black mb-3 text-white">
                     Motorist Sign Up
                 </h1>
 
-                <p class="mb-8 text-gray-500">
+                <p class="text-gray-400 mb-8">
                     Create your motorist account.
                 </p>
 
                 @if ($errors->any())
-                    <div class="bg-red-50 mb-4 p-4 border border-red-200 rounded-xl">
-                        <ul class="space-y-1 text-red-500 text-sm">
+                    <div class="mb-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-4">
+                        <ul class="space-y-1 text-red-400 text-sm">
                             @foreach ($errors->all() as $error)
                                 <li>• {{ $error }}</li>
                             @endforeach
@@ -119,7 +121,7 @@
                     @csrf
 
                     <div>
-                        <label class="block mb-2 font-semibold text-gray-700 text-sm">
+                        <label class="block mb-2 text-sm font-bold text-gray-300">
                             Full Name
                         </label>
 
@@ -128,11 +130,11 @@
                             value="{{ old('name') }}"
                             required
                             placeholder="Juan dela Cruz"
-                            class="bg-white px-4 py-4 border border-gray-200 focus:border-orange-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-100 w-full text-gray-700 placeholder-gray-400 transition">
+                            class="w-full rounded-2xl border border-white/10 bg-[#1a1a1a] px-5 py-4 text-white placeholder-gray-500 outline-none transition focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10">
                     </div>
 
                     <div>
-                        <label class="block mb-2 font-semibold text-gray-700 text-sm">
+                        <label class="block mb-2 text-sm font-bold text-gray-300">
                             Email Address
                         </label>
 
@@ -141,11 +143,11 @@
                             value="{{ old('email') }}"
                             required
                             placeholder="example@gmail.com"
-                            class="bg-white px-4 py-4 border border-gray-200 focus:border-orange-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-100 w-full text-gray-700 placeholder-gray-400 transition">
+                            class="w-full rounded-2xl border border-white/10 bg-[#1a1a1a] px-5 py-4 text-white placeholder-gray-500 outline-none transition focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10">
                     </div>
 
                     <div>
-                        <label class="block mb-2 font-semibold text-gray-700 text-sm">
+                        <label class="block mb-2 text-sm font-bold text-gray-300">
                             Password
                         </label>
 
@@ -155,18 +157,18 @@
                                 name="password"
                                 required
                                 placeholder="Minimum 6 characters"
-                                class="bg-white px-4 py-4 pr-12 border border-gray-200 focus:border-orange-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-100 w-full text-gray-700 placeholder-gray-400 transition">
+                                class="w-full rounded-2xl border border-white/10 bg-[#1a1a1a] px-5 py-4 pr-12 text-white placeholder-gray-500 outline-none transition focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10">
 
                             <button type="button"
                                 onclick="togglePassword('password')"
-                                class="top-1/2 right-4 absolute text-gray-400 hover:text-orange-500 -translate-y-1/2 transition">
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#F7941D] transition">
                                 👁
                             </button>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block mb-2 font-semibold text-gray-700 text-sm">
+                        <label class="block mb-2 text-sm font-bold text-gray-300">
                             Confirm Password
                         </label>
 
@@ -176,37 +178,30 @@
                                 name="password_confirmation"
                                 required
                                 placeholder="Repeat your password"
-                                class="bg-white px-4 py-4 pr-12 border border-gray-200 focus:border-orange-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-100 w-full text-gray-700 placeholder-gray-400 transition">
+                                class="w-full rounded-2xl border border-white/10 bg-[#1a1a1a] px-5 py-4 pr-12 text-white placeholder-gray-500 outline-none transition focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10">
 
                             <button type="button"
                                 onclick="togglePassword('password_confirmation')"
-                                class="top-1/2 right-4 absolute text-gray-400 hover:text-orange-500 -translate-y-1/2 transition">
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#F7941D] transition">
                                 👁
                             </button>
                         </div>
                     </div>
 
                     <button type="submit"
-                        class="bg-[#202020] hover:bg-orange-500 py-4 rounded-xl w-full font-black text-white transition duration-300">
+                        class="w-full rounded-2xl bg-[#F7941D] hover:bg-orange-600 py-4 font-black text-white transition shadow-lg shadow-orange-500/20">
                         Create Motorist Account
                     </button>
                 </form>
 
-                <div class="space-y-2 mt-8 text-center">
-                    <p class="text-gray-500 text-sm">
-                        Already have an account?
-
-                        <a href="{{ route('login') }}"
-                            class="font-bold text-orange-500 hover:text-orange-600 transition">
-                            Log in
-                        </a>
-                    </p>
-
-                
-                </div>
+                <p class="mt-8 text-center text-sm text-gray-400">
+                    Already have an account?
+                    <a href="{{ route('login') }}" class="font-black text-[#F7941D] hover:text-orange-400 transition">
+                        Log in
+                    </a>
+                </p>
 
             </div>
-
         </div>
 
     </div>
@@ -223,5 +218,4 @@
     </script>
 
 </body>
-
 </html>
