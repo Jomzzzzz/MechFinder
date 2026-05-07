@@ -11,137 +11,249 @@
     <style>
         body {
             font-family: Inter, Arial, sans-serif;
-            background: #0F0F0F;
+            background:
+                linear-gradient(rgba(15,15,15,.72), rgba(15,15,15,.72)),
+                url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+        }
+
+        .hero-image {
+            background:
+                linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.08)),
+                url('https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
         }
     </style>
 </head>
 
 <body class="text-white">
 
-    <div class="flex flex-col min-h-screen">
+    <div class="flex justify-center items-center min-h-screen px-4 py-10">
 
-        <!-- NAVBAR -->
-        <nav class="flex justify-between items-center px-6 md:px-16 py-5 border-white/10 border-b">
-            <a href="/" class="flex items-center gap-3">
-                <div
-                    class="flex justify-center items-center bg-orange-500 rounded-xl w-10 h-10 font-black text-black text-xl">
-                    ⚙
-                </div>
+        <div class="grid md:grid-cols-2 w-full max-w-6xl min-h-[680px] overflow-hidden rounded-none glass-panel">
 
+            <!-- LEFT IMAGE PANEL -->
+            <div class="relative hidden md:flex flex-col justify-between hero-image p-10">
+
+                <!-- BRAND -->
+                <a href="/" class="flex items-center gap-4">
+                    <div class="flex justify-center items-center bg-white rounded-full w-12 h-12 text-black text-xl">
+                        ⚙
+                    </div>
+
+                    <div>
+                        <h1 class="font-bold text-2xl tracking-tight">MechFinder</h1>
+                        <p class="text-white/75 text-xs">Motor Shop Portal</p>
+                    </div>
+                </a>
+
+                <!-- HERO TEXT -->
                 <div>
-                    <h1 class="font-black text-xl md:text-2xl tracking-wide">
-                        MECHFINDER
-                    </h1>
-                    <p class="text-gray-400 text-xs">
-                        Motor Shop Portal
+                    <h2 class="mb-4 font-black text-5xl leading-tight">
+                        Manage Repair Requests
+                    </h2>
+
+                    <p class="max-w-md text-white/90 text-lg leading-relaxed">
+                        Receive dispatch requests, update your shop availability, and help nearby motorists during breakdowns.
                     </p>
+
+                    <div class="flex items-center gap-2 mt-10">
+                        <div class="bg-white rounded-full w-12 h-1"></div>
+                        <div class="bg-white/80 rounded-full w-2 h-2"></div>
+                        <div class="bg-white/80 rounded-full w-2 h-2"></div>
+                    </div>
                 </div>
-            </a>
+            </div>
 
-            <a href="/login"
-                class="bg-white hover:bg-orange-500 px-5 py-2.5 rounded-xl font-bold text-black text-sm transition">
-                Shop Login
-            </a>
-        </nav>
+            <!-- RIGHT CONTENT PANEL -->
+            <div class="relative flex flex-col justify-center bg-white px-8 md:px-20 py-12 text-[#101633]">
 
-        <!-- HERO -->
-        <main class="flex flex-1 justify-center items-center px-6 py-16">
-            <div class="items-center gap-12 grid md:grid-cols-2 w-full max-w-5xl">
+            
 
-                <!-- LEFT -->
-                <div>
-                    <span
-                        class="inline-block bg-orange-500/10 mb-6 px-4 py-2 rounded-full font-bold text-orange-400 text-sm">
+                <div class="w-full max-w-md mx-auto">
+                    <span class="inline-block mb-5 font-semibold text-orange-500 text-sm">
                         Motorcycle Repair Dispatch System
                     </span>
 
-                    <h2 class="mb-6 font-black text-4xl md:text-6xl leading-tight">
-                        Manage repair requests faster and easier.
+                    <h2 class="mb-4 font-black text-4xl leading-tight">
+                        Welcome to MechFinder!
                     </h2>
 
-                    <p class="mb-8 text-gray-400 text-lg leading-relaxed">
-                        MechFinder helps motor shops receive dispatch requests, manage availability,
-                        and connect with motorists during motorcycle breakdowns.
+                    <p class="mb-10 text-gray-500 text-sm leading-relaxed">
+                        A clean and simple portal for motor shops to manage repair requests,
+                        availability, ratings, and location-based dispatch services.
                     </p>
 
-                    <div class="flex sm:flex-row flex-col gap-4">
+                    <!-- BUTTONS -->
+                    <div class="space-y-4 mb-12">
                         <a href="/login"
-                            class="bg-orange-500 hover:bg-orange-600 px-8 py-4 rounded-xl font-black text-black text-center transition">
+                            class="block bg-[#202020] hover:bg-orange-500 px-8 py-4 rounded-lg font-black text-white text-center transition">
                             Log In
                         </a>
 
                         <a href="{{ route('signup') }}"
-                            class="px-8 py-4 border border-white/20 hover:border-orange-500 rounded-xl font-bold text-white hover:text-orange-400 text-center transition">
-                            Register as Motorist
-                        </a>
+   class="block bg-white hover:bg-orange-100 px-8 py-4 border border-orange-200 rounded-lg font-semibold text-gray-700 hover:text-orange-500 text-center transition duration-300">
+    Register as Motorist
+</a>
 
                         <a href="{{ route('signup.shop') }}"
-                            class="hover:bg-orange-500/10 px-8 py-4 border border-orange-500/40 rounded-xl font-bold text-orange-400 text-center transition">
+                            class="block bg-white hover:bg-orange-100 px-8 py-4 border border-orange-200 rounded-lg font-semibold text-orange-500 text-center transition">
                             Register Your Shop
                         </a>
                     </div>
+
+                    <!-- FEATURES -->
+<div class="pt-8 border-gray-200 border-t">
+
+    <div class="gap-6 grid grid-cols-1">
+
+        <!-- MOTORIST FEATURES -->
+        <div>
+            <div class="flex items-center gap-2 mb-4">
+                <div class="bg-orange-500 rounded-full w-2 h-2"></div>
+
+                <p class="font-bold text-[#101633] text-sm uppercase tracking-wide">
+                    Motorist Portal
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+
+                <div class="p-4 border border-gray-100 rounded-xl hover:border-orange-200 transition">
+                    <div class="mb-2 text-xl">📍</div>
+
+                    <h4 class="font-bold text-sm">
+                        Nearby Shops
+                    </h4>
+
+                    <p class="text-gray-400 text-xs">
+                        Find nearby motorcycle repair shops instantly.
+                    </p>
                 </div>
 
-                <!-- RIGHT CARD -->
-                <div class="bg-[#1A1A1A] shadow-xl p-8 border border-white/10 rounded-3xl">
-                    <h3 class="mb-6 font-black text-2xl">
-                        Portal Features
-                    </h3>
+                <div class="p-4 border border-gray-100 rounded-xl hover:border-orange-200 transition">
+                    <div class="mb-2 text-xl">🚨</div>
 
-                    <div class="space-y-5">
-                        <div class="flex gap-4">
-                            <div
-                                class="flex justify-center items-center bg-orange-500/10 rounded-xl w-11 h-11 text-orange-400">
-                                📩
-                            </div>
-                            <div>
-                                <h4 class="font-bold">Dispatch Requests</h4>
-                                <p class="text-gray-400 text-sm">View incoming motorist requests.</p>
-                            </div>
-                        </div>
+                    <h4 class="font-bold text-sm">
+                        Emergency Dispatch
+                    </h4>
 
-                        <div class="flex gap-4">
-                            <div
-                                class="flex justify-center items-center bg-orange-500/10 rounded-xl w-11 h-11 text-orange-400">
-                                🟢
-                            </div>
-                            <div>
-                                <h4 class="font-bold">Shop Status</h4>
-                                <p class="text-gray-400 text-sm">Set your shop as open, busy, or closed.</p>
-                            </div>
-                        </div>
+                    <p class="text-gray-400 text-xs">
+                        Request roadside mechanic assistance in real-time.
+                    </p>
+                </div>
 
-                        <div class="flex gap-4">
-                            <div
-                                class="flex justify-center items-center bg-orange-500/10 rounded-xl w-11 h-11 text-orange-400">
-                                📍
-                            </div>
-                            <div>
-                                <h4 class="font-bold">Location Based</h4>
-                                <p class="text-gray-400 text-sm">Help nearby motorists find your shop.</p>
-                            </div>
-                        </div>
+                <div class="p-4 border border-gray-100 rounded-xl hover:border-orange-200 transition">
+                    <div class="mb-2 text-xl">💬</div>
 
-                        <div class="flex gap-4">
-                            <div
-                                class="flex justify-center items-center bg-orange-500/10 rounded-xl w-11 h-11 text-orange-400">
-                                ⭐
-                            </div>
-                            <div>
-                                <h4 class="font-bold">Ratings</h4>
-                                <p class="text-gray-400 text-sm">Build trust through completed jobs and reviews.</p>
-                            </div>
-                        </div>
-                    </div>
+                    <h4 class="font-bold text-sm">
+                        Live Chat
+                    </h4>
+
+                    <p class="text-gray-400 text-xs">
+                        Communicate directly with motor shops and mechanics.
+                    </p>
+                </div>
+
+                <div class="p-4 border border-gray-100 rounded-xl hover:border-orange-200 transition">
+                    <div class="mb-2 text-xl">⭐</div>
+
+                    <h4 class="font-bold text-sm">
+                        Reviews & Ratings
+                    </h4>
+
+                    <p class="text-gray-400 text-xs">
+                        Rate completed services and trusted shops.
+                    </p>
                 </div>
 
             </div>
-        </main>
+        </div>
 
-        <!-- FOOTER -->
-        <footer class="px-6 py-6 border-white/10 border-t text-gray-500 text-sm text-center">
-            © 2026 MechFinder. Built for motor shops and motorists in Olongapo City.
-        </footer>
+        <!-- SHOP OWNER FEATURES -->
+        <div class="pt-2">
+
+            <div class="flex items-center gap-2 mb-4">
+                <div class="bg-black rounded-full w-2 h-2"></div>
+
+                <p class="font-bold text-[#101633] text-sm uppercase tracking-wide">
+                    Shop Owner Portal
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+
+                <div class="p-4 border border-gray-100 rounded-xl hover:border-orange-200 transition">
+                    <div class="mb-2 text-xl">📩</div>
+
+                    <h4 class="font-bold text-sm">
+                        Dispatch Requests
+                    </h4>
+
+                    <p class="text-gray-400 text-xs">
+                        Receive and manage nearby repair requests.
+                    </p>
+                </div>
+
+                <div class="p-4 border border-gray-100 rounded-xl hover:border-orange-200 transition">
+                    <div class="mb-2 text-xl">🟢</div>
+
+                    <h4 class="font-bold text-sm">
+                        Shop Status
+                    </h4>
+
+                    <p class="text-gray-400 text-xs">
+                        Set availability as open, busy, or closed.
+                    </p>
+                </div>
+
+                <div class="p-4 border border-gray-100 rounded-xl hover:border-orange-200 transition">
+                    <div class="mb-2 text-xl">📊</div>
+
+                    <h4 class="font-bold text-sm">
+                        Dashboard Analytics
+                    </h4>
+
+                    <p class="text-gray-400 text-xs">
+                        Track jobs, ratings, and daily performance.
+                    </p>
+                </div>
+
+                <div class="p-4 border border-gray-100 rounded-xl hover:border-orange-200 transition">
+                    <div class="mb-2 text-xl">🛠</div>
+
+                    <h4 class="font-bold text-sm">
+                        Mechanic Dispatch
+                    </h4>
+
+                    <p class="text-gray-400 text-xs">
+                        Send mechanics directly to motorists in need.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+                <!-- FOOTER -->
+                <footer class="right-0 bottom-8 left-0 absolute text-gray-400 text-xs text-center">
+                    © 2026 MechFinder. Built for motor shops and motorists in Olongapo City.
+                </footer>
+
+            </div>
+
+        </div>
 
     </div>
 

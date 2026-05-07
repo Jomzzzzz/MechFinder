@@ -5,79 +5,208 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motorist Sign Up - MechFinder</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            font-family: Inter, Arial, sans-serif;
+            background:
+                linear-gradient(rgba(15,15,15,.72), rgba(15,15,15,.72)),
+                url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .glass-card {
+            background: rgba(255,255,255,0.96);
+            box-shadow: 0 30px 80px rgba(0,0,0,.35);
+        }
+
+        .left-panel {
+            background:
+                linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.15)),
+                url('https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        input::-ms-reveal,
+        input::-ms-clear {
+            display: none;
+        }
+
+        input::-webkit-credentials-auto-fill-button {
+            visibility: hidden;
+            display: none !important;
+            pointer-events: none;
+        }
+    </style>
 </head>
 
-<body class="flex justify-center items-center bg-[#0f0f0f] px-4 min-h-screen">
+<body class="flex justify-center items-center px-4 py-10 min-h-screen">
 
-    <div class="bg-white/5 p-8 border border-white/10 rounded-2xl w-full max-w-md">
+    <div class="grid md:grid-cols-2 w-full max-w-6xl min-h-[760px] overflow-hidden glass-card">
 
-        <h1 class="mb-2 font-black text-orange-500 text-4xl text-center">⚙ MECHFINDER</h1>
-        <p class="mb-8 text-gray-400 text-center">Create your motorist account</p>
+        <!-- LEFT SIDE -->
+        <div class="hidden relative md:flex flex-col justify-between left-panel p-10 text-white">
 
-        @if ($errors->any())
-            <div class="bg-red-500/10 mb-4 p-4 border border-red-500/30 rounded-lg">
-                <ul class="space-y-1 text-red-400 text-sm">
-                    @foreach ($errors->all() as $error)
-                        <li>• {{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+            <a href="/" class="flex items-center gap-4">
+                <div class="flex justify-center items-center bg-white rounded-full w-12 h-12 text-black text-xl">
+                    ⚙
+                </div>
 
-        <form method="POST" action="{{ route('signup.post') }}" class="space-y-4">
-            @csrf
+                <div>
+                    <h1 class="font-bold text-2xl">MechFinder</h1>
+                    <p class="text-white/70 text-xs">Motorist Portal</p>
+                </div>
+            </a>
 
             <div>
-                <label class="block mb-2 font-semibold text-gray-300 text-sm">Full Name</label>
-                <input type="text" name="name" value="{{ old('name') }}" required placeholder="Juan dela Cruz"
-                    class="bg-white/10 px-4 py-3 border border-white/10 focus:border-orange-500 rounded-lg focus:outline-none w-full text-white placeholder-gray-500">
-            </div>
+                <h2 class="mb-4 font-black text-5xl leading-tight">
+                    Find Help Faster
+                </h2>
 
-            <div>
-                <label class="block mb-2 font-semibold text-gray-300 text-sm">Email Address</label>
-                <input type="email" name="email" value="{{ old('email') }}" required
-                    placeholder="example@gmail.com"
-                    class="bg-white/10 px-4 py-3 border border-white/10 focus:border-orange-500 rounded-lg focus:outline-none w-full text-white placeholder-gray-500">
-            </div>
+                <p class="max-w-md text-white/90 text-lg leading-relaxed">
+                    Create your account to request emergency motorcycle repair,
+                    find nearby shops, and track dispatch updates.
+                </p>
 
-            <div>
-                <label class="block mb-2 font-semibold text-gray-300 text-sm">Password</label>
-                <div class="relative">
-                    <input id="password" type="password" name="password" required placeholder="Minimum 6 characters"
-                        class="bg-white/10 px-4 py-3 pr-12 border border-white/10 focus:border-orange-500 rounded-lg focus:outline-none w-full text-white placeholder-gray-500">
-                    <button type="button" onclick="togglePassword('password')"
-                        class="top-1/2 right-3 absolute text-gray-400 hover:text-orange-400 -translate-y-1/2">👁</button>
+                <div class="flex items-center gap-2 mt-10">
+                    <div class="bg-white rounded-full w-12 h-1"></div>
+                    <div class="bg-white/70 rounded-full w-2 h-2"></div>
+                    <div class="bg-white/70 rounded-full w-2 h-2"></div>
                 </div>
             </div>
 
-            <div>
-                <label class="block mb-2 font-semibold text-gray-300 text-sm">Confirm Password</label>
-                <div class="relative">
-                    <input id="password_confirmation" type="password" name="password_confirmation" required
-                        placeholder="Repeat your password"
-                        class="bg-white/10 px-4 py-3 pr-12 border border-white/10 focus:border-orange-500 rounded-lg focus:outline-none w-full text-white placeholder-gray-500">
-                    <button type="button" onclick="togglePassword('password_confirmation')"
-                        class="top-1/2 right-3 absolute text-gray-400 hover:text-orange-400 -translate-y-1/2">👁</button>
-                </div>
+        </div>
+
+        <!-- RIGHT SIDE -->
+        <div class="relative flex flex-col justify-center bg-white px-8 md:px-20 py-12">
+
+            <div class="top-8 right-8 absolute">
+                <a href="/"
+                    class="inline-flex justify-center items-center bg-black hover:bg-orange-500 px-8 py-3 rounded-full font-semibold text-white text-sm transition">
+                    Home
+                </a>
             </div>
 
-            <button type="submit"
-                class="bg-orange-500 hover:bg-orange-600 py-3 rounded-lg w-full font-bold text-white transition">
-                Create Motorist Account
-            </button>
-        </form>
+            <div class="mx-auto w-full max-w-md">
 
-        <div class="space-y-2 mt-6 text-center">
-            <p class="text-gray-400 text-sm">
-                Already have an account?
-                <a href="{{ route('login') }}" class="font-semibold text-orange-400 hover:text-orange-300">Log in</a>
-            </p>
-            <p class="text-gray-400 text-sm">
-                Registering a shop?
-                <a href="{{ route('signup.shop') }}" class="font-semibold text-orange-400 hover:text-orange-300">Shop
-                    Sign Up</a>
-            </p>
+                <span class="inline-block mb-4 font-semibold text-orange-500 text-sm">
+                    Motorcycle Emergency Assistance
+                </span>
+
+                <h1 class="mb-2 font-black text-[#101633] text-4xl">
+                    Motorist Sign Up
+                </h1>
+
+                <p class="mb-8 text-gray-500">
+                    Create your motorist account.
+                </p>
+
+                @if ($errors->any())
+                    <div class="bg-red-50 mb-4 p-4 border border-red-200 rounded-xl">
+                        <ul class="space-y-1 text-red-500 text-sm">
+                            @foreach ($errors->all() as $error)
+                                <li>• {{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('signup.post') }}" class="space-y-4">
+                    @csrf
+
+                    <div>
+                        <label class="block mb-2 font-semibold text-gray-700 text-sm">
+                            Full Name
+                        </label>
+
+                        <input type="text"
+                            name="name"
+                            value="{{ old('name') }}"
+                            required
+                            placeholder="Juan dela Cruz"
+                            class="bg-white px-4 py-4 border border-gray-200 focus:border-orange-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-100 w-full text-gray-700 placeholder-gray-400 transition">
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 font-semibold text-gray-700 text-sm">
+                            Email Address
+                        </label>
+
+                        <input type="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            required
+                            placeholder="example@gmail.com"
+                            class="bg-white px-4 py-4 border border-gray-200 focus:border-orange-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-100 w-full text-gray-700 placeholder-gray-400 transition">
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 font-semibold text-gray-700 text-sm">
+                            Password
+                        </label>
+
+                        <div class="relative">
+                            <input id="password"
+                                type="password"
+                                name="password"
+                                required
+                                placeholder="Minimum 6 characters"
+                                class="bg-white px-4 py-4 pr-12 border border-gray-200 focus:border-orange-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-100 w-full text-gray-700 placeholder-gray-400 transition">
+
+                            <button type="button"
+                                onclick="togglePassword('password')"
+                                class="top-1/2 right-4 absolute text-gray-400 hover:text-orange-500 -translate-y-1/2 transition">
+                                👁
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block mb-2 font-semibold text-gray-700 text-sm">
+                            Confirm Password
+                        </label>
+
+                        <div class="relative">
+                            <input id="password_confirmation"
+                                type="password"
+                                name="password_confirmation"
+                                required
+                                placeholder="Repeat your password"
+                                class="bg-white px-4 py-4 pr-12 border border-gray-200 focus:border-orange-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-orange-100 w-full text-gray-700 placeholder-gray-400 transition">
+
+                            <button type="button"
+                                onclick="togglePassword('password_confirmation')"
+                                class="top-1/2 right-4 absolute text-gray-400 hover:text-orange-500 -translate-y-1/2 transition">
+                                👁
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                        class="bg-[#202020] hover:bg-orange-500 py-4 rounded-xl w-full font-black text-white transition duration-300">
+                        Create Motorist Account
+                    </button>
+                </form>
+
+                <div class="space-y-2 mt-8 text-center">
+                    <p class="text-gray-500 text-sm">
+                        Already have an account?
+
+                        <a href="{{ route('login') }}"
+                            class="font-bold text-orange-500 hover:text-orange-600 transition">
+                            Log in
+                        </a>
+                    </p>
+
+                
+                </div>
+
+            </div>
+
         </div>
 
     </div>
@@ -85,7 +214,11 @@
     <script>
         function togglePassword(id) {
             const input = document.getElementById(id);
-            input.type = input.type === 'password' ? 'text' : 'password';
+
+            input.type =
+                input.type === 'password'
+                ? 'text'
+                : 'password';
         }
     </script>
 
