@@ -4,217 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MechFinder | Login</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
-        body {
-            font-family: Inter, Arial, sans-serif;
-            background:
-                linear-gradient(rgba(15,15,15,.90), rgba(15,15,15,.94)),
-                url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1600&q=80');
-            background-size: cover;
-            background-position: center;
-        }
-
         * {
-            letter-spacing: -0.01em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        .clean-title {
-            letter-spacing: -0.04em;
+        body {
+            background: #fafafa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
 
-        .clean-text {
-            line-height: 1.75;
+        .input-smooth {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
         }
 
-        input::-ms-reveal,
-        input::-ms-clear {
-            display: none;
+        .input-smooth:focus {
+            border-color: #F7941D;
+            box-shadow: 0 0 0 3px rgba(247, 148, 29, 0.1);
+            outline: none;
         }
 
-        input::-webkit-credentials-auto-fill-button {
-            visibility: hidden;
-            display: none !important;
-            pointer-events: none;
+        .btn-smooth {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-smooth:active {
+            transform: scale(0.98);
+        }
+
+        .logo-accent {
+            color: #F7941D;
         }
     </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center px-4 py-8 text-white">
+<body>
+    <div class="min-h-screen grid lg:grid-cols-2">
 
-    <div class="w-full max-w-7xl overflow-hidden rounded-[2rem] border border-white/10 bg-[#111111]/95 shadow-2xl grid lg:grid-cols-2">
-
-        <!-- LEFT PANEL -->
-        <div class="hidden lg:flex min-h-[760px] flex-col justify-between bg-[#0f0f0f] border-r border-white/10 p-10 xl:p-14">
-
-            <!-- LOGO -->
-            <a href="/" class="flex items-center gap-4">
-
-                <div class="w-12 h-12 rounded-full bg-[#F7941D] flex items-center justify-center text-white text-xl font-black shadow-lg shadow-orange-500/20">
-                    ⚙
-                </div>
-
-                <div>
-                    <h1 class="text-2xl font-black text-[#F7941D]">
-                        MechFinder
-                    </h1>
-
-                    <p class="text-xs text-gray-500">
-                        Motorcycle Repair Dispatch System
-                    </p>
-                </div>
-
-            </a>
-
-            <!-- CONTENT -->
-            <div>
-
-                <span class="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full text-xs font-bold text-gray-300 mb-8">
-                    🏍 For Motorists and Shop Owners
-                </span>
-
-                <h2 class="clean-title text-4xl xl:text-5xl font-black leading-[1.05] mb-6 text-white max-w-xl">
-                    One login for repair help and shop management.
-                </h2>
-
-                <p class="clean-text max-w-xl text-gray-400 text-base">
-                    Access MechFinder as a motorist or shop owner.
-                    Find nearby repair shops, request roadside assistance,
-                    manage dispatch requests, and stay updated in real time.
-                </p>
-
-                <!-- FEATURE GRID -->
-                <div class="grid grid-cols-3 gap-4 mt-12">
-
-                    <!-- CARD -->
-                    <div class="bg-[#1a1a1a] border border-white/5 rounded-3xl p-5">
-
-                        <div class="text-3xl mb-4">
-                            🏍
-                        </div>
-
-                        <h3 class="font-bold text-white text-sm mb-2">
-                            Motorists
-                        </h3>
-
-                        <p class="text-gray-500 text-xs leading-relaxed">
-                            Find nearby repair shops and request roadside assistance.
-                        </p>
-
-                    </div>
-
-                    <!-- CARD -->
-                    <div class="bg-[#1a1a1a] border border-white/5 rounded-3xl p-5">
-
-                        <div class="text-3xl mb-4">
-                            🛠
-                        </div>
-
-                        <h3 class="font-bold text-white text-sm mb-2">
-                            Shop Owners
-                        </h3>
-
-                        <p class="text-gray-500 text-xs leading-relaxed">
-                            Manage requests and update repair shop availability.
-                        </p>
-
-                    </div>
-
-                    <!-- CARD -->
-                    <div class="bg-[#1a1a1a] border border-white/5 rounded-3xl p-5">
-
-                        <div class="text-3xl mb-4">
-                            💬
-                        </div>
-
-                        <h3 class="font-bold text-white text-sm mb-2">
-                            Live Updates
-                        </h3>
-
-                        <p class="text-gray-500 text-xs leading-relaxed">
-                            Chat and track dispatch progress in real-time.
-                        </p>
-
-                    </div>
-
-                </div>
-
+        <!-- LEFT SIDE - IMAGE -->
+        <div class="hidden lg:flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-300 p-12">
+            <div class="max-w-sm w-full">
+                <img src="{{ asset('images/login-image.jpg') }}" alt="Motorcycle Rider"
+                     alt="Motorcycle"
+                     class="w-full h-auto object-contain filter brightness-110">
             </div>
-
-            <!-- FOOTER -->
-            <p class="text-xs text-gray-600">
-                © 2026 MechFinder. Built for motorcycle repair services in Olongapo City.
-            </p>
-
         </div>
 
-        <!-- RIGHT PANEL -->
-        <div class="relative flex items-center bg-[#111111] px-6 sm:px-8 md:px-14 lg:px-16 py-10 md:py-12">
-
-            <!-- HOME -->
-            <a href="/"
-               class="absolute top-5 right-5 bg-[#1a1a1a] hover:bg-[#F7941D] border border-white/10 px-5 py-2.5 rounded-full text-xs font-bold text-white transition">
-                Home
-            </a>
-
-            <div class="w-full max-w-md mx-auto">
-
-                <!-- MOBILE LOGO -->
-                <div class="lg:hidden mb-10">
-
-                    <a href="/" class="flex items-center gap-4">
-
-                        <div class="w-12 h-12 rounded-full bg-[#F7941D] flex items-center justify-center text-white text-xl font-black shadow-lg shadow-orange-500/20">
-                            ⚙
-                        </div>
-
-                        <div>
-                            <h1 class="text-2xl font-black text-[#F7941D]">
-                                MechFinder
-                            </h1>
-
-                            <p class="text-xs text-gray-500">
-                                Motorcycle Repair Dispatch System
-                            </p>
-                        </div>
-
-                    </a>
-
-                </div>
+        <!-- RIGHT SIDE - LOGIN FORM -->
+        <div class="flex items-center justify-center px-6 py-12">
+            <div class="w-full max-w-sm">
 
                 <!-- HEADER -->
-                <span class="inline-block mb-4 text-[#F7941D] text-xs font-black uppercase tracking-[0.2em]">
-                    Secure Access
-                </span>
+                <div class="mb-12">
+                    <a href="/" class="flex items-center gap-3 mb-8">
+                        <div class="w-10 h-10 rounded-lg bg-[#F7941D] flex items-center justify-center text-white font-black">
+                            ⚙
+                        </div>
+                        <span class="text-xl font-bold text-gray-900">MechFinder</span>
+                    </a>
 
-                <h1 class="clean-title text-4xl md:text-5xl font-black mb-3 text-white">
-                    Welcome back
-                </h1>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
+                    <p class="text-gray-500">Sign in to your account</p>
+                </div>
 
-                <p class="clean-text text-gray-400 mb-8 text-sm">
-                    Sign in to continue using MechFinder.
-                </p>
-
-                <!-- ERRORS -->
+                <!-- MESSAGES -->
                 @if (session('error'))
-                    <div class="mb-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
-                        <p class="text-red-400 text-sm">{{ session('error') }}</p>
+                    <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
+                        <p class="text-red-700 text-sm">{{ session('error') }}</p>
                     </div>
                 @endif
 
                 @if (session('success'))
-                    <div class="mb-4 rounded-2xl border border-green-500/20 bg-green-500/10 p-4">
-                        <p class="text-green-400 text-sm">{{ session('success') }}</p>
+                    <div class="mb-6 p-4 rounded-lg bg-green-50 border border-green-200">
+                        <p class="text-green-700 text-sm">{{ session('success') }}</p>
                     </div>
                 @endif
 
                 @if ($errors->any())
-                    <div class="mb-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
-                        <ul class="space-y-1 text-red-400 text-sm">
+                    <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
+                        <ul class="space-y-1">
                             @foreach ($errors->all() as $error)
-                                <li>• {{ $error }}</li>
+                                <li class="text-red-700 text-sm">{{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>
@@ -224,121 +98,80 @@
                 <form method="POST" action="{{ route('login.post') }}" class="space-y-5">
                     @csrf
 
-                    <!-- EMAIL -->
                     <div>
-
-                        <label class="block mb-2 text-sm font-medium text-gray-300">
-                            Gmail Address
-                        </label>
-
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                         <input type="email"
                                name="email"
                                value="{{ old('email') }}"
                                required
-                               placeholder="example@gmail.com"
-                               class="w-full rounded-2xl border border-white/10 bg-[#1a1a1a] px-5 py-4 text-white placeholder-gray-500 outline-none transition focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10">
-
+                               placeholder="you@example.com"
+                               class="input-smooth w-full px-4 py-3 rounded-lg text-base">
                     </div>
 
-                    <!-- PASSWORD -->
                     <div>
-
-                        <label class="block mb-2 text-sm font-medium text-gray-300">
-                            Password
-                        </label>
-
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                         <div class="relative">
-
                             <input id="password"
                                    type="password"
                                    name="password"
                                    required
-                                   placeholder="Enter your password"
-                                   class="w-full rounded-2xl border border-white/10 bg-[#1a1a1a] px-5 py-4 pr-12 text-white placeholder-gray-500 outline-none transition focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10">
-
+                                   placeholder="••••••••"
+                                   class="input-smooth w-full px-4 py-3 rounded-lg text-base pr-12">
                             <button type="button"
                                     onclick="togglePassword()"
-                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-[#F7941D] transition">
-
-                                <svg id="eyeOpen"
-                                     xmlns="http://www.w3.org/2000/svg"
-                                     class="w-5 h-5"
-                                     fill="none"
-                                     viewBox="0 0 24 24"
-                                     stroke="currentColor">
-
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          stroke-width="2"
-                                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          stroke-width="2"
-                                          d="M2.458 12C3.732 7.943 7.523 5 12 5
-                                          c4.478 0 8.268 2.943 9.542 7
-                                          -1.274 4.057-5.064 7-9.542 7
-                                          -4.477 0-8.268-2.943-9.542-7z" />
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
-
-                                <svg id="eyeClosed"
-                                     xmlns="http://www.w3.org/2000/svg"
-                                     class="hidden w-5 h-5"
-                                     fill="none"
-                                     viewBox="0 0 24 24"
-                                     stroke="currentColor">
-
-                                    <path stroke-linecap="round"
-                                          stroke-linejoin="round"
-                                          stroke-width="2"
-                                          d="M13.875 18.825A10.05 10.05 0 0112 19
-                                          c-4.478 0-8.268-2.943-9.542-7
-                                          a9.956 9.956 0 012.293-3.95m3.087-2.523
-                                          A9.953 9.953 0 0112 5
-                                          c4.478 0 8.268 2.943 9.542 7
-                                          a9.97 9.97 0 01-4.132 5.411M15 12
-                                          a3 3 0 11-6 0 3 3 0 016 0zm6 6L3 3" />
-                                </svg>
-
                             </button>
-
                         </div>
-
                     </div>
 
-                    <!-- BUTTON -->
-                    <button type="submit"
-                            class="w-full rounded-2xl bg-[#F7941D] hover:bg-orange-600 py-4 font-black text-white transition shadow-lg shadow-orange-500/20">
-                        Login
-                    </button>
+                    <div class="flex items-center justify-between pt-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="w-4 h-4 border-gray-300 rounded accent-[#F7941D]">
+                            <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                        </label>
+                        <a href="#" class="text-sm text-[#F7941D] hover:text-orange-600">
+                            Forgot password?
+                        </a>
+                    </div>
 
+                    <button type="submit" class="btn-smooth w-full bg-[#F7941D] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg mt-6">
+                        Sign in
+                    </button>
                 </form>
 
-                <!-- LINKS -->
-                <div class="mt-8 space-y-3 text-center text-sm text-gray-500">
-
-                    <p>
-                        New shop owner?
-
-                        <a href="{{ route('signup.shop') }}"
-                           class="font-bold text-[#F7941D] hover:text-orange-400 transition">
-                            Register your shop
-                        </a>
-                    </p>
-
-                    <p>
-                        New motorist?
-
-                        <a href="{{ route('signup') }}"
-                           class="font-bold text-[#F7941D] hover:text-orange-400 transition">
-                            Sign up
-                        </a>
-                    </p>
-
+                <!-- DIVIDER -->
+                <div class="flex items-center gap-3 my-8">
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                    <span class="text-xs text-gray-500 font-medium">OR</span>
+                    <div class="flex-1 h-px bg-gray-200"></div>
                 </div>
 
-            </div>
+                <!-- SOCIAL -->
+                <div class="flex gap-3">
+                    <button type="button" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.834 8.207 11.387.6.11.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v-3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                    </button>
+                    <button type="button" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.85-3.08.4-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.48-2.53 3.2l-.42-.07z"/></svg>
+                    </button>
+                    <a href="{{ route('auth.google.login') }}" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="14" font-weight="bold" fill="currentColor">G</text></svg>
+                    </a>
+                </div>
 
+                <!-- SIGNUP LINK -->
+                <p class="text-center mt-8 text-gray-600 text-sm">
+                    Don't have an account?
+                    <a href="{{ route('signup') }}" class="font-semibold text-[#F7941D] hover:text-orange-600">
+                        Create one
+                    </a>
+                </p>
+
+            </div>
         </div>
 
     </div>
@@ -346,19 +179,12 @@
     <script>
         function togglePassword() {
             const password = document.getElementById('password');
-            const eyeOpen = document.getElementById('eyeOpen');
-            const eyeClosed = document.getElementById('eyeClosed');
+            const eyeIcon = document.getElementById('eyeIcon');
 
             if (password.type === 'password') {
                 password.type = 'text';
-
-                eyeOpen.classList.add('hidden');
-                eyeClosed.classList.remove('hidden');
             } else {
                 password.type = 'password';
-
-                eyeOpen.classList.remove('hidden');
-                eyeClosed.classList.add('hidden');
             }
         }
     </script>

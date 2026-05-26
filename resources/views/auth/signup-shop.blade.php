@@ -1,333 +1,216 @@
-{{-- resources/views/auth/signup-shop.blade.php --}}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shop Sign Up - MechFinder</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
         body {
-            font-family: Inter, Arial, sans-serif;
-            background: #0f0f0f;
+            background: #fafafa;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
 
-        .auth-bg {
-            background:
-                linear-gradient(90deg, rgba(15,15,15,.96), rgba(15,15,15,.82)),
-                url('/images/clean-shop.jpg');
-            background-size: cover;
-            background-position: center;
+        .input-smooth {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
         }
 
-        input::-ms-reveal,
-        input::-ms-clear {
-            display: none;
+        .input-smooth:focus {
+            border-color: #F7941D;
+            box-shadow: 0 0 0 3px rgba(247, 148, 29, 0.1);
+            outline: none;
         }
 
-        input::-webkit-credentials-auto-fill-button {
-            visibility: hidden;
-            display: none !important;
-            pointer-events: none;
+        .btn-smooth {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-smooth:active {
+            transform: scale(0.98);
         }
     </style>
 </head>
 
-<body class="min-h-screen bg-[#0f0f0f] text-white">
+<body>
+    <div class="min-h-screen grid lg:grid-cols-2">
 
-    <main class="min-h-screen grid lg:grid-cols-2">
-
-        <!-- LEFT BRAND PANEL -->
-        <section class="auth-bg hidden lg:flex flex-col justify-between p-12">
-
-            <a href="/" class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-[#F7941D] flex items-center justify-center text-white text-xl font-black shadow-lg shadow-orange-500/30">
-                    ⚙
-                </div>
-
-                <div>
-                    <h1 class="text-2xl font-black text-[#F7941D]">
-                        MechFinder
-                    </h1>
-                    <p class="text-xs text-gray-300">
-                        Shop Owner Portal
-                    </p>
-                </div>
-            </a>
-
-            <div class="max-w-xl">
-                <span class="inline-flex items-center gap-2 bg-white/10 border border-white/10 px-5 py-2 rounded-full text-sm font-bold mb-8">
-                    🛠 Motor Shop Registration
-                </span>
-
-                <h2 class="text-5xl xl:text-6xl font-black leading-tight mb-6">
-                    Grow your motorcycle repair shop.
-                </h2>
-
-                <p class="text-lg text-gray-300 leading-relaxed">
-                    Register your shop, receive nearby dispatch requests, manage your availability,
-                    and connect with motorists who need emergency repair assistance.
-                </p>
+        <!-- LEFT SIDE - IMAGE -->
+        <div class="hidden lg:flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-12">
+            <div class="max-w-sm w-full">
+                <img src="{{ asset('images/register-shop.jpg') }}" alt="Motorcycle Rider"
+                     alt="Motorcycle Repair Shop"
+                     class="w-full h-auto object-contain filter brightness-105">
             </div>
+        </div>
 
-            <div class="grid grid-cols-3 gap-4 max-w-xl">
-                <div class="bg-white/10 border border-white/10 rounded-2xl p-4">
-                    <div class="text-2xl mb-2">📩</div>
-                    <p class="text-xs font-black">Requests</p>
-                </div>
+        <!-- RIGHT SIDE - SIGNUP FORM -->
+        <div class="flex items-center justify-center px-6 py-12">
+            <div class="w-full max-w-sm max-h-screen overflow-y-auto">
 
-                <div class="bg-white/10 border border-white/10 rounded-2xl p-4">
-                    <div class="text-2xl mb-2">🟢</div>
-                    <p class="text-xs font-black">Status</p>
-                </div>
-
-                <div class="bg-white/10 border border-white/10 rounded-2xl p-4">
-                    <div class="text-2xl mb-2">📊</div>
-                    <p class="text-xs font-black">Analytics</p>
-                </div>
-            </div>
-
-        </section>
-
-        <!-- RIGHT FORM PANEL -->
-        <section class="flex items-center justify-center px-5 py-10 lg:px-12">
-
-            <div class="w-full max-w-2xl">
-
-                <!-- MOBILE BRAND -->
-                <div class="lg:hidden mb-10 flex items-center justify-between">
-                    <a href="/" class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-full bg-[#F7941D] flex items-center justify-center text-white text-xl font-black">
+                <!-- HEADER -->
+                <div class="mb-10">
+                    <a href="/" class="flex items-center gap-3 mb-8">
+                        <div class="w-10 h-10 rounded-lg bg-[#F7941D] flex items-center justify-center text-white font-black">
                             ⚙
                         </div>
-                        <div>
-                            <h1 class="text-2xl font-black text-[#F7941D]">MechFinder</h1>
-                            <p class="text-xs text-gray-400">Shop Owner Portal</p>
-                        </div>
+                        <span class="text-xl font-bold text-gray-900">MechFinder</span>
                     </a>
 
-                    <a href="/"
-                       class="bg-[#1a1a1a] hover:bg-[#222] border border-white/10 px-5 py-2 rounded-full text-sm font-bold transition">
-                        Home
-                    </a>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Register shop</h1>
+                    <p class="text-gray-500">Join as a shop owner</p>
                 </div>
 
-                <!-- DESKTOP HOME -->
-                <div class="hidden lg:flex justify-end mb-8">
-                    <a href="/"
-                       class="bg-[#1a1a1a] hover:bg-[#222] border border-white/10 px-6 py-3 rounded-full text-sm font-bold transition">
-                        Home
-                    </a>
-                </div>
+                <!-- MESSAGES -->
+                @if ($errors->any())
+                    <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
+                        <ul class="space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li class="text-red-700 text-sm">{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-                <div class="bg-[#1a1a1a] border border-white/10 rounded-[2rem] p-6 md:p-10 shadow-2xl">
+                <!-- FORM -->
+                <form method="POST" action="{{ route('signup.shop.post') }}" class="space-y-4">
+                    @csrf
 
-                    <div class="mb-8">
-                        <span class="inline-block mb-3 text-[#F7941D] text-sm font-black">
-                            MOTORCYCLE REPAIR DISPATCH SYSTEM
-                        </span>
-
-                        <h1 class="text-4xl md:text-5xl font-black text-white mb-3">
-                            Shop Registration
-                        </h1>
-
-                        <p class="text-gray-400">
-                            Create your motor shop account and start receiving repair requests.
-                        </p>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Shop name</label>
+                        <input type="text"
+                               name="shop_name"
+                               value="{{ old('shop_name') }}"
+                               required
+                               placeholder="Juan's Motorcycle Repair"
+                               class="input-smooth w-full px-4 py-3 rounded-lg text-base">
                     </div>
 
-                    <!-- ERRORS -->
-                    @if ($errors->any())
-                        <div class="mb-6 bg-red-500/10 border border-red-500/30 rounded-2xl p-4">
-                            <ul class="space-y-1 text-red-400 text-sm">
-                                @foreach ($errors->all() as $error)
-                                    <li>• {{ $error }}</li>
-                                @endforeach
-                            </ul>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                        <input type="text"
+                               name="address"
+                               value="{{ old('address') }}"
+                               required
+                               placeholder="123 Main Street"
+                               class="input-smooth w-full px-4 py-3 rounded-lg text-base">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone <span class="text-gray-400">(optional)</span></label>
+                        <input type="text"
+                               name="phone"
+                               value="{{ old('phone') }}"
+                               placeholder="09XXXXXXXXX"
+                               class="input-smooth w-full px-4 py-3 rounded-lg text-base">
+                    </div>
+
+                    <div class="pt-2 border-t border-gray-200">
+                        <p class="text-sm font-medium text-gray-700 mb-4">Owner information</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full name</label>
+                        <input type="text"
+                               name="name"
+                               value="{{ old('name') }}"
+                               required
+                               placeholder="Juan Dela Cruz"
+                               class="input-smooth w-full px-4 py-3 rounded-lg text-base">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email"
+                               name="email"
+                               value="{{ old('email') }}"
+                               required
+                               placeholder="you@example.com"
+                               class="input-smooth w-full px-4 py-3 rounded-lg text-base">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <div class="relative">
+                            <input id="password"
+                                   type="password"
+                                   name="password"
+                                   required
+                                   placeholder="••••••••"
+                                   class="input-smooth w-full px-4 py-3 rounded-lg text-base pr-12">
+                            <button type="button"
+                                    onclick="togglePassword('password')"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                👁
+                            </button>
                         </div>
-                    @endif
+                    </div>
 
-                    <!-- FORM -->
-                    <form method="POST" action="{{ route('signup.shop.post') }}" class="space-y-8">
-                        @csrf
-
-                        <!-- SHOP DETAILS -->
-                        <div>
-                            <div class="flex items-center gap-3 mb-5">
-                                <div class="w-9 h-9 rounded-full bg-[#F7941D] flex items-center justify-center text-white font-black">
-                                    1
-                                </div>
-                                <div>
-                                    <h2 class="font-black text-white">
-                                        Shop Details
-                                    </h2>
-                                    <p class="text-xs text-gray-400">
-                                        Basic information about your motorcycle repair shop.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="grid md:grid-cols-2 gap-4">
-                                <div class="md:col-span-2">
-                                    <label class="block mb-2 text-sm font-bold text-gray-300">
-                                        Shop Name
-                                    </label>
-
-                                    <input type="text"
-                                        name="shop_name"
-                                        value="{{ old('shop_name') }}"
-                                        required
-                                        placeholder="Juan's Auto Repair"
-                                        class="w-full bg-[#0f0f0f] border border-white/10 focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10 rounded-2xl px-5 py-4 text-white placeholder-gray-500 outline-none transition">
-                                </div>
-
-                                <div class="md:col-span-2">
-                                    <label class="block mb-2 text-sm font-bold text-gray-300">
-                                        Address
-                                    </label>
-
-                                    <input type="text"
-                                        name="address"
-                                        value="{{ old('address') }}"
-                                        required
-                                        placeholder="123 Rizal Ave, Olongapo City"
-                                        class="w-full bg-[#0f0f0f] border border-white/10 focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10 rounded-2xl px-5 py-4 text-white placeholder-gray-500 outline-none transition">
-                                </div>
-
-                                <div class="md:col-span-2">
-                                    <label class="block mb-2 text-sm font-bold text-gray-300">
-                                        Phone Number
-                                        <span class="text-gray-500">(optional)</span>
-                                    </label>
-
-                                    <input type="text"
-                                        name="phone"
-                                        value="{{ old('phone') }}"
-                                        placeholder="09XXXXXXXXX"
-                                        class="w-full bg-[#0f0f0f] border border-white/10 focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10 rounded-2xl px-5 py-4 text-white placeholder-gray-500 outline-none transition">
-                                </div>
-                            </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirm password</label>
+                        <div class="relative">
+                            <input id="password_confirmation"
+                                   type="password"
+                                   name="password_confirmation"
+                                   required
+                                   placeholder="••••••••"
+                                   class="input-smooth w-full px-4 py-3 rounded-lg text-base pr-12">
+                            <button type="button"
+                                    onclick="togglePassword('password_confirmation')"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                👁
+                            </button>
                         </div>
+                    </div>
 
-                        <!-- OWNER ACCOUNT -->
-                        <div>
-                            <div class="flex items-center gap-3 mb-5">
-                                <div class="w-9 h-9 rounded-full bg-[#F7941D] flex items-center justify-center text-white font-black">
-                                    2
-                                </div>
-                                <div>
-                                    <h2 class="font-black text-white">
-                                        Owner Account
-                                    </h2>
-                                    <p class="text-xs text-gray-400">
-                                        Login information for the shop owner.
-                                    </p>
-                                </div>
-                            </div>
+                    <button type="submit" class="btn-smooth w-full bg-[#F7941D] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg mt-6">
+                        Register shop
+                    </button>
+                </form>
 
-                            <div class="grid md:grid-cols-2 gap-4">
-                                <div class="md:col-span-2">
-                                    <label class="block mb-2 text-sm font-bold text-gray-300">
-                                        Full Name
-                                    </label>
-
-                                    <input type="text"
-                                        name="name"
-                                        value="{{ old('name') }}"
-                                        required
-                                        placeholder="Juan dela Cruz"
-                                        class="w-full bg-[#0f0f0f] border border-white/10 focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10 rounded-2xl px-5 py-4 text-white placeholder-gray-500 outline-none transition">
-                                </div>
-
-                                <div class="md:col-span-2">
-                                    <label class="block mb-2 text-sm font-bold text-gray-300">
-                                        Email Address
-                                    </label>
-
-                                    <input type="email"
-                                        name="email"
-                                        value="{{ old('email') }}"
-                                        required
-                                        placeholder="example@gmail.com"
-                                        class="w-full bg-[#0f0f0f] border border-white/10 focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10 rounded-2xl px-5 py-4 text-white placeholder-gray-500 outline-none transition">
-                                </div>
-
-                                <div>
-                                    <label class="block mb-2 text-sm font-bold text-gray-300">
-                                        Password
-                                    </label>
-
-                                    <div class="relative">
-                                        <input id="password"
-                                            type="password"
-                                            name="password"
-                                            required
-                                            placeholder="Minimum 6 characters"
-                                            class="w-full bg-[#0f0f0f] border border-white/10 focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10 rounded-2xl px-5 py-4 pr-12 text-white placeholder-gray-500 outline-none transition">
-
-                                        <button type="button"
-                                            onclick="togglePassword('password')"
-                                            class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#F7941D] transition">
-                                            👁
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block mb-2 text-sm font-bold text-gray-300">
-                                        Confirm Password
-                                    </label>
-
-                                    <div class="relative">
-                                        <input id="password_confirmation"
-                                            type="password"
-                                            name="password_confirmation"
-                                            required
-                                            placeholder="Repeat password"
-                                            class="w-full bg-[#0f0f0f] border border-white/10 focus:border-[#F7941D] focus:ring-4 focus:ring-orange-500/10 rounded-2xl px-5 py-4 pr-12 text-white placeholder-gray-500 outline-none transition">
-
-                                        <button type="button"
-                                            onclick="togglePassword('password_confirmation')"
-                                            class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#F7941D] transition">
-                                            👁
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="submit"
-                            class="w-full bg-[#F7941D] hover:bg-orange-600 py-4 rounded-2xl font-black text-white transition shadow-lg shadow-orange-500/20">
-                            Register Shop
-                        </button>
-                    </form>
-
-                    <p class="mt-8 text-center text-sm text-gray-400">
-                        Already have an account?
-                        <a href="{{ route('login') }}"
-                           class="font-black text-[#F7941D] hover:text-orange-400 transition">
-                            Log in
-                        </a>
-                    </p>
-
+                <!-- DIVIDER -->
+                <div class="flex items-center gap-3 my-8">
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                    <span class="text-xs text-gray-500 font-medium">OR</span>
+                    <div class="flex-1 h-px bg-gray-200"></div>
                 </div>
 
+                <!-- SOCIAL -->
+                <div class="flex gap-3">
+                    <button type="button" class="flex-1 flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.834 8.207 11.387.6.11.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v-3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                    </button>
+                    <button type="button" class="flex-1 flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.85-3.08.4-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.48-2.53 3.2l-.42-.07z"/></svg>
+                    </button>
+                    <a href="{{ route('auth.google.signup') }}" class="flex-1 flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition font-bold">
+                        G
+                    </a>
+                </div>
+
+                <!-- LOGIN LINK -->
+                <p class="text-center mt-8 text-gray-600 text-sm pb-8">
+                    Already have an account?
+                    <a href="{{ route('login') }}" class="font-semibold text-[#F7941D] hover:text-orange-600">
+                        Sign in
+                    </a>
+                </p>
+
             </div>
+        </div>
 
-        </section>
+    </div>
 
-    </main>
     <script>
         function togglePassword(id) {
-            const input = document.getElementById(id);
-
-            input.type =
-                input.type === 'password'
-                ? 'text'
-                : 'password';
+            const field = document.getElementById(id);
+            field.type = field.type === 'password' ? 'text' : 'password';
         }
     </script>
 

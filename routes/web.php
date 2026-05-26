@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\MotoristController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\AdminController;
@@ -43,6 +44,11 @@ Route::post("/signup/shop", [AuthController::class, "registerShop"])->name(
 );
 
 Route::post("/logout", [AuthController::class, "logout"])->name("logout");
+
+// Google OAuth
+Route::get("/auth/google/login", [OAuthController::class, "redirectToGoogle"])->defaults('type', 'motorist')->name("auth.google.login");
+Route::get("/auth/google/signup", [OAuthController::class, "redirectToGoogle"])->defaults('type', 'shop')->name("auth.google.signup");
+Route::get("/auth/google/callback", [OAuthController::class, "handleGoogleCallback"])->name("auth.google.callback");
 
 /*
 |--------------------------------------------------------------------------
@@ -191,6 +197,15 @@ Route::prefix("motorist")->group(function () {
     "motorist.review.store"
   );
 });
+
+// Motorist authenticated dashboard
+Route::prefix("motorist")
+  ->middleware(["auth", "role:motorist"])
+  ->group(function () {
+    Route::get("/dashboard", [MotoristController::class, "dashboard"])->name(
+      "motorist.dashboard"
+    );
+  });
 
 /*
 |--------------------------------------------------------------------------
