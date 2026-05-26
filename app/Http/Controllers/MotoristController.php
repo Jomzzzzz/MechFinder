@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\DB;
 
 class MotoristController extends Controller
 {
+  public function dashboard()
+  {
+    return view("motorist.dashboard");
+  }
+
   public function index()
   {
     return view("motorist.index");
@@ -193,6 +198,187 @@ class MotoristController extends Controller
     return response()->json([
       "success" => true,
       "message" => "Review submitted successfully.",
+    ]);
+  }
+
+  public function apiShops(Request $request)
+  {
+    $lat = $request->query("lat");
+    $lng = $request->query("lng");
+
+    $shops = DB::table("shops")
+      ->leftJoin("reviews", "shops.id", "=", "reviews.shop_id")
+      ->select(
+        "shops.id",
+        "shops.shop_name",
+        "shops.address",
+        "shops.phone",
+        "shops.latitude",
+        "shops.longitude",
+        "shops.status",
+        DB::raw("COALESCE(AVG(reviews.rating), 0) as rating"),
+        DB::raw("COUNT(reviews.id) as review_count")
+      )
+      ->groupBy(
+        "shops.id",
+        "shops.shop_name",
+        "shops.address",
+        "shops.phone",
+        "shops.latitude",
+        "shops.longitude",
+        "shops.status"
+      )
+      ->get()
+      ->map(function ($shop) use ($lat, $lng) {
+        $shop->rating = round($shop->rating, 1);
+
+        if ($lat && $lng && $shop->latitude && $shop->longitude) {
+          $shop->distance = $this->distanceKm(
+            $lat,
+            $lng,
+            $shop->latitude,
+            $shop->longitude
+          );
+          $shop->eta = max(3, round(($shop->distance / 30) * 60));
+        } else {
+          $shop->distance = null;
+          $shop->eta = null;
+        }
+
+        return $shop;
+      })
+      ->sortBy(function ($shop) {
+        if ($shop->status === "open") {
+          return $shop->distance ?? 999;
+        }
+
+        return 9999;
+      })
+      ->values();
+
+    return response()->json($shops);
+  }
+
+  public function createDispatchRequest(Request $request)
+  {
+    return $this->storeDispatch($request);
+  }
+
+  public function getMessages($dispatchId)
+  {
+    $messages = DB::table("messages")
+      ->where("dispatch_id", $dispatchId)
+      ->orderBy("created_at", "asc")
+      ->get();
+
+    if ($messages->isEmpty()) {
+      return response()->json([], 404);
+    }
+
+    return response()->json($messages);
+  }
+
+  public function sendMessage(Request $request)
+  {
+    $validated = $request->validate([
+      "dispatch_id" => "required|exists:dispatch_requests,id",
+      "message" => "required|string",
+      "sender_type" => "required|in:motorist,shop",
+      "motorist_id" => "nullable|exists:users,id",
+      "shop_id" => "nullable|exists:shops,id",
+      "guest_token" => "nullable|string|max:100",
+    ]);
+
+    DB::table("messages")->insert([
+      "dispatch_id" => $validated["dispatch_id"],
+      "motorist_id" => $validated["motorist_id"] ?? null,
+      "shop_id" => $validated["shop_id"] ?? null,
+      "message" => $validated["message"],
+      "sender_type" => $validated["sender_type"],
+      "created_at" => now(),
+      "updated_at" => now(),
+    ]);
+
+    return response()->json([
+      "success" => true,
+      "message" => "Message sent successfully.",
+    ]);
+  }
+
+  public function submitReview(Request $request)
+  {
+    return $this->storeReview($request);
+  }
+
+  public function getShopsForMessaging()
+  {
+    $shops = DB::table("shops")
+      ->leftJoin("reviews", "shops.id", "=", "reviews.shop_id")
+      ->select(
+        "shops.id",
+        "shops.shop_name",
+        "shops.address",
+        "shops.phone",
+        DB::raw("COALESCE(AVG(reviews.rating), 0) as rating")
+      )
+      ->groupBy("shops.id", "shops.shop_name", "shops.address", "shops.phone")
+      ->get();
+
+    return response()->json($shops);
+  }
+
+  public function getShopMessages($shopId)
+  {
+    $guest_token = request()->query("guest_token");
+    $motorist_id = request()->query("motorist_id");
+
+    $query = DB::table("shop_messages")
+      ->where("shop_id", $shopId);
+
+    if ($guest_token) {
+      $query->where("guest_token", $guest_token);
+    } elseif ($motorist_id) {
+      $query->where("motorist_id", $motorist_id);
+    } else {
+      return response()->json(["error" => "No guest_token or motorist_id provided"], 400);
+    }
+
+    $messages = $query
+      ->orderBy("created_at", "asc")
+      ->get();
+
+    return response()->json($messages);
+  }
+
+  public function sendShopMessage(Request $request)
+  {
+    $validated = $request->validate([
+      "shop_id" => "required|exists:shops,id",
+      "message" => "required|string",
+      "sender_type" => "required|in:motorist,shop",
+      "motorist_id" => "nullable|exists:users,id",
+      "guest_token" => "nullable|string|max:100",
+    ]);
+
+    if (!$validated["motorist_id"] && !$validated["guest_token"]) {
+      return response()->json([
+        "error" => "Either motorist_id or guest_token must be provided",
+      ], 422);
+    }
+
+    DB::table("shop_messages")->insert([
+      "motorist_id" => $validated["motorist_id"] ?? null,
+      "guest_token" => $validated["guest_token"] ?? null,
+      "shop_id" => $validated["shop_id"],
+      "message" => $validated["message"],
+      "sender_type" => $validated["sender_type"],
+      "created_at" => now(),
+      "updated_at" => now(),
+    ]);
+
+    return response()->json([
+      "success" => true,
+      "message" => "Message sent successfully.",
     ]);
   }
 
