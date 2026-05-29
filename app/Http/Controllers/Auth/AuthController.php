@@ -116,7 +116,7 @@ class AuthController extends Controller
       return back()->withInput()->with("error", "Incorrect password.");
     }
 
-    Auth::login($user, true);
+    Auth::login($user, $request->boolean('remember'));
     $request->session()->regenerate();
 
     return redirect($this->redirectByRole($user->role));

@@ -49,6 +49,25 @@
         .hero-glow {
             background: radial-gradient(ellipse at 60% 50%, rgba(247, 148, 29, .12) 0%, transparent 70%);
         }
+
+        /* Nav responsive — guaranteed regardless of CDN */
+        .nav-desktop {
+            display: none;
+        }
+
+        .nav-mobile {
+            display: flex;
+        }
+
+        @media (min-width: 768px) {
+            .nav-desktop {
+                display: flex;
+            }
+
+            .nav-mobile {
+                display: none;
+            }
+        }
     </style>
 </head>
 
@@ -65,7 +84,7 @@
             </a>
 
             <!-- Desktop Nav Links -->
-            <div class="hidden md:flex items-center gap-0.5 flex-1 justify-center">
+            <div class="nav-desktop items-center gap-0.5 flex-1 justify-center">
                 <a href="#features"
                     class="px-3.5 py-2 text-sm font-medium text-[#6B6963] hover:text-[#0D0D0D] hover:bg-[#F5F4F1] rounded-lg transition-all">Features</a>
                 <a href="#how-it-works"
@@ -80,7 +99,7 @@
             </div>
 
             <!-- Desktop Actions -->
-            <div class="hidden md:flex items-center gap-2 flex-shrink-0">
+            <div class="nav-desktop items-center gap-2 flex-shrink-0">
                 <a href="{{ route('login') }}"
                     class="px-4 py-2 text-sm font-medium text-[#0D0D0D] hover:bg-[#F5F4F1] rounded-lg transition-all">Sign
                     in</a>
@@ -90,7 +109,7 @@
             </div>
 
             <!-- Mobile: Sign in + Hamburger -->
-            <div class="md:hidden flex items-center gap-2">
+            <div class="nav-mobile items-center gap-2">
                 <a href="{{ route('login') }}"
                     class="px-3 py-1.5 text-sm font-medium text-[#0D0D0D] hover:bg-[#F5F4F1] rounded-lg transition-all">Sign
                     in</a>
