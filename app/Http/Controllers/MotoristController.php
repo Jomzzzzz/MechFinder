@@ -38,6 +38,8 @@ class MotoristController extends Controller
         "shops.latitude",
         "shops.longitude",
         "shops.status",
+        "shops.logo",
+        "shops.cover_photo",
         DB::raw("COALESCE(AVG(reviews.rating), 0) as rating"),
         DB::raw("COUNT(reviews.id) as review_count")
       )
@@ -48,7 +50,9 @@ class MotoristController extends Controller
         "shops.phone",
         "shops.latitude",
         "shops.longitude",
-        "shops.status"
+        "shops.status",
+        "shops.logo",
+        "shops.cover_photo"
       )
       ->get()
       ->map(function ($shop) use ($lat, $lng) {

@@ -5,11 +5,11 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-               MECHFINDER — PROFESSIONAL LIGHT THEME
-               ══════════════════════════════════════════════ */
+                               MECHFINDER — PROFESSIONAL LIGHT THEME
+                               ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
-            --bar-h: 70px;
+            --bar-h: 78px;
             --brand: #F7941D;
             --brand-dk: #C87010;
             --brand-bg: rgba(247, 148, 29, .09);
@@ -224,64 +224,225 @@
             z-index: 20;
             background: var(--surface);
             border-top: 1px solid var(--border);
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, .06);
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, .07);
             padding: 10px 14px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
-        .shops-stat {
-            flex-shrink: 0;
-            text-align: center;
-        }
-
-        .shops-stat .s-num {
-            font-size: 22px;
-            font-weight: 800;
-            line-height: 1;
-            color: var(--text-1);
-        }
-
-        .shops-stat .s-num span {
-            color: var(--brand);
-        }
-
-        .shops-stat .s-lbl {
-            font-size: 9px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            color: var(--text-3);
-            margin-top: 1px;
-        }
-
-        .divider-v {
-            width: 1px;
-            height: 36px;
-            background: var(--border);
-            flex-shrink: 0;
-        }
-
-        .btn-rescue {
+        /* Find-a-shop trigger button */
+        .btn-shops {
             flex: 1;
-            background: var(--action);
-            color: #fff;
-            font-size: 14px;
-            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
             border-radius: var(--r2);
-            padding: 13px;
-            border: none;
+            padding: 10px 12px;
             cursor: pointer;
+            min-width: 0;
+            text-align: left;
+            -webkit-tap-highlight-color: transparent;
+            transition: background .15s;
+        }
+
+        .btn-shops:active {
+            background: var(--border);
+        }
+
+        .btn-shops-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--r1);
+            background: var(--brand-bg);
+            color: var(--brand);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .btn-shops-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .btn-shops-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-1);
+            line-height: 1.2;
+        }
+
+        .btn-shops-sub {
+            font-size: 10px;
+            color: var(--text-3);
+            margin-top: 2px;
+        }
+
+        .btn-rescue {
+            flex-shrink: 0;
+            background: var(--action);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: var(--r2);
+            padding: 12px 14px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            line-height: 1;
             transition: background .15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-rescue .br-icon {
+            font-size: 18px;
+        }
+
+        .btn-rescue .br-label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            opacity: .75;
         }
 
         .btn-rescue:active {
             background: var(--action-2);
+        }
+
+        /* ── SHOP LIST (inside shops panel) ── */
+        .panel-search-wrap {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 14px;
+        }
+
+        .panel-search {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            background: var(--surface-2);
+            border: 1px solid var(--border-2);
+            border-radius: var(--r2);
+            padding: 9px 12px;
+        }
+
+        .panel-search input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            color: var(--text-1);
+            font-family: inherit;
+            outline: none;
+        }
+
+        .panel-search input::placeholder {
+            color: var(--text-3);
+        }
+
+        .shop-item {
+            background: var(--surface);
+            border-radius: var(--r2);
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .shop-item-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: var(--r1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            flex-shrink: 0;
+        }
+
+        .shop-item-icon.open {
+            background: var(--brand-bg);
+            color: var(--brand);
+        }
+
+        .shop-item-icon.closed {
+            background: var(--surface-2);
+            color: var(--text-3);
+        }
+
+        .shop-item-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .shop-item-name {
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .shop-item-meta {
+            font-size: 11px;
+            color: var(--text-2);
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .shop-status-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 4px;
+        }
+
+        .shop-status-badge.open {
+            background: var(--brand-bg);
+            color: var(--brand-dk);
+        }
+
+        .shop-status-badge.closed {
+            background: var(--surface-2);
+            color: var(--text-3);
+        }
+
+        .dir-btn {
+            flex-shrink: 0;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--action-bg);
+            color: var(--action);
+            border: 1px solid rgba(30, 41, 59, .12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .dir-btn:active {
+            background: rgba(30, 41, 59, .14);
         }
 
         /* ── PANELS ── */
@@ -680,6 +841,97 @@
             margin: 10px 12px;
             font-family: Inter, sans-serif;
         }
+
+        /* ── CONFIRM MODAL ── */
+        #confirmModal {
+            position: absolute;
+            inset: 0;
+            z-index: 60;
+            background: rgba(0, 0, 0, .45);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s ease;
+        }
+
+        #confirmModal.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .cm-sheet {
+            background: var(--surface);
+            border-radius: var(--r3) var(--r3) 0 0;
+            width: 100%;
+            padding: 20px 20px 32px;
+            transform: translateY(100%);
+            transition: transform .25s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        #confirmModal.show .cm-sheet {
+            transform: translateY(0);
+        }
+
+        .cm-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, .1);
+            color: var(--red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin: 0 auto 14px;
+        }
+
+        .cm-title {
+            font-size: 17px;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-1);
+            margin-bottom: 6px;
+        }
+
+        .cm-body {
+            font-size: 13px;
+            color: var(--text-2);
+            text-align: center;
+            line-height: 1.6;
+            margin-bottom: 22px;
+        }
+
+        .cm-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .cm-btn-cancel {
+            width: 100%;
+            background: var(--red);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: var(--r2);
+            padding: 14px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .cm-btn-back {
+            width: 100%;
+            background: var(--surface-2);
+            color: var(--text-1);
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: var(--r2);
+            padding: 14px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
     </style>
 
     <div id="mfApp">
@@ -723,14 +975,18 @@
         {{-- RESCUE BAR --}}
         <div id="rescueBar">
             {{-- Idle state: shown when no active request --}}
-            <div id="barIdle" style="display:flex;align-items:center;gap:12px;width:100%;">
-                <div class="shops-stat">
-                    <div class="s-num"><span id="openShopsCount">…</span></div>
-                    <div class="s-lbl">Open shops</div>
-                </div>
-                <div class="divider-v"></div>
+            <div id="barIdle" style="display:flex;align-items:center;gap:10px;width:100%;">
+                <button class="btn-shops" onclick="openPanel('shopsPanel')">
+                    <div class="btn-shops-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                    <div class="btn-shops-text">
+                        <div class="btn-shops-title">Find a Shop</div>
+                        <div class="btn-shops-sub"><span id="openShopsCount">…</span> open nearby</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="font-size:11px;color:var(--text-3);"></i>
+                </button>
                 <button class="btn-rescue" onclick="openPanel('rescuePanel')">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Request Rescue
+                    <span class="br-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <span class="br-label">Rescue</span>
                 </button>
             </div>
             {{-- Active state: shown while a request is in progress --}}
@@ -746,6 +1002,47 @@
                     style="display:none;flex-shrink:0;background:transparent;border:1.5px solid var(--red);color:var(--red);font-size:12px;font-weight:700;border-radius:var(--r1);padding:8px 14px;cursor:pointer;">
                     <i class="fa-solid fa-xmark"></i> Cancel
                 </button>
+            </div>
+        </div>
+
+        {{-- ══ SHOPS PANEL ══ --}}
+        <div id="shopsPanel" class="panel">
+            <div class="ph">
+                <button class="ph-back" onclick="closePanel('shopsPanel')">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div>
+                    <div class="ph-title">Nearby Shops</div>
+                    <div class="ph-subtitle">Tap <i class="fa-solid fa-location-arrow" style="font-size:9px;"></i> for
+                        directions</div>
+                </div>
+            </div>
+            <div class="panel-search-wrap">
+                <div class="panel-search">
+                    <i class="fa-solid fa-magnifying-glass" style="color:var(--text-3);font-size:13px;"></i>
+                    <input id="shopSearchInput" type="search" placeholder="Search shop name…"
+                        oninput="filterShopList(this.value)">
+                    <button id="shopSearchClear" onclick="clearShopSearch()"
+                        style="display:none;background:none;border:none;color:var(--text-3);cursor:pointer;font-size:13px;padding:0;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="shopList" style="padding:12px 14px 32px;"></div>
+        </div>
+
+        {{-- CANCEL CONFIRMATION MODAL --}}
+        <div id="confirmModal" onclick="_cmBgClick(event)">
+            <div class="cm-sheet">
+                <div class="cm-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="cm-title">Cancel Rescue Request?</div>
+                <div class="cm-body">Your request will be removed and no mechanic will be dispatched. You can submit a new
+                    one anytime.</div>
+                <div class="cm-actions">
+                    <button class="cm-btn-cancel" onclick="_cmConfirm()"><i class="fa-solid fa-xmark"></i> Yes, Cancel
+                        Request</button>
+                    <button class="cm-btn-back" onclick="_cmClose()">Keep Waiting</button>
+                </div>
             </div>
         </div>
 
@@ -781,7 +1078,8 @@
             <div style="padding:12px 14px 32px; display:flex; flex-direction:column; gap:14px;">
 
                 {{-- Identity summary --}}
-                <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px;">
+                <div
+                    style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                         <span
                             style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);">Rescuing</span>
@@ -816,7 +1114,8 @@
                                 class="t-label">Brake</span>
                         </button>
                         <button class="issue-tile" onclick="selectIssue(this,'Chain Problem')">
-                            <span class="t-icon"><i class="fa-solid fa-link"></i></span><span class="t-label">Chain</span>
+                            <span class="t-icon"><i class="fa-solid fa-link"></i></span><span
+                                class="t-label">Chain</span>
                         </button>
                         <button class="issue-tile" onclick="selectIssue(this,'Other')">
                             <span class="t-icon"><i class="fa-solid fa-circle-question"></i></span><span
@@ -944,8 +1243,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-               MECHFINDER — APP LOGIC
-               ══════════════════════════════════════════════ */
+                               MECHFINDER — APP LOGIC
+                               ══════════════════════════════════════════════ */
 
         const STATUS_LABEL = {
             requested: '<i class="fa-solid fa-hourglass-half"></i> Finding nearest shop…',
@@ -980,6 +1279,7 @@
         let selectedIssue = null;
         let currentRequestId = LS.get('mf_current_request_id');
         let pusherClient = null;
+        let allShops = [];
 
         /* ── IDENTITY ── */
         function genToken() {
@@ -1072,6 +1372,7 @@
         async function loadShops() {
             try {
                 const shops = await fetch(`/motorist/shops?lat=${userLat}&lng=${userLng}`).then(r => r.json());
+                allShops = shops;
                 renderShopPins(shops);
             } catch {
                 /* non-critical */
@@ -1081,7 +1382,13 @@
         function renderShopPins(shops) {
             shopMarkers.forEach(m => map.removeLayer(m));
             shopMarkers = [];
-            document.getElementById('openShopsCount').textContent = shops.filter(s => s.status === 'open').length;
+            const openCount = shops.filter(s => s.status === 'open').length;
+            document.getElementById('openShopsCount').textContent = openCount;
+
+            // Refresh list if panel is open
+            if (document.getElementById('shopsPanel').classList.contains('open')) {
+                renderShopList(shops, document.getElementById('shopSearchInput').value);
+            }
 
             shops.forEach(shop => {
                 if (!shop.latitude || !shop.longitude) return;
@@ -1112,9 +1419,73 @@
             });
         }
 
+        /* ── SHOP LIST + SEARCH ── */
+        function renderShopList(shops, query) {
+            const q = (query || '').toLowerCase().trim();
+            const filtered = q ? shops.filter(s => (s.shop_name || s.name || '').toLowerCase().includes(q)) : shops;
+            // open shops first
+            const sorted = [...filtered].sort((a, b) => {
+                if (a.status === 'open' && b.status !== 'open') return -1;
+                if (a.status !== 'open' && b.status === 'open') return 1;
+                return (a.distance_km ?? 999) - (b.distance_km ?? 999);
+            });
+            const list = document.getElementById('shopList');
+            if (!sorted.length) {
+                list.innerHTML =
+                    '<div style="text-align:center;padding:48px 0;color:var(--text-3);font-size:13px;">No shops found.</div>';
+                return;
+            }
+            list.innerHTML = sorted.map(s => {
+                const open = s.status === 'open';
+                const name = s.shop_name || s.name || 'Shop';
+                const addr = s.address ? `<span>${s.address}</span>` : '';
+                const dist = s.distance != null ?
+                    `<span><i class="fa-solid fa-location-dot" style="font-size:9px;"></i> ${Number(s.distance).toFixed(1)} km</span>` :
+                    '';
+                const stars = s.rating ?
+                    `<span><i class="fa-solid fa-star" style="color:#F59E0B;font-size:9px;"></i> ${Number(s.rating).toFixed(1)}</span>` :
+                    '';
+                const hasCoords = s.latitude && s.longitude;
+                const iconHtml = s.logo ?
+                    `<img src="/storage/${s.logo}" style="width:42px;height:42px;border-radius:var(--r1);object-fit:cover;flex-shrink:0;" alt="${name}">` :
+                    `<div class="shop-item-icon ${open ? 'open' : 'closed'}"><i class="fa-solid fa-wrench"></i></div>`;
+                return `<div class="shop-item">
+                    ${iconHtml}
+                    <div class="shop-item-body">
+                        <div class="shop-item-name">${name}</div>
+                        <div class="shop-item-meta">
+                            <span class="shop-status-badge ${open ? 'open' : 'closed'}">${open ? 'Open' : 'Closed'}</span>
+                            ${dist}${stars}${addr}
+                        </div>
+                    </div>
+                    ${hasCoords ? `<button class="dir-btn" onclick="getDirections(${s.latitude},${s.longitude})" title="Get directions"><i class="fa-solid fa-location-arrow"></i></button>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function filterShopList(query) {
+            const clear = document.getElementById('shopSearchClear');
+            if (clear) clear.style.display = query ? 'block' : 'none';
+            renderShopList(allShops, query);
+        }
+
+        function clearShopSearch() {
+            const input = document.getElementById('shopSearchInput');
+            input.value = '';
+            filterShopList('');
+            input.focus();
+        }
+
+        function getDirections(lat, lng) {
+            const url =
+                `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${lat},${lng}&travelmode=driving`;
+            window.open(url, '_blank');
+        }
+
         /* ── RESCUE FORM ── */
         function openPanel(id) {
             if (id === 'rescuePanel') refreshIdentityCard();
+            if (id === 'shopsPanel') renderShopList(allShops, '');
             document.getElementById(id).classList.add('open');
         }
 
@@ -1302,9 +1673,22 @@
             cancelBtn.style.display = status === 'requested' ? 'block' : 'none';
         }
 
-        async function cancelDispatch() {
+        function cancelDispatch() {
             if (!currentRequestId) return;
-            if (!confirm('Cancel your rescue request?')) return;
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function _cmClose() {
+            document.getElementById('confirmModal').classList.remove('show');
+        }
+
+        function _cmBgClick(e) {
+            if (e.target === document.getElementById('confirmModal')) _cmClose();
+        }
+
+        async function _cmConfirm() {
+            _cmClose();
+            const btn = document.querySelector('#confirmModal .cm-btn-cancel');
             try {
                 const res = await fetch(`/motorist/request/${currentRequestId}/cancel`, {
                     method: 'POST',
@@ -1321,7 +1705,7 @@
                     document.getElementById('reqBadge').classList.remove('show');
                     updateRescueBar(null);
                 } else {
-                    alert(data.error ?? 'Could not cancel request.');
+                    alert(data.error ?? 'Could not cancel — request may have already been accepted.');
                 }
             } catch {
                 alert('Network error. Please try again.');
@@ -1338,15 +1722,18 @@
                 closePanel('requestsPanel');
                 closePanel('profilePanel');
                 closePanel('rescuePanel');
+                closePanel('shopsPanel');
                 setTimeout(() => map.invalidateSize(), 350);
             } else if (tab === 'requests') {
                 closePanel('profilePanel');
                 closePanel('rescuePanel');
+                closePanel('shopsPanel');
                 openPanel('requestsPanel');
                 loadRequests();
             } else if (tab === 'profile') {
                 closePanel('requestsPanel');
                 closePanel('rescuePanel');
+                closePanel('shopsPanel');
                 loadProfileInputs();
                 openPanel('profilePanel');
             }

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ShopController extends Controller
 {
@@ -417,6 +418,36 @@ class ShopController extends Controller
       "success" => true,
       "status" => $validated["status"],
     ]);
+  }
+
+  public function uploadImages(Request $request)
+  {
+    $request->validate([
+      "logo"        => "nullable|image|mimes:jpeg,jpg,png,webp|max:2048",
+      "cover_photo" => "nullable|image|mimes:jpeg,jpg,png,webp|max:4096",
+    ]);
+
+    $shopId = $this->getCurrentShopId();
+    $shop   = $this->getShop();
+    $update = ["updated_at" => now()];
+
+    if ($request->hasFile("logo")) {
+      if ($shop && $shop->logo) {
+        Storage::disk("public")->delete($shop->logo);
+      }
+      $update["logo"] = $request->file("logo")->store("shops/logos", "public");
+    }
+
+    if ($request->hasFile("cover_photo")) {
+      if ($shop && $shop->cover_photo) {
+        Storage::disk("public")->delete($shop->cover_photo);
+      }
+      $update["cover_photo"] = $request->file("cover_photo")->store("shops/covers", "public");
+    }
+
+    DB::table("shops")->where("id", $shopId)->update($update);
+
+    return back()->with("success", "Shop images updated successfully.");
   }
 
   public function update(Request $request)

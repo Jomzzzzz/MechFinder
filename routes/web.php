@@ -145,6 +145,9 @@ Route::prefix("shop")
     Route::post("/settings/update", [ShopController::class, "update"])->name(
       "shop.update"
     );
+    Route::post("/settings/images", [ShopController::class, "uploadImages"])->name(
+      "shop.upload-images"
+    );
     Route::post("/settings/toggle-status", [
       ShopController::class,
       "toggleStatus",
