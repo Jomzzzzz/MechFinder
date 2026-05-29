@@ -278,89 +278,42 @@
     {{-- Main Grid --}}
     <div style="display:grid; grid-template-columns:1fr 360px; gap:20px; align-items:start;">
 
-        {{-- Left: Pending Requests --}}
+        {{-- Left: Standby / Listening indicator --}}
         <div>
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
                 <h2
                     style="font-size:15px; font-weight:700; color:#1d273b; margin:0; display:flex; align-items:center; gap:8px;">
                     <i class="fas fa-inbox" style="color:#206bc4; font-size:13px;"></i> Incoming Requests
                 </h2>
-                <span class="badge badge-danger" id="pending-badge">{{ $pending }} new</span>
+                <span class="badge badge-danger" id="pending-badge"
+                    style="{{ $pending > 0 ? '' : 'display:none;' }}">{{ $pending }} unclaimed</span>
             </div>
-
-            <div id="requests-container" style="display:flex; flex-direction:column; gap:10px;">
-                @forelse($requests as $req)
-                    @php
-                        $mName = $req->owner_name ?? ($req->motorist_name ?? 'Unknown Motorist');
-                        $vehicle =
-                            implode(
-                                ' · ',
-                                array_filter([$req->vehicle_make_model ?? null, $req->vehicle_variant_color ?? null]),
-                            ) ?:
-                            'Not specified';
-                        $plate = $req->plate_temp_number ?? 'No plate';
-                        $isDisp = ($req->request_type ?? '') === 'dispatch';
-                    @endphp
-                    <div class="req-card" id="req-{{ $req->id }}">
-                        <div class="req-head" onclick="toggleCard(this)">
-                            <div class="req-ico"><i class="fas {{ $isDisp ? 'fa-motorcycle' : 'fa-store' }}"></i></div>
-                            <div class="req-info">
-                                <div class="req-title">{{ $req->issue_type ?? 'Motorcycle Issue' }}</div>
-                                <div class="req-meta">{{ $mName }} ·
-                                    {{ \Carbon\Carbon::parse($req->created_at)->diffForHumans() }}</div>
-                            </div>
-                            <span class="sbadge badge-danger">REQUESTED</span>
-                            <i class="fas fa-chevron-down req-chev"></i>
-                        </div>
-                        <div class="req-body">
-                            <div class="req-div"></div>
-                            <div class="req-grid">
-                                <div>
-                                    <div class="req-fl">Contact</div>
-                                    <div class="req-fv">{{ $req->contact_number ?? '—' }}</div>
-                                </div>
-                                <div>
-                                    <div class="req-fl">Plate No.</div>
-                                    <div class="req-fv">{{ $plate }}</div>
-                                </div>
-                                <div class="s2">
-                                    <div class="req-fl">Vehicle</div>
-                                    <div class="req-fv">{{ $vehicle }}</div>
-                                </div>
-                                @if (!empty($req->location))
-                                    <div class="s2">
-                                        <div class="req-fl">Location</div>
-                                        <div class="req-fv">{{ $req->location }}</div>
-                                    </div>
-                                @endif
-                                @if (!empty($req->description))
-                                    <div class="s2">
-                                        <div class="req-fl">Description</div>
-                                        <div class="req-fv">{{ $req->description }}</div>
-                                    </div>
-                                @endif
-                            </div>
-                            <div class="req-acts">
-                                <button class="btn btn-success btn-sm" onclick="acceptRequest({{ $req->id }})"><i
-                                        class="fas fa-check"></i> Accept</button>
-                                <button class="btn btn-danger btn-sm" onclick="declineRequest({{ $req->id }})"><i
-                                        class="fas fa-xmark"></i> Decline</button>
-                                @if (!empty($req->latitude) && !empty($req->longitude))
-                                    <a href="https://www.google.com/maps?q={{ $req->latitude }},{{ $req->longitude }}"
-                                        target="_blank" rel="noopener" class="btn btn-secondary btn-sm">
-                                        <i class="fas fa-map-location-dot"></i> Map
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
+            <div class="t-card" style="padding:32px 24px; text-align:center;">
+                <div
+                    style="width:48px;height:48px;border-radius:50%;background:#ebf0fb;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+                    <i class="fas fa-bell" style="color:#206bc4; font-size:20px;"></i>
+                </div>
+                <div style="font-weight:700; color:#1d273b; font-size:15px; margin-bottom:6px;">Listening for rescue
+                    requests</div>
+                <div style="font-size:13px; color:#667382; line-height:1.6;">When a motorist nearby needs help, a popup will
+                    appear here. First shop to accept gets the job.</div>
+                @if ($pending > 0)
+                    <div
+                        style="margin-top:18px; padding:12px 16px; background:#fff5f5; border:1px solid #fecaca; border-radius:8px; display:flex; align-items:center; justify-content:space-between;">
+                        <span style="font-size:13px; color:#d63939; font-weight:600;"><i class="fas fa-exclamation-circle"
+                                style="margin-right:5px;"></i>{{ $pending }} pending
+                            request{{ $pending > 1 ? 's' : '' }}</span>
+                        <button onclick="loadUnclaimedRequests()"
+                            style="background:#d63939;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">View</button>
                     </div>
-                @empty
-                    <div class="t-card" style="padding:32px; text-align:center; color:#667382;">
-                        <i class="fas fa-bell-slash"
-                            style="font-size:24px; margin-bottom:8px; display:block; opacity:.4;"></i>
-                        No pending requests right now
+                @else
+                    <div style="margin-top:18px;">
+                        <button onclick="loadUnclaimedRequests()"
+                            style="background:#f0f4ff;color:#206bc4;border:1px solid #c5d3f0;border-radius:6px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;width:100%;">
+                            <i class="fas fa-rotate" style="margin-right:5px;"></i>Check for requests
+                        </button>
                     </div>
-                @endforelse
+                @endif
             </div>
         </div>
 
@@ -611,53 +564,140 @@
             el.textContent = Math.max(0, (parseInt(el.textContent) || 0) + delta) + suffix;
         }
 
-        async function acceptRequest(id) {
-            showConfirmModal('Accept Request', 'Accept this dispatch request and notify the motorist?',
-                async function() {
-                    try {
-                        var r = await fetch('/shop/accept/' + id, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': getCsrfToken(),
-                                'Accept': 'application/json'
-                            }
-                        });
-                        var d = await r.json();
-                        if (d.success) {
-                            showToast('Request accepted.', 'success');
-                            var c = document.getElementById('req-' + id);
-                            if (c) c.remove();
-                            adjustCount('stat-pending', -1);
-                            adjustCount('pending-badge', -1, ' new');
-                        } else showToast(d.message || 'Failed.', 'error');
-                    } catch (e) {
-                        showToast('Network error.', 'error');
-                    }
-                }, 'Accept', '#2fb344');
+        // ---------- Dispatch Popup ----------
+        var _currentPopupReqId = null;
+        var _popupTimer = null;
+        var _popupQueue = [];
+
+        function queueDispatchPopup(req) {
+            _popupQueue.push(req);
+            if (!_currentPopupReqId) processPopupQueue();
         }
-        async function declineRequest(id) {
-            showConfirmModal('Decline Request', 'Decline this request? The motorist will be notified.',
-                async function() {
-                    try {
-                        var r = await fetch('/shop/decline/' + id, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': getCsrfToken(),
-                                'Accept': 'application/json'
-                            }
-                        });
-                        var d = await r.json();
-                        if (d.success) {
-                            showToast('Request declined.', 'info');
-                            var c = document.getElementById('req-' + id);
-                            if (c) c.remove();
-                            adjustCount('stat-pending', -1);
-                            adjustCount('pending-badge', -1, ' new');
-                        } else showToast(d.message || 'Failed.', 'error');
-                    } catch (e) {
-                        showToast('Network error.', 'error');
+
+        function processPopupQueue() {
+            if (_popupQueue.length === 0) return;
+            showDispatchPopup(_popupQueue.shift());
+        }
+
+        function showDispatchPopup(req) {
+            _currentPopupReqId = req.id;
+            document.getElementById('popup-issue').textContent = req.issue_type || 'Motorcycle Issue';
+            var parts = [];
+            if (req.owner_name) parts.push('<strong>' + escHtml(req.owner_name) + '</strong>');
+            if (req.contact_number) parts[0] = (parts[0] || '') + ' <span style="color:#667382;">· ' + escHtml(req
+                .contact_number) + '</span>';
+            if (req.vehicle_make_model) parts.push(
+                '<span style="color:#667382;font-size:12px;"><i class="fas fa-motorcycle" style="margin-right:4px;"></i>' +
+                escHtml(req.vehicle_make_model) + '</span>');
+            if (req.location) parts.push(
+                '<span style="color:#667382;font-size:12px;"><i class="fas fa-location-dot" style="color:#d63939;margin-right:4px;"></i>' +
+                escHtml(req.location) + '</span>');
+            if (req.description) parts.push('<em style="color:#667382;font-size:12px;">' + escHtml(req.description) +
+                '</em>');
+            document.getElementById('popup-details').innerHTML = parts.join('<br>') || '—';
+            var acceptBtn = document.getElementById('popup-accept-btn');
+            acceptBtn.disabled = false;
+            acceptBtn.innerHTML = '<i class="fas fa-check"></i> Accept Job';
+            document.getElementById('dispatch-popup').style.display = 'flex';
+            startPopupTimer(60);
+        }
+
+        function startPopupTimer(seconds) {
+            clearInterval(_popupTimer);
+            var remaining = seconds;
+
+            function tick() {
+                var badge = document.getElementById('popup-timer-badge');
+                if (badge) badge.textContent = remaining + 's';
+                if (remaining <= 0) {
+                    clearInterval(_popupTimer);
+                    closeDispatchPopup();
+                }
+                remaining--;
+            }
+            tick();
+            _popupTimer = setInterval(tick, 1000);
+        }
+
+        async function acceptPopupRequest() {
+            if (!_currentPopupReqId) return;
+            var btn = document.getElementById('popup-accept-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Accepting…';
+            try {
+                var r = await fetch('/shop/accept/' + _currentPopupReqId, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'Accept': 'application/json'
                     }
-                }, 'Decline', '#d63939');
+                });
+                var d = await r.json();
+                if (d.success) {
+                    clearInterval(_popupTimer);
+                    document.getElementById('dispatch-popup').style.display = 'none';
+                    _currentPopupReqId = null;
+                    showToast('Job accepted! Check Active Jobs below.', 'success', 6000);
+                    adjustCount('stat-active', 1);
+                    adjustCount('stat-pending', -1);
+                    var pb = document.getElementById('pending-badge');
+                    if (pb) {
+                        var n = Math.max(0, (parseInt(pb.textContent) || 0) - 1);
+                        pb.textContent = n + ' unclaimed';
+                        if (n === 0) pb.style.display = 'none';
+                    }
+                    setTimeout(processPopupQueue, 500);
+                } else if (d.taken) {
+                    closeDispatchPopup();
+                    showToast('Too slow! Another shop already accepted this one.', 'warning', 5000);
+                } else {
+                    closeDispatchPopup();
+                    showToast(d.message || 'Could not accept.', 'error');
+                }
+            } catch (e) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Accept Job';
+                showToast('Network error. Try again.', 'error');
+            }
+        }
+
+        function declinePopupRequest() {
+            if (!_currentPopupReqId) return;
+            fetch('/shop/decline/' + _currentPopupReqId, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': getCsrfToken()
+                }
+            });
+            closeDispatchPopup();
+        }
+
+        function closeDispatchPopup() {
+            clearInterval(_popupTimer);
+            document.getElementById('dispatch-popup').style.display = 'none';
+            _currentPopupReqId = null;
+            setTimeout(processPopupQueue, 400);
+        }
+
+        async function loadUnclaimedRequests() {
+            try {
+                var r = await fetch('/shop/unclaimed-requests', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                var d = await r.json();
+                if (d.requests && d.requests.length) {
+                    _popupQueue = [];
+                    _currentPopupReqId = null;
+                    d.requests.forEach(function(req) {
+                        _popupQueue.push(req);
+                    });
+                    processPopupQueue();
+                } else showToast('No unclaimed requests at the moment.', 'info');
+            } catch (e) {
+                showToast('Could not load requests.', 'error');
+            }
         }
         async function updateRequestStatus(id, status) {
             try {
@@ -694,31 +734,7 @@
 
 
 
-        function prependRequestCard(req) {
-            var con = document.getElementById('requests-container');
-            if (!con) return;
-            var empty = con.querySelector('.t-card');
-            if (empty) empty.remove();
-            var div = document.createElement('div');
-            div.id = 'req-' + req.id;
-            div.className = 'req-card is-new open';
-            div.innerHTML =
-                '<div class="req-head" onclick="toggleCard(this)"><div class="req-ico"><i class="fas fa-motorcycle"></i></div><div class="req-info"><div class="req-title">' +
-                escHtml(req.issue_type || 'Motorcycle Issue') + '</div><div class="req-meta">' + escHtml(req.owner_name ||
-                    'Motorist') +
-                ' · Just now</div></div><span class="sbadge badge-danger">REQUESTED</span><i class="fas fa-chevron-down req-chev"></i></div><div class="req-body" style="display:block;"><div class="req-div"></div><div class="req-grid"><div><div class="req-fl">Contact</div><div class="req-fv">' +
-                escHtml(req.contact_number || '—') +
-                '</div></div><div><div class="req-fl">Plate No.</div><div class="req-fv">' + escHtml(req
-                    .plate_temp_number || '—') +
-                '</div></div><div class="s2"><div class="req-fl">Vehicle</div><div class="req-fv">' + escHtml(req
-                    .vehicle_make_model || 'Not specified') + '</div></div>' + (req.location ?
-                    '<div class="s2"><div class="req-fl">Location</div><div class="req-fv">' + escHtml(req.location) +
-                    '</div></div>' : '') +
-                '</div><div class="req-acts"><button class="btn btn-success btn-sm" onclick="acceptRequest(' + req.id +
-                ')"><i class="fas fa-check"></i> Accept</button><button class="btn btn-danger btn-sm" onclick="declineRequest(' +
-                req.id + ')"><i class="fas fa-times"></i> Decline</button></div></div>';
-            con.insertBefore(div, con.firstChild);
-        }
+        // Popup is now the entry point for new requests — prependRequestCard is no longer used
 
         var smallMap = null,
             modalMap = null,
@@ -753,16 +769,32 @@
             }).addTo(smallMap);
             loadLiveMapData();
             setInterval(loadLiveMapData, 5000);
-            if (window.Echo && window.shopId) {
-                window.Echo.private('shop.' + window.shopId).listen('.dispatch.new', function(req) {
-                    showToast('New request from ' + (req.owner_name || 'motorist') + ' — ' + (req
-                        .issue_type || 'Issue'), 'new', 7000);
-                    prependRequestCard(req);
-                    adjustCount('stat-pending', 1);
-                    adjustCount('pending-badge', 1, ' new');
-                });
-            }
+            subscribeWhenReady(0);
+            // Auto-queue any pending requests that exist at page load
+            @if ($pending > 0)
+                loadUnclaimedRequests();
+            @endif
         });
+
+        function subscribeWhenReady(attempts) {
+            if (window.Echo) {
+                // Public channel — all open shop dashboards receive new dispatch requests
+                window.Echo.channel('shop-requests').listen('.dispatch.new', function(req) {
+                    queueDispatchPopup(req);
+                    adjustCount('stat-pending', 1);
+                    var pb = document.getElementById('pending-badge');
+                    if (pb) {
+                        var n = (parseInt(pb.textContent) || 0) + 1;
+                        pb.textContent = n + ' unclaimed';
+                        pb.style.display = '';
+                    }
+                });
+            } else if (attempts < 30) {
+                setTimeout(function() {
+                    subscribeWhenReady(attempts + 1);
+                }, 200);
+            }
+        }
 
         function initModalMap() {
             if (modalMap) return;
@@ -889,4 +921,48 @@
             });
         }
     </script>
+@endsection
+
+@section('body_after')
+    {{-- Dispatch Popup Overlay --}}
+    <div id="dispatch-popup"
+        style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:16px;">
+        <div
+            style="width:100%; max-width:420px; background:#fff; border-radius:16px; box-shadow:0 24px 64px rgba(0,0,0,.25); overflow:hidden;">
+            {{-- Header --}}
+            <div style="background:#d63939; padding:16px 20px; display:flex; align-items:center; gap:12px;">
+                <div
+                    style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fas fa-motorcycle" style="color:#fff; font-size:18px;"></i>
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div
+                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.75);">
+                        New Rescue Request</div>
+                    <div id="popup-issue"
+                        style="font-size:17px;font-weight:700;color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    </div>
+                </div>
+                <div id="popup-timer-badge"
+                    style="background:rgba(0,0,0,.25);color:#fff;font-size:13px;font-weight:800;border-radius:20px;padding:5px 12px;flex-shrink:0;min-width:44px;text-align:center;">
+                    60s</div>
+            </div>
+            {{-- Body --}}
+            <div style="padding:16px 20px 20px;">
+                <div id="popup-details"
+                    style="background:#f4f6fb;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;line-height:1.9;">
+                </div>
+                <div style="display:flex;gap:10px;">
+                    <button id="popup-accept-btn" onclick="acceptPopupRequest()"
+                        style="flex:2;background:#2fb344;color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;">
+                        <i class="fas fa-check"></i> Accept Job
+                    </button>
+                    <button onclick="declinePopupRequest()"
+                        style="flex:1;background:transparent;color:#d63939;border:1.5px solid #d63939;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;">
+                        Pass
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

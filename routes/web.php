@@ -46,9 +46,16 @@ Route::post("/signup/shop", [AuthController::class, "registerShop"])->name(
 Route::post("/logout", [AuthController::class, "logout"])->name("logout");
 
 // Google OAuth
-Route::get("/auth/google/login", [OAuthController::class, "redirectToGoogle"])->defaults('type', 'motorist')->name("auth.google.login");
-Route::get("/auth/google/signup", [OAuthController::class, "redirectToGoogle"])->defaults('type', 'shop')->name("auth.google.signup");
-Route::get("/auth/google/callback", [OAuthController::class, "handleGoogleCallback"])->name("auth.google.callback");
+Route::get("/auth/google/login", [OAuthController::class, "redirectToGoogle"])
+  ->defaults("type", "motorist")
+  ->name("auth.google.login");
+Route::get("/auth/google/signup", [OAuthController::class, "redirectToGoogle"])
+  ->defaults("type", "shop")
+  ->name("auth.google.signup");
+Route::get("/auth/google/callback", [
+  OAuthController::class,
+  "handleGoogleCallback",
+])->name("auth.google.callback");
 
 /*
 |--------------------------------------------------------------------------
@@ -138,6 +145,10 @@ Route::prefix("shop")
       ShopController::class,
       "fetchRequests",
     ])->name("shop.data");
+    Route::get("/unclaimed-requests", [
+      ShopController::class,
+      "unclaimedRequests",
+    ])->name("shop.unclaimed-requests");
     Route::get("/dashboard-map-data", [
       ShopController::class,
       "dashboardMapData",
@@ -145,9 +156,10 @@ Route::prefix("shop")
     Route::post("/settings/update", [ShopController::class, "update"])->name(
       "shop.update"
     );
-    Route::post("/settings/images", [ShopController::class, "uploadImages"])->name(
-      "shop.upload-images"
-    );
+    Route::post("/settings/images", [
+      ShopController::class,
+      "uploadImages",
+    ])->name("shop.upload-images");
     Route::post("/settings/toggle-status", [
       ShopController::class,
       "toggleStatus",
@@ -183,8 +195,7 @@ Route::prefix("mechanic")
 
 Route::prefix("motorist")->group(function () {
   // Map view
-  Route::get("/map", [MotoristController::class, "map"])
-    ->name("motorist.map");
+  Route::get("/map", [MotoristController::class, "map"])->name("motorist.map");
 
   // Public / guest routes
   Route::get("/", [MotoristController::class, "index"])->name("motorist.index");
@@ -201,8 +212,16 @@ Route::prefix("motorist")->group(function () {
     MotoristController::class,
     "requestStatus",
   ])->name("motorist.request.status");
-  Route::post("/request/{id}/cancel", [MotoristController::class, "cancelDispatch"])->name("motorist.request.cancel");
-  Route::post("/profile/password", [MotoristController::class, "changePassword"])->middleware(['auth', 'role:motorist'])->name("motorist.profile.password");
+  Route::post("/request/{id}/cancel", [
+    MotoristController::class,
+    "cancelDispatch",
+  ])->name("motorist.request.cancel");
+  Route::post("/profile/password", [
+    MotoristController::class,
+    "changePassword",
+  ])
+    ->middleware(["auth", "role:motorist"])
+    ->name("motorist.profile.password");
   Route::post("/review", [MotoristController::class, "storeReview"])->name(
     "motorist.review.store"
   );

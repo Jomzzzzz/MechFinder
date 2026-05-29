@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                               MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                               ══════════════════════════════════════════════ */
+                                                                                                                   MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                   ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -80,67 +80,22 @@
         }
 
         /* ── STATUS STRIP ── */
-        #statusStrip {
-            position: absolute;
-            left: 12px;
-            right: 12px;
-            top: 12px;
-            z-index: 22;
-            border-radius: var(--r3);
-            overflow: hidden;
-            box-shadow: var(--sh-float);
-            cursor: pointer;
-            transform: translateY(-140%);
-            opacity: 0;
-            pointer-events: none;
-            transition: transform .3s ease, opacity .3s ease;
+        /* ── BAR SPINNER ── */
+        .bar-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid var(--brand-bg);
+            border-top-color: var(--brand);
+            border-radius: 50%;
+            animation: barSpin .75s linear infinite;
+            flex-shrink: 0;
+            display: none;
         }
 
-        #statusStrip.show {
-            transform: translateY(0);
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .strip-body {
-            background: var(--brand);
-            padding: 10px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .strip-label {
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .1em;
-            color: rgba(0, 0, 0, .45);
-        }
-
-        #stripText {
-            font-size: 12px;
-            font-weight: 700;
-            color: #111;
-            margin-top: 2px;
-        }
-
-        .strip-cta {
-            font-size: 10px;
-            font-weight: 700;
-            color: rgba(0, 0, 0, .45);
-        }
-
-        .strip-track {
-            height: 3px;
-            background: rgba(0, 0, 0, .12);
-        }
-
-        #stripBar {
-            height: 100%;
-            background: rgba(255, 255, 255, .6);
-            transition: width .5s ease;
-            width: 0%;
+        @keyframes barSpin {
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* ── LOCATE FAB ── */
@@ -742,22 +697,7 @@
             box-shadow: 0 4px 20px rgba(30, 41, 59, .3);
         }
 
-        /* Pulse the status strip when waiting for shop to accept */
-        #statusStrip.searching .strip-body {
-            animation: stripPulse 1.8s ease-in-out infinite;
-        }
 
-        @keyframes stripPulse {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: .7;
-            }
-        }
 
         /* ── PROFILE ── */
         .prof-hero {
@@ -1240,20 +1180,6 @@
         {{-- MAP --}}
         <div id="map"></div>
 
-        {{-- ACTIVE REQUEST STRIP --}}
-        <div id="statusStrip" onclick="showTab('requests')">
-            <div class="strip-body">
-                <div>
-                    <div class="strip-label">Active Rescue</div>
-                    <div id="stripText">Finding nearest shop…</div>
-                </div>
-                <span class="strip-cta">Details →</span>
-            </div>
-            <div class="strip-track">
-                <div id="stripBar"></div>
-            </div>
-        </div>
-
         {{-- LOCATE FAB --}}
         <button id="locateFab" onclick="locateUser()" title="Find my location">
             <i class="fa-solid fa-crosshairs"></i>
@@ -1284,17 +1210,23 @@
                 </button>
             </div>
             {{-- Active state: shown while a request is in progress --}}
-            <div id="barActive" style="display:none;align-items:center;gap:10px;width:100%;">
+            <div id="barActive" style="display:none;align-items:center;gap:10px;width:100%;" onclick="showTab('requests')">
+                <div id="barSpinner" class="bar-spinner"></div>
                 <div style="flex:1;min-width:0;">
                     <div
                         style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);">
                         Active Rescue</div>
                     <div id="barActiveText" style="font-size:13px;font-weight:600;color:var(--text-1);margin-top:2px;">
                     </div>
+                    <div id="barActiveLoc"
+                        style="font-size:11px;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:3px;">
+                        <i class="fa-solid fa-location-dot" style="font-size:10px;color:var(--brand);"></i>
+                        <span>Detecting…</span>
+                    </div>
                 </div>
-                <button id="cancelBtn" onclick="cancelDispatch()"
-                    style="display:none;flex-shrink:0;background:transparent;border:1.5px solid var(--red);color:var(--red);font-size:12px;font-weight:700;border-radius:var(--r1);padding:8px 14px;cursor:pointer;">
-                    <i class="fa-solid fa-xmark"></i> Cancel
+                <button id="cancelBtn" onclick="event.stopPropagation();cancelDispatch()"
+                    style="display:none;flex-shrink:0;width:36px;height:36px;background:transparent;border:2px solid var(--red);color:var(--red);border-radius:50%;cursor:pointer;align-items:center;justify-content:center;font-size:15px;padding:0;">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
         </div>
@@ -1693,8 +1625,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                               MECHFINDER — APP LOGIC
-                                                                                               ══════════════════════════════════════════════ */
+                                                                                                                   MECHFINDER — APP LOGIC
+                                                                                                                   ══════════════════════════════════════════════ */
 
         const STATUS_LABEL = {
             requested: '<i class="fa-solid fa-hourglass-half"></i> Finding nearest shop…',
@@ -1783,9 +1715,11 @@
 
         function locateUser() {
             const lineBtm = document.getElementById('locationLineBtm');
+            const locSpan = document.querySelector('#barActiveLoc span');
 
             function setLocation(text) {
                 lineBtm.textContent = text;
+                if (locSpan) locSpan.textContent = text;
             }
             if (!navigator.geolocation) {
                 setLocation('GPS not supported');
@@ -2065,6 +1999,7 @@
                     });
 
                     closePanel('rescuePanel');
+                    document.getElementById('rescueFab').style.display = 'none';
                     // reset form
                     document.querySelectorAll('.issue-tile').forEach(t => t.classList.remove('sel'));
                     document.getElementById('dispatchDesc').value = '';
@@ -2120,7 +2055,6 @@
                         LS.del('mf_current_request_id');
                         currentRequestId = null;
                         if (pusherClient) pusherClient.disconnect();
-                        document.getElementById('statusStrip').classList.remove('show');
                         document.getElementById('reqBadge').classList.remove('show');
                     }, status === 'completed' ? 12000 : 5000);
                 }
@@ -2137,6 +2071,7 @@
                 }
                 const d = await res.json();
                 if (!['completed', 'declined', 'cancelled'].includes(d.status)) {
+                    document.getElementById('rescueFab').style.display = 'none';
                     showStatusStrip(d.status); // also calls updateRescueBar
                     subscribeToDispatch(requestId);
                     document.getElementById('reqBadge').classList.add('show');
@@ -2148,11 +2083,6 @@
         }
 
         function showStatusStrip(status) {
-            document.getElementById('stripText').innerHTML = STATUS_LABEL[status] ?? status;
-            document.getElementById('stripBar').style.width = (STEP_PROGRESS[status] ?? 0) + '%';
-            const strip = document.getElementById('statusStrip');
-            strip.classList.add('show');
-            strip.classList.toggle('searching', status === 'requested');
             updateRescueBar(status);
         }
 
@@ -2161,15 +2091,18 @@
             const active = document.getElementById('barActive');
             const activeText = document.getElementById('barActiveText');
             const cancelBtn = document.getElementById('cancelBtn');
+            const spinner = document.getElementById('barSpinner');
             if (!status || ['completed', 'declined', 'cancelled'].includes(status)) {
                 idle.style.display = 'flex';
                 active.style.display = 'none';
+                document.getElementById('rescueFab').style.display = 'flex';
                 return;
             }
             idle.style.display = 'none';
             active.style.display = 'flex';
             activeText.innerHTML = STATUS_LABEL[status] ?? status;
-            cancelBtn.style.display = status === 'requested' ? 'block' : 'none';
+            cancelBtn.style.display = status === 'requested' ? 'flex' : 'none';
+            if (spinner) spinner.style.display = status === 'requested' ? 'block' : 'none';
         }
 
         function cancelDispatch() {
@@ -2200,7 +2133,6 @@
                     LS.del('mf_current_request_id');
                     currentRequestId = null;
                     if (pusherClient) pusherClient.disconnect();
-                    document.getElementById('statusStrip').classList.remove('show', 'searching');
                     document.getElementById('reqBadge').classList.remove('show');
                     updateRescueBar(null);
                 } else {

@@ -137,19 +137,11 @@ class MotoristController extends Controller
       );
     }
 
-    // Auto-assign to the nearest open shop — motorist does not choose
-    $lat = isset($validated["latitude"])
-      ? (float) $validated["latitude"]
-      : null;
-    $lng = isset($validated["longitude"])
-      ? (float) $validated["longitude"]
-      : null;
-    $shopId = $this->findNearestOpenShop($lat, $lng);
-
+    // No pre-assignment — first shop to accept claims the job
     $id = DB::table("dispatch_requests")->insertGetId([
-      "shop_id" => $shopId,
+      "shop_id" => null,
       "guest_token" => $validated["guest_token"] ?? null,
-      "guest_name" => $validated["owner_name"], // kept for COALESCE display queries
+      "guest_name" => $validated["owner_name"],
       "vehicle_make_model" => $validated["vehicle_make_model"] ?? null,
       "vehicle_variant_color" => $validated["vehicle_variant_color"] ?? null,
       "plate_temp_number" => $validated["plate_temp_number"] ?? null,
@@ -164,31 +156,37 @@ class MotoristController extends Controller
       "updated_at" => now(),
     ]);
 
-    if ($shopId) {
-      broadcast(
-        new DispatchRequestCreated((int) $shopId, [
-          "id" => $id,
-          "issue_type" => $validated["issue_type"],
-          "owner_name" => $validated["owner_name"],
-          "contact_number" => $validated["contact_number"],
-          "vehicle_make_model" => $validated["vehicle_make_model"] ?? null,
-          "vehicle_variant_color" =>
-            $validated["vehicle_variant_color"] ?? null,
-          "plate_temp_number" => $validated["plate_temp_number"] ?? null,
-          "description" => $validated["description"] ?? null,
-          "location" => $validated["location"] ?? null,
-          "status" => "requested",
-          "created_at" => now()->toDateTimeString(),
-        ])
-      )->toOthers();
-    }
+    // Check if any open shops exist at all
+    $openStatusId = DB::table("shop_statuses")
+      ->where("slug", "open")
+      ->value("id");
+    $hasOpenShops = DB::table("shops")
+      ->where("status_id", $openStatusId)
+      ->exists();
+
+    // Broadcast to ALL shop dashboards — first to accept wins
+    broadcast(
+      new DispatchRequestCreated([
+        "id" => $id,
+        "issue_type" => $validated["issue_type"],
+        "owner_name" => $validated["owner_name"],
+        "contact_number" => $validated["contact_number"],
+        "vehicle_make_model" => $validated["vehicle_make_model"] ?? null,
+        "vehicle_variant_color" => $validated["vehicle_variant_color"] ?? null,
+        "plate_temp_number" => $validated["plate_temp_number"] ?? null,
+        "description" => $validated["description"] ?? null,
+        "location" => $validated["location"] ?? null,
+        "status" => "requested",
+        "created_at" => now()->toDateTimeString(),
+      ])
+    );
 
     return response()->json([
       "success" => true,
       "request_id" => $id,
-      "shop_found" => $shopId !== null,
-      "message" => $shopId
-        ? "Your rescue request has been sent. A nearby shop will respond shortly."
+      "shop_found" => $hasOpenShops,
+      "message" => $hasOpenShops
+        ? "Your rescue request has been sent to nearby shops."
         : "No open shops available right now. Your request has been saved.",
     ]);
   }

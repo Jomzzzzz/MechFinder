@@ -52,22 +52,21 @@ class ShopController extends Controller
   {
     $shopId = $this->getCurrentShopId();
 
+    // All 'requested' requests are visible to every shop — first to accept wins
     $requests = DB::table("dispatch_requests")
-      ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
       ->leftJoin(
         "guest_profiles as gp",
         "dispatch_requests.guest_token",
         "=",
         "gp.guest_token"
       )
-      ->where("dispatch_requests.shop_id", $shopId)
       ->where("dispatch_requests.status", "requested")
       ->select(
         "dispatch_requests.*",
         "gp.owner_name as owner_name",
         "gp.contact_number as contact_number",
         DB::raw(
-          'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
+          'COALESCE(gp.owner_name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
         )
       )
       ->latest("dispatch_requests.created_at")
@@ -144,37 +143,52 @@ class ShopController extends Controller
     );
   }
 
-  public function fetchRequests()
+  public function unclaimedRequests()
   {
-    $shopId = $this->getCurrentShopId();
-
+    // All requested requests — visible to every shop
     $requests = DB::table("dispatch_requests")
-      ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
       ->leftJoin(
         "guest_profiles as gp",
         "dispatch_requests.guest_token",
         "=",
         "gp.guest_token"
       )
-      ->where("dispatch_requests.shop_id", $shopId)
       ->where("dispatch_requests.status", "requested")
       ->select(
-        "dispatch_requests.*",
-        "gp.owner_name as owner_name",
-        "gp.contact_number as contact_number",
+        "dispatch_requests.id",
+        "dispatch_requests.issue_type",
+        "dispatch_requests.vehicle_make_model",
+        "dispatch_requests.vehicle_variant_color",
+        "dispatch_requests.plate_temp_number",
+        "dispatch_requests.description",
+        "dispatch_requests.location",
+        "dispatch_requests.latitude",
+        "dispatch_requests.longitude",
+        "dispatch_requests.created_at",
+        "gp.owner_name",
+        "gp.contact_number",
         DB::raw(
-          'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
+          'COALESCE(gp.owner_name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
         )
       )
       ->latest("dispatch_requests.created_at")
       ->get();
 
-    $html = view("components.requests-list", compact("requests"))->render();
+    return response()->json(["requests" => $requests]);
+  }
+
+  public function fetchRequests()
+  {
+    $shopId = $this->getCurrentShopId();
+
+    // Count ALL pending requests (every shop competes)
+    $unclaimedCount = DB::table("dispatch_requests")
+      ->where("status", "requested")
+      ->count();
 
     return response()->json([
       "success" => true,
-      "html" => $html,
-      "pending" => $requests->count(),
+      "pending" => $unclaimedCount,
       "shopStatus" => $this->getShopStatus(),
     ]);
   }
@@ -303,14 +317,26 @@ class ShopController extends Controller
 
   public function accept(int $id)
   {
-    DB::table("dispatch_requests")
+    $shopId = $this->getCurrentShopId();
+
+    // Atomic race — InnoDB serialises concurrent UPDATEs; only the first changes status to 'accepted'
+    $claimed = DB::table("dispatch_requests")
       ->where("id", $id)
-      ->where("shop_id", $this->getCurrentShopId())
+      ->where("status", "requested")
       ->update([
+        "shop_id" => $shopId,
         "status" => "accepted",
         "accepted_at" => now(),
         "updated_at" => now(),
       ]);
+
+    if (!$claimed) {
+      return response()->json([
+        "success" => false,
+        "taken" => true,
+        "message" => "Another shop already accepted this request.",
+      ]);
+    }
 
     broadcast(new DispatchStatusUpdated($id, "accepted"));
 
@@ -319,71 +345,7 @@ class ShopController extends Controller
 
   public function decline(int $id)
   {
-    $shopId = $this->getCurrentShopId();
-
-    $req = DB::table("dispatch_requests")
-      ->where("id", $id)
-      ->where("shop_id", $shopId)
-      ->where("status", "requested")
-      ->first();
-
-    if (!$req) {
-      return response()->json(
-        [
-          "success" => false,
-          "message" => "Not authorized or request no longer pending.",
-        ],
-        403
-      );
-    }
-
-    // Try to find the next nearest open shop (skip the one that just declined)
-    $lat = $req->latitude ? (float) $req->latitude : null;
-    $lng = $req->longitude ? (float) $req->longitude : null;
-    $nextShopId = $this->findNearestOpenShop($lat, $lng, [$shopId]);
-
-    if ($nextShopId) {
-      // Reassign to next shop — stays "requested"
-      DB::table("dispatch_requests")
-        ->where("id", $id)
-        ->update(["shop_id" => $nextShopId, "updated_at" => now()]);
-
-      $reqData = DB::table("dispatch_requests")
-        ->leftJoin(
-          "guest_profiles as gp",
-          "dispatch_requests.guest_token",
-          "=",
-          "gp.guest_token"
-        )
-        ->where("dispatch_requests.id", $id)
-        ->select("dispatch_requests.*", "gp.owner_name", "gp.contact_number")
-        ->first();
-
-      broadcast(
-        new DispatchRequestCreated((int) $nextShopId, [
-          "id" => $id,
-          "issue_type" => $reqData->issue_type,
-          "owner_name" =>
-            $reqData->owner_name ?? ($reqData->guest_name ?? "Unknown"),
-          "contact_number" => $reqData->contact_number ?? "",
-          "vehicle_make_model" => $reqData->vehicle_make_model ?? null,
-          "vehicle_variant_color" => $reqData->vehicle_variant_color ?? null,
-          "plate_temp_number" => $reqData->plate_temp_number ?? null,
-          "description" => $reqData->description ?? null,
-          "location" => $reqData->location ?? null,
-          "status" => "requested",
-          "created_at" => $reqData->created_at,
-        ])
-      )->toOthers();
-    } else {
-      // No other open shops available — notify motorist
-      DB::table("dispatch_requests")
-        ->where("id", $id)
-        ->update(["status" => "declined", "updated_at" => now()]);
-
-      broadcast(new DispatchStatusUpdated($id, "declined"));
-    }
-
+    // Shop passes on this request — no DB change, stays available for others
     return response()->json(["success" => true]);
   }
 

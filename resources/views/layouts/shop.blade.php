@@ -604,6 +604,7 @@
         }
     </script>
 
+    @yield('body_after')
 </body>
 
 </html>
