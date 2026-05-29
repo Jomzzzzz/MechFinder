@@ -80,7 +80,9 @@ class MotoristController extends Controller
       })
       ->values();
 
-    return response()->json($shops);
+    return response()
+      ->json($shops)
+      ->header("Cache-Control", "no-store, no-cache, must-revalidate");
   }
 
   public function showShop($id)

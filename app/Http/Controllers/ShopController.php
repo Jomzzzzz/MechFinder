@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\DispatchStatusUpdated;
+use App\Events\ShopStatusUpdated;
 use App\Models\MechanicProfile;
 use App\Models\DispatchMechanic;
 use App\Models\User;
@@ -682,6 +683,8 @@ class ShopController extends Controller
       ->update(["status_id" => $newStatusId, "updated_at" => now()]);
 
     $newStatus = DB::table("shop_statuses")->where("id", $newStatusId)->first();
+
+    broadcast(new ShopStatusUpdated($shopId, $newStatus->slug));
 
     return response()->json([
       "success" => true,

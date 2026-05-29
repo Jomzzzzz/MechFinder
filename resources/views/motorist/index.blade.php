@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                       ══════════════════════════════════════════════ */
+                                                                                               MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                               ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -1693,8 +1693,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                       MECHFINDER — APP LOGIC
-                                                                                       ══════════════════════════════════════════════ */
+                                                                                               MECHFINDER — APP LOGIC
+                                                                                               ══════════════════════════════════════════════ */
 
         const STATUS_LABEL = {
             requested: '<i class="fa-solid fa-hourglass-half"></i> Finding nearest shop…',
@@ -1729,6 +1729,7 @@
         let selectedIssue = null;
         let currentRequestId = LS.get('mf_current_request_id');
         let pusherClient = null;
+        let shopStatusClient = null;
         let allShops = [];
 
         /* ── IDENTITY ── */
@@ -1753,6 +1754,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             initMap();
             locateUser();
+            subscribeToShopStatus();
             if (currentRequestId) resumeActiveRequest(currentRequestId);
             @if (session('pw_success'))
                 showToast('{{ session('pw_success') }}', 'success');
@@ -1835,7 +1837,9 @@
 
         async function loadShops() {
             try {
-                const shops = await fetch(`/motorist/shops?lat=${userLat}&lng=${userLng}`).then(r => r.json());
+                const shops = await fetch(`/motorist/shops?lat=${userLat}&lng=${userLng}&_t=${Date.now()}`, {
+                    cache: 'no-store'
+                }).then(r => r.json());
                 allShops = shops;
                 renderShopPins(shops);
             } catch {
@@ -2085,6 +2089,18 @@
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Send Rescue Request';
             }
+        }
+
+        /* ── REAL-TIME SHOP STATUS ── */
+        function subscribeToShopStatus() {
+            if (!window.pusherKey) return;
+            shopStatusClient = new Pusher(window.pusherKey, {
+                cluster: window.pusherCluster,
+                forceTLS: true
+            });
+            shopStatusClient.subscribe('shops-status').bind('shop.status', () => {
+                loadShops(); // re-fetch all shops whenever any shop toggles
+            });
         }
 
         /* ── REAL-TIME STATUS ── */
