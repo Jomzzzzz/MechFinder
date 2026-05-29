@@ -203,6 +203,7 @@ Route::prefix("motorist")->group(function () {
     MotoristController::class,
     "requestStatus",
   ])->name("motorist.request.status");
+  Route::post("/request/{id}/cancel", [MotoristController::class, "cancelDispatch"])->name("motorist.request.cancel");
   Route::post("/review", [MotoristController::class, "storeReview"])->name(
     "motorist.review.store"
   );

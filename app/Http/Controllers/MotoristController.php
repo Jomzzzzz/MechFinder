@@ -211,7 +211,7 @@ class MotoristController extends Controller
   public function requestStatus($id)
   {
     $request = DB::table("dispatch_requests")
-      ->join("shops", "dispatch_requests.shop_id", "=", "shops.id")
+      ->leftJoin("shops", "dispatch_requests.shop_id", "=", "shops.id")
       ->where("dispatch_requests.id", $id)
       ->select(
         "dispatch_requests.*",
@@ -226,6 +226,22 @@ class MotoristController extends Controller
     }
 
     return response()->json($request);
+  }
+
+  public function cancelDispatch($id)
+  {
+    $updated = DB::table("dispatch_requests")
+      ->where("id", $id)
+      ->where("status", "requested")
+      ->update(["status" => "cancelled", "updated_at" => now()]);
+
+    if (!$updated) {
+      return response()->json(["error" => "Cannot cancel — request not found or already accepted."], 422);
+    }
+
+    event(new \App\Events\DispatchStatusUpdated($id, "cancelled"));
+
+    return response()->json(["success" => true]);
   }
 
   public function storeReview(Request $request)

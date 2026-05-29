@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-           MECHFINDER — PROFESSIONAL LIGHT THEME
-           ══════════════════════════════════════════════ */
+               MECHFINDER — PROFESSIONAL LIGHT THEME
+               ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 70px;
@@ -722,14 +722,31 @@
 
         {{-- RESCUE BAR --}}
         <div id="rescueBar">
-            <div class="shops-stat">
-                <div class="s-num"><span id="openShopsCount">…</span></div>
-                <div class="s-lbl">Open shops</div>
+            {{-- Idle state: shown when no active request --}}
+            <div id="barIdle" style="display:flex;align-items:center;gap:12px;width:100%;">
+                <div class="shops-stat">
+                    <div class="s-num"><span id="openShopsCount">…</span></div>
+                    <div class="s-lbl">Open shops</div>
+                </div>
+                <div class="divider-v"></div>
+                <button class="btn-rescue" onclick="openPanel('rescuePanel')">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Request Rescue
+                </button>
             </div>
-            <div class="divider-v"></div>
-            <button class="btn-rescue" onclick="openPanel('rescuePanel')">
-                <i class="fa-solid fa-triangle-exclamation"></i> Request Rescue
-            </button>
+            {{-- Active state: shown while a request is in progress --}}
+            <div id="barActive" style="display:none;align-items:center;gap:10px;width:100%;">
+                <div style="flex:1;min-width:0;">
+                    <div
+                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);">
+                        Active Rescue</div>
+                    <div id="barActiveText" style="font-size:13px;font-weight:600;color:var(--text-1);margin-top:2px;">
+                    </div>
+                </div>
+                <button id="cancelBtn" onclick="cancelDispatch()"
+                    style="display:none;flex-shrink:0;background:transparent;border:1.5px solid var(--red);color:var(--red);font-size:12px;font-weight:700;border-radius:var(--r1);padding:8px 14px;cursor:pointer;">
+                    <i class="fa-solid fa-xmark"></i> Cancel
+                </button>
+            </div>
         </div>
 
         {{-- SEARCH OVERLAY --}}
@@ -927,8 +944,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-           MECHFINDER — APP LOGIC
-           ══════════════════════════════════════════════ */
+               MECHFINDER — APP LOGIC
+               ══════════════════════════════════════════════ */
 
         const STATUS_LABEL = {
             requested: '<i class="fa-solid fa-hourglass-half"></i> Finding nearest shop…',
@@ -938,6 +955,7 @@
             in_progress: '<i class="fa-solid fa-wrench"></i> Repair in progress',
             completed: '<i class="fa-solid fa-circle-check"></i> All done!',
             declined: '<i class="fa-solid fa-circle-xmark"></i> No shops available',
+            cancelled: '<i class="fa-solid fa-ban"></i> Request cancelled',
         };
         const STEP_ORDER = ['requested', 'accepted', 'en_route', 'arrived', 'in_progress', 'completed'];
         const STEP_PROGRESS = {
@@ -1244,13 +1262,17 @@
                 const res = await fetch(`/motorist/request/${requestId}`);
                 if (!res.ok) {
                     LS.del('mf_current_request_id');
+                    currentRequestId = null;
                     return;
                 }
                 const d = await res.json();
-                if (!['completed', 'declined'].includes(d.status)) {
-                    showStatusStrip(d.status);
+                if (!['completed', 'declined', 'cancelled'].includes(d.status)) {
+                    showStatusStrip(d.status); // also calls updateRescueBar
                     subscribeToDispatch(requestId);
                     document.getElementById('reqBadge').classList.add('show');
+                } else {
+                    LS.del('mf_current_request_id');
+                    currentRequestId = null;
                 }
             } catch {}
         }
@@ -1261,6 +1283,49 @@
             const strip = document.getElementById('statusStrip');
             strip.classList.add('show');
             strip.classList.toggle('searching', status === 'requested');
+            updateRescueBar(status);
+        }
+
+        function updateRescueBar(status) {
+            const idle = document.getElementById('barIdle');
+            const active = document.getElementById('barActive');
+            const activeText = document.getElementById('barActiveText');
+            const cancelBtn = document.getElementById('cancelBtn');
+            if (!status || ['completed', 'declined', 'cancelled'].includes(status)) {
+                idle.style.display = 'flex';
+                active.style.display = 'none';
+                return;
+            }
+            idle.style.display = 'none';
+            active.style.display = 'flex';
+            activeText.innerHTML = STATUS_LABEL[status] ?? status;
+            cancelBtn.style.display = status === 'requested' ? 'block' : 'none';
+        }
+
+        async function cancelDispatch() {
+            if (!currentRequestId) return;
+            if (!confirm('Cancel your rescue request?')) return;
+            try {
+                const res = await fetch(`/motorist/request/${currentRequestId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': window.csrfToken
+                    }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    LS.del('mf_current_request_id');
+                    currentRequestId = null;
+                    if (pusherClient) pusherClient.disconnect();
+                    document.getElementById('statusStrip').classList.remove('show', 'searching');
+                    document.getElementById('reqBadge').classList.remove('show');
+                    updateRescueBar(null);
+                } else {
+                    alert(data.error ?? 'Could not cancel request.');
+                }
+            } catch {
+                alert('Network error. Please try again.');
+            }
         }
 
         /* ── NAVIGATION ── */
