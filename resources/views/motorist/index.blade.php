@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                       ══════════════════════════════════════════════ */
+                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                       ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -64,57 +64,6 @@
         }
 
         /* ── TOP BAR ── */
-        #topBar {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            right: 12px;
-            z-index: 20;
-        }
-
-        .top-card {
-            background: var(--surface);
-            border-radius: var(--r3);
-            box-shadow: var(--sh-float);
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .top-logo {
-            width: 34px;
-            height: 34px;
-            border-radius: var(--r1);
-            background: var(--brand);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            flex-shrink: 0;
-        }
-
-        .top-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .app-name {
-            font-size: 13px;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .location-line {
-            font-size: 11px;
-            color: var(--text-2);
-            margin-top: 1px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
         .icon-btn {
             width: 34px;
             height: 34px;
@@ -135,7 +84,7 @@
             position: absolute;
             left: 12px;
             right: 12px;
-            top: 74px;
+            top: 12px;
             z-index: 22;
             border-radius: var(--r3);
             overflow: hidden;
@@ -200,18 +149,25 @@
             right: 12px;
             bottom: calc(var(--nav-h) + var(--bar-h) + 12px);
             z-index: 21;
-            width: 42px;
-            height: 42px;
-            border-radius: var(--r2);
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
             background: var(--surface);
-            border: 1px solid var(--border);
+            border: none;
             box-shadow: var(--sh-float);
             color: var(--text-2);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 17px;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            transition: background .15s, transform .1s;
+        }
+
+        #locateFab:active {
+            background: var(--surface-2);
+            transform: scale(.94);
         }
 
         /* ── RESCUE BAR ── */
@@ -283,40 +239,31 @@
             margin-top: 2px;
         }
 
-        .btn-rescue {
-            flex-shrink: 0;
-            background: var(--action);
+        /* ── RESCUE FAB (floating circle on map) ── */
+        #rescueFab {
+            position: absolute;
+            right: 12px;
+            bottom: calc(var(--nav-h) + var(--bar-h) + 68px);
+            z-index: 21;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: var(--red);
             color: #fff;
-            font-size: 13px;
-            font-weight: 700;
-            border-radius: var(--r2);
-            padding: 12px 14px;
             border: none;
+            box-shadow: var(--sh-float);
             cursor: pointer;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
-            line-height: 1;
-            transition: background .15s;
+            font-size: 17px;
             -webkit-tap-highlight-color: transparent;
+            transition: background .15s, transform .1s;
         }
 
-        .btn-rescue .br-icon {
-            font-size: 18px;
-        }
-
-        .btn-rescue .br-label {
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            opacity: .75;
-        }
-
-        .btn-rescue:active {
-            background: var(--action-2);
+        #rescueFab:active {
+            background: #DC2626;
+            transform: scale(.94);
         }
 
         /* ── SHOP LIST (inside shops panel) ── */
@@ -505,6 +452,81 @@
         }
 
         /* ── ISSUE TILES ── */
+        /* ── RESCUE FORM ── */
+        .rescue-form {
+            padding: 12px 14px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .resc-section {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .resc-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .09em;
+            color: var(--text-3);
+        }
+
+        .resc-label-opt {
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        /* identity card */
+        .resc-identity-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r2);
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .resc-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--brand-bg);
+            color: var(--brand);
+            border: 1.5px solid rgba(247, 148, 29, .25);
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        #identityBody {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .resc-edit-btn {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--r1);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-2);
+            font-size: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        /* issue grid */
         .issue-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -519,16 +541,23 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             transition: border-color .15s, background .15s;
         }
 
-        .issue-tile .t-icon {
-            font-size: 19px;
+        .issue-tile .t-icon-wrap {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--surface-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
             color: var(--text-3);
-            line-height: 1;
+            transition: background .15s, color .15s;
         }
 
         .issue-tile .t-label {
@@ -540,13 +569,57 @@
         }
 
         .issue-tile.sel {
-            border-color: var(--action);
-            background: var(--action-bg);
+            border-color: var(--brand);
+            background: var(--brand-bg);
         }
 
-        .issue-tile.sel .t-icon,
+        .issue-tile.sel .t-icon-wrap {
+            background: var(--brand);
+            color: #fff;
+        }
+
         .issue-tile.sel .t-label {
-            color: var(--action);
+            color: var(--brand-dk);
+        }
+
+        /* gps row */
+        .resc-gps {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r1);
+            font-size: 11px;
+            color: var(--text-2);
+        }
+
+        /* rescue submit */
+        .rescue-submit-btn {
+            width: 100%;
+            background: var(--brand);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: var(--r2);
+            padding: 14px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity .15s;
+        }
+
+        .rescue-submit-btn:disabled {
+            opacity: .35;
+            cursor: not-allowed;
+        }
+
+        .rescue-submit-btn:not(:disabled):active {
+            opacity: .85;
         }
 
         /* ── INPUTS ── */
@@ -1167,18 +1240,6 @@
         {{-- MAP --}}
         <div id="map"></div>
 
-        {{-- TOP BAR --}}
-        <header id="topBar">
-            <div class="top-card">
-                <div class="top-logo"><i class="fa-solid fa-wrench"></i></div>
-                <div class="top-info">
-                    <div class="app-name">MechFinder</div>
-                    <div class="location-line" id="locationLine">Detecting location…</div>
-                </div>
-
-            </div>
-        </header>
-
         {{-- ACTIVE REQUEST STRIP --}}
         <div id="statusStrip" onclick="showTab('requests')">
             <div class="strip-body">
@@ -1198,21 +1259,28 @@
             <i class="fa-solid fa-crosshairs"></i>
         </button>
 
+        {{-- RESCUE FAB --}}
+        <button id="rescueFab" onclick="openPanel('rescuePanel')" title="Request Rescue">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </button>
+
         {{-- RESCUE BAR --}}
         <div id="rescueBar">
             {{-- Idle state: shown when no active request --}}
-            <div id="barIdle" style="display:flex;align-items:center;gap:10px;width:100%;">
+            <div id="barIdle" style="display:flex;align-items:center;width:100%;">
                 <button class="btn-shops" onclick="openPanel('shopsPanel')">
-                    <div class="btn-shops-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                    <div class="btn-shops-icon"><i class="fa-solid fa-wrench"></i></div>
                     <div class="btn-shops-text">
                         <div class="btn-shops-title">Find a Shop</div>
-                        <div class="btn-shops-sub"><span id="openShopsCount">…</span> open nearby</div>
+                        <div class="btn-shops-sub">
+                            <i class="fa-solid fa-location-dot"></i>
+                            <span id="locationLineBtm">Detecting…</span>
+                            &nbsp;&middot;&nbsp;
+                            <i class="fa-solid fa-circle-check" style="color:var(--green);"></i>
+                            <span id="openShopsCount">…</span> open
+                        </div>
                     </div>
-                    <i class="fa-solid fa-chevron-right" style="font-size:11px;color:var(--text-3);"></i>
-                </button>
-                <button class="btn-rescue" onclick="openPanel('rescuePanel')">
-                    <span class="br-icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
-                    <span class="br-label">Rescue</span>
+                    <i class="fa-chevron-right fa-solid" style="font-size:11px;color:var(--text-3);"></i>
                 </button>
             </div>
             {{-- Active state: shown while a request is in progress --}}
@@ -1235,7 +1303,7 @@
         <div id="shopsPanel" class="panel">
             <div class="ph">
                 <button class="ph-back" onclick="closePanel('shopsPanel')">
-                    <i class="fa-solid fa-arrow-left"></i>
+                    <i class="fa-arrow-left fa-solid"></i>
                 </button>
                 <div>
                     <div class="ph-title">Nearby Shops</div>
@@ -1293,7 +1361,7 @@
 
             <div class="ph">
                 <button class="ph-back" onclick="closePanel('rescuePanel')">
-                    <i class="fa-solid fa-arrow-left"></i>
+                    <i class="fa-arrow-left fa-solid"></i>
                 </button>
                 <div>
                     <div class="ph-title">Request Rescue</div>
@@ -1301,80 +1369,71 @@
                 </div>
             </div>
 
-            <div style="padding:12px 14px 32px; display:flex; flex-direction:column; gap:14px;">
+            <div class="rescue-form">
 
-                {{-- Identity summary --}}
-                <div
-                    style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <span
-                            style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);">Rescuing</span>
-                        <button onclick="showTab('profile')"
-                            style="font-size:11px;font-weight:600;color:var(--action);background:none;border:none;cursor:pointer;">
-                            Edit <i class="fa-solid fa-pen" style="font-size:9px;"></i>
+                {{-- Identity --}}
+                <div class="resc-section">
+                    <div class="resc-label">Rescuing</div>
+                    <div class="resc-identity-card">
+                        <div class="resc-avatar" id="rescueAvatar">?</div>
+                        <div id="identityBody" style="flex:1;min-width:0;"></div>
+                        <button onclick="showTab('profile')" class="resc-edit-btn" title="Edit profile">
+                            <i class="fa-solid fa-pen"></i>
                         </button>
                     </div>
-                    <div id="identityBody" style="font-size:13px;line-height:1.7;color:var(--text-1);"></div>
                 </div>
 
                 {{-- Issue type --}}
-                <div>
-                    <p
-                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);margin-bottom:8px;">
-                        What's the problem?</p>
+                <div class="resc-section">
+                    <div class="resc-label">What's the problem?</div>
                     <div class="issue-grid">
                         <button class="issue-tile" onclick="selectIssue(this,'Flat Tire')">
-                            <span class="t-icon"><i class="fa-solid fa-wrench"></i></span><span class="t-label">Flat
-                                Tire</span>
+                            <span class="t-icon-wrap"><i class="fa-solid fa-wrench"></i></span>
+                            <span class="t-label">Flat Tire</span>
                         </button>
                         <button class="issue-tile" onclick="selectIssue(this,'Engine Stall')">
-                            <span class="t-icon"><i class="fa-solid fa-gear"></i></span><span class="t-label">Engine
-                                Stall</span>
+                            <span class="t-icon-wrap"><i class="fa-solid fa-gear"></i></span>
+                            <span class="t-label">Engine Stall</span>
                         </button>
                         <button class="issue-tile" onclick="selectIssue(this,'Battery')">
-                            <span class="t-icon"><i class="fa-solid fa-battery-half"></i></span><span
-                                class="t-label">Battery</span>
+                            <span class="t-icon-wrap"><i class="fa-solid fa-battery-half"></i></span>
+                            <span class="t-label">Battery</span>
                         </button>
                         <button class="issue-tile" onclick="selectIssue(this,'Brake Problem')">
-                            <span class="t-icon"><i class="fa-solid fa-circle-stop"></i></span><span
-                                class="t-label">Brake</span>
+                            <span class="t-icon-wrap"><i class="fa-solid fa-circle-stop"></i></span>
+                            <span class="t-label">Brake</span>
                         </button>
                         <button class="issue-tile" onclick="selectIssue(this,'Chain Problem')">
-                            <span class="t-icon"><i class="fa-solid fa-link"></i></span><span
-                                class="t-label">Chain</span>
+                            <span class="t-icon-wrap"><i class="fa-solid fa-link"></i></span>
+                            <span class="t-label">Chain</span>
                         </button>
                         <button class="issue-tile" onclick="selectIssue(this,'Other')">
-                            <span class="t-icon"><i class="fa-solid fa-circle-question"></i></span><span
-                                class="t-label">Other</span>
+                            <span class="t-icon-wrap"><i class="fa-solid fa-circle-question"></i></span>
+                            <span class="t-label">Other</span>
                         </button>
                     </div>
                 </div>
 
                 {{-- Description --}}
-                <div>
-                    <p
-                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);margin-bottom:8px;">
-                        Description <span
-                            style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3);">—
-                            optional</span></p>
+                <div class="resc-section">
+                    <div class="resc-label">Notes <span class="resc-label-opt">— optional</span></div>
                     <textarea id="dispatchDesc" class="mf-input" rows="3" placeholder="Describe your situation…"
                         style="resize:none;"></textarea>
                 </div>
 
-                {{-- GPS note --}}
-                <div
-                    style="display:flex;align-items:center;gap:8px;padding:9px 11px;background:var(--action-bg);border-radius:var(--r1);font-size:11px;color:var(--action);border:1px solid rgba(30,41,59,.12);">
-                    <i class="fa-solid fa-location-dot"></i>
-                    Your GPS location will be shared with the dispatched shop
+                {{-- GPS --}}
+                <div class="resc-gps">
+                    <i class="fa-solid fa-location-dot" style="color:var(--brand);"></i>
+                    GPS location shared with the dispatched shop
                 </div>
 
                 {{-- Submit --}}
-                <button id="rescueBtn" onclick="submitDispatch()" class="btn-primary" disabled>
-                    <i class="fa-solid fa-triangle-exclamation"></i> Send Rescue Request
+                <button id="rescueBtn" onclick="submitDispatch()" class="rescue-submit-btn" disabled>
+                    <i class="fa-solid fa-paper-plane"></i> Send Rescue Request
                 </button>
 
                 <p id="noShopWarning"
-                    style="display:none;text-align:center;font-size:11px;color:var(--red);margin-top:-6px;">
+                    style="display:none;text-align:center;font-size:11px;color:var(--red);margin-top:-8px;">
                     <i class="fa-solid fa-circle-exclamation"></i> No open shops found nearby. Your request has been saved.
                 </p>
 
@@ -1407,7 +1466,7 @@
                                 <div class="prof-row-title">My Motorcycle</div>
                                 <div id="profMotoSub" class="prof-row-sub empty">Tap to add — make, model, plate</div>
                             </div>
-                            <i class="fa-solid fa-chevron-right prof-row-chevron"></i>
+                            <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
                         </button>
                         <button class="prof-row" onclick="openSubPanel('editContactPanel')">
                             <div class="prof-row-icon"><i class="fa-solid fa-phone"></i></div>
@@ -1416,7 +1475,7 @@
                                 <div id="profContactSub" class="prof-row-sub empty">Tap to add — name &amp; phone number
                                 </div>
                             </div>
-                            <i class="fa-solid fa-chevron-right prof-row-chevron"></i>
+                            <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
                         </button>
                     </div>
                     <p style="font-size:10px;color:var(--text-3);margin-top:6px;padding:0 4px;line-height:1.5;">
@@ -1435,7 +1494,7 @@
                                 <div class="prof-row-title">Change Password</div>
                                 <div class="prof-row-sub">Update your login password</div>
                             </div>
-                            <i class="fa-solid fa-chevron-right prof-row-chevron"></i>
+                            <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
                         </button>
                     </div>
                 </div>
@@ -1444,7 +1503,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="logout-btn">
-                        <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                        <i class="fa-right-from-bracket fa-solid"></i> Log Out
                     </button>
                 </form>
 
@@ -1455,7 +1514,7 @@
         <div id="editMotoPanel" class="panel" style="display:none;">
             <div class="ph">
                 <button class="ph-back" onclick="closeSubPanel('editMotoPanel')">
-                    <i class="fa-solid fa-arrow-left"></i>
+                    <i class="fa-arrow-left fa-solid"></i>
                 </button>
                 <div style="flex:1;">
                     <div class="ph-title">My Motorcycle</div>
@@ -1497,7 +1556,7 @@
         <div id="editContactPanel" class="panel" style="display:none;">
             <div class="ph">
                 <button class="ph-back" onclick="closeSubPanel('editContactPanel')">
-                    <i class="fa-solid fa-arrow-left"></i>
+                    <i class="fa-arrow-left fa-solid"></i>
                 </button>
                 <div style="flex:1;">
                     <div class="ph-title">Dispatch Contact</div>
@@ -1533,7 +1592,7 @@
         <div id="changePasswordPanel" class="panel" style="display:none;">
             <div class="ph">
                 <button class="ph-back" onclick="closeSubPanel('changePasswordPanel')">
-                    <i class="fa-solid fa-arrow-left"></i>
+                    <i class="fa-arrow-left fa-solid"></i>
                 </button>
                 <div>
                     <div class="ph-title">Change Password</div>
@@ -1592,7 +1651,7 @@
 
             <div class="ph">
                 <button class="ph-back" onclick="showTab('map')">
-                    <i class="fa-solid fa-arrow-left"></i>
+                    <i class="fa-arrow-left fa-solid"></i>
                 </button>
                 <div>
                     <div class="ph-title">My Requests</div>
@@ -1634,8 +1693,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                       MECHFINDER — APP LOGIC
-                                                       ══════════════════════════════════════════════ */
+                                                                                       MECHFINDER — APP LOGIC
+                                                                                       ══════════════════════════════════════════════ */
 
         const STATUS_LABEL = {
             requested: '<i class="fa-solid fa-hourglass-half"></i> Finding nearest shop…',
@@ -1721,9 +1780,13 @@
         }
 
         function locateUser() {
-            const line = document.getElementById('locationLine');
+            const lineBtm = document.getElementById('locationLineBtm');
+
+            function setLocation(text) {
+                lineBtm.textContent = text;
+            }
             if (!navigator.geolocation) {
-                line.textContent = 'GPS not supported';
+                setLocation('GPS not supported');
                 loadShops();
                 return;
             }
@@ -1736,10 +1799,10 @@
                     .then(r => r.json())
                     .then(d => {
                         const p = (d.display_name || '').split(',');
-                        line.textContent = p.slice(0, 2).join(',').trim() || 'Location detected';
+                        setLocation(p.slice(0, 2).join(',').trim() || 'Location detected');
                     })
                     .catch(() => {
-                        line.textContent = 'Location detected';
+                        setLocation('Location detected');
                     });
 
                 if (userMarker) map.removeLayer(userMarker);
@@ -1755,9 +1818,11 @@
 
                 map.setView([userLat, userLng], 15);
                 loadShops();
+                startShopPolling();
             }, () => {
-                line.textContent = 'Using Olongapo default';
+                setLocation('Using Olongapo default');
                 loadShops();
+                startShopPolling();
             }, {
                 enableHighAccuracy: true,
                 timeout: 10000,
@@ -1766,6 +1831,8 @@
         }
 
         /* ── SHOPS (pins only) ── */
+        let _shopPollTimer = null;
+
         async function loadShops() {
             try {
                 const shops = await fetch(`/motorist/shops?lat=${userLat}&lng=${userLng}`).then(r => r.json());
@@ -1774,6 +1841,11 @@
             } catch {
                 /* non-critical */
             }
+        }
+
+        function startShopPolling() {
+            if (_shopPollTimer) return; // already running
+            _shopPollTimer = setInterval(loadShops, 30000); // refresh every 30 s
         }
 
         function renderShopPins(shops) {
@@ -1882,7 +1954,10 @@
         /* ── RESCUE FORM ── */
         function openPanel(id) {
             if (id === 'rescuePanel') refreshIdentityCard();
-            if (id === 'shopsPanel') renderShopList(allShops, '');
+            if (id === 'shopsPanel') {
+                renderShopList(allShops, '');
+                loadShops(); // always fetch fresh status when panel opens
+            }
             document.getElementById(id).classList.add('open');
         }
 
@@ -1904,20 +1979,21 @@
             const id = mfIdentity();
             const body = document.getElementById('identityBody');
             const btn = document.getElementById('rescueBtn');
+            const avatar = document.getElementById('rescueAvatar');
 
             if (!id.owner_name) {
+                if (avatar) avatar.textContent = '?';
                 body.innerHTML =
-                    '<span style="color:var(--red);font-size:12px;"><i class="fa-solid fa-circle-exclamation"></i> Profile incomplete — fill in your name and contact first.</span>';
+                    '<span style="color:var(--red);font-size:12px;line-height:1.2;">Complete your profile first.</span>';
                 btn.disabled = true;
                 return;
             }
-            let html = `<div style="font-weight:700;margin-bottom:2px;">${id.owner_name}</div>`;
+            if (avatar) avatar.textContent = id.owner_name[0].toUpperCase();
+            let html = `<div style="font-size:13px;font-weight:700;line-height:1.2;">${id.owner_name}</div>`;
             if (id.contact_number) html +=
-                `<div style="color:var(--text-2);font-size:12px;"><i class="fa-solid fa-phone" style="width:14px;font-size:10px;"></i> ${id.contact_number}</div>`;
+                `<div style="font-size:11px;color:var(--text-2);line-height:1.2;margin-top:2px;">${id.contact_number}</div>`;
             if (id.vehicle_make_model) html +=
-                `<div style="color:var(--text-2);font-size:12px;"><i class="fa-solid fa-motorcycle" style="width:14px;font-size:10px;"></i> ${id.vehicle_make_model}${id.vehicle_variant_color?' · '+id.vehicle_variant_color:''}</div>`;
-            if (id.plate_temp_number) html +=
-                `<div style="color:var(--text-2);font-size:12px;"><i class="fa-solid fa-id-card" style="width:14px;font-size:10px;"></i> ${id.plate_temp_number}</div>`;
+                `<div style="font-size:11px;color:var(--text-2);line-height:1.2;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${id.vehicle_make_model}${id.vehicle_variant_color?' · '+id.vehicle_variant_color:''}</div>`;
             body.innerHTML = html;
             if (selectedIssue) btn.disabled = false;
         }
