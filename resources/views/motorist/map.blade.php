@@ -1,4 +1,4 @@
-@extends('motorist.shops')
+@extends('layouts.motorist')
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-950 text-white flex flex-col">
