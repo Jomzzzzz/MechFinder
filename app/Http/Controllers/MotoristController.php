@@ -10,11 +10,6 @@ use Illuminate\Support\Facades\Hash;
 
 class MotoristController extends Controller
 {
-  public function dashboard()
-  {
-    return view("motorist.dashboard");
-  }
-
   public function map()
   {
     return view("motorist.map");

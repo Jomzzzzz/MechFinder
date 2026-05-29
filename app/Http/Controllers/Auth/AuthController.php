@@ -128,7 +128,7 @@ class AuthController extends Controller
       User::ROLE_ADMIN => "/admin/dashboard",
       User::ROLE_SHOP => "/shop/dashboard",
       User::ROLE_MECHANIC => "/mechanic/dashboard",
-      default => "/motorist/dashboard",
+      default => "/motorist",
     };
   }
 

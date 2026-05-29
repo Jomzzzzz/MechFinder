@@ -182,11 +182,6 @@ Route::prefix("mechanic")
 */
 
 Route::prefix("motorist")->group(function () {
-  // Authenticated motorist dashboard
-  Route::get("/dashboard", [MotoristController::class, "dashboard"])
-    ->middleware(["auth", "role:motorist"])
-    ->name("motorist.dashboard");
-
   // Map view
   Route::get("/map", [MotoristController::class, "map"])
     ->name("motorist.map");
