@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Events\DispatchRequestCreated;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class MotoristController extends Controller
 {
@@ -246,6 +248,24 @@ class MotoristController extends Controller
     event(new \App\Events\DispatchStatusUpdated($id, "cancelled"));
 
     return response()->json(["success" => true]);
+  }
+
+  public function changePassword(Request $request)
+  {
+    $request->validate([
+      'current_password' => ['required'],
+      'password'         => ['required', 'string', 'min:6', 'confirmed'],
+    ]);
+
+    $user = Auth::user();
+
+    if (!Hash::check($request->current_password, $user->password)) {
+      return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+    }
+
+    $user->update(['password' => Hash::make($request->password)]);
+
+    return redirect()->route('motorist.index')->with('pw_success', 'Password updated successfully.');
   }
 
   public function storeReview(Request $request)

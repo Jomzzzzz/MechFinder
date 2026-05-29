@@ -207,6 +207,7 @@ Route::prefix("motorist")->group(function () {
     "requestStatus",
   ])->name("motorist.request.status");
   Route::post("/request/{id}/cancel", [MotoristController::class, "cancelDispatch"])->name("motorist.request.cancel");
+  Route::post("/profile/password", [MotoristController::class, "changePassword"])->middleware(['auth', 'role:motorist'])->name("motorist.profile.password");
   Route::post("/review", [MotoristController::class, "storeReview"])->name(
     "motorist.review.store"
   );

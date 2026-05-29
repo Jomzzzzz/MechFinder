@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                               MECHFINDER — PROFESSIONAL LIGHT THEME
-                               ══════════════════════════════════════════════ */
+                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                       ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -686,6 +686,234 @@
             }
         }
 
+        /* ── PROFILE ── */
+        .prof-hero {
+            background: linear-gradient(145deg, var(--action) 0%, var(--action-2) 100%);
+            padding: 28px 20px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .prof-avatar {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: var(--brand);
+            color: #fff;
+            font-size: 26px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid rgba(255, 255, 255, .2);
+        }
+
+        .prof-hero-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+        }
+
+        .prof-hero-email {
+            font-size: 12px;
+            color: rgba(255, 255, 255, .55);
+            margin-top: 1px;
+            text-align: center;
+        }
+
+        .prof-hero-badge {
+            margin-top: 6px;
+            padding: 3px 10px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, .12);
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .7);
+            letter-spacing: .05em;
+        }
+
+        .prof-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .09em;
+            color: var(--text-3);
+            padding: 0 2px;
+            margin-bottom: 6px;
+        }
+
+        .prof-group {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r2);
+            overflow: hidden;
+        }
+
+        .prof-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 14px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .prof-row+.prof-row {
+            border-top: 1px solid var(--border);
+        }
+
+        .prof-row-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--r1);
+            flex-shrink: 0;
+            background: var(--action-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prof-row-icon i {
+            font-size: 13px;
+            color: var(--action);
+        }
+
+        .prof-row-icon.red {
+            background: rgba(239, 68, 68, .08);
+        }
+
+        .prof-row-icon.red i {
+            color: var(--red);
+        }
+
+        .prof-row-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .prof-row-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-1);
+        }
+
+        .prof-row-sub {
+            font-size: 11px;
+            color: var(--text-2);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .prof-row-sub.empty {
+            color: var(--text-3);
+            font-style: italic;
+        }
+
+        .prof-row-chevron {
+            font-size: 10px;
+            color: var(--text-3);
+            flex-shrink: 0;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-2);
+            padding-left: 2px;
+        }
+
+        .field-hint {
+            font-size: 10px;
+            color: var(--text-3);
+            padding-left: 2px;
+            line-height: 1.4;
+        }
+
+        .info-banner {
+            background: var(--action-bg);
+            border: 1px solid rgba(30, 41, 59, .12);
+            border-radius: var(--r2);
+            padding: 11px 13px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .info-banner i {
+            color: var(--action);
+            font-size: 13px;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+
+        .info-banner span {
+            font-size: 12px;
+            color: var(--action);
+            line-height: 1.5;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 14px;
+            background: none;
+            border: 1.5px solid var(--red);
+            border-radius: var(--r2);
+            color: var(--red);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* ── TOAST ── */
+        #mfToast {
+            position: absolute;
+            bottom: calc(var(--nav-h) + 14px);
+            left: 50%;
+            transform: translateX(-50%) translateY(12px);
+            background: var(--action);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 99px;
+            white-space: nowrap;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity .25s, transform .25s;
+            pointer-events: none;
+        }
+
+        #mfToast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        #mfToast.success {
+            background: var(--green);
+        }
+
+        #mfToast.error {
+            background: var(--red);
+        }
+
         /* ── BOTTOM NAV ── */
         #bottomNav {
             position: absolute;
@@ -947,9 +1175,7 @@
                     <div class="app-name">MechFinder</div>
                     <div class="location-line" id="locationLine">Detecting location…</div>
                 </div>
-                <button class="icon-btn" onclick="showTab('profile')">
-                    <i class="fa-solid fa-user"></i>
-                </button>
+
             </div>
         </header>
 
@@ -1020,7 +1246,7 @@
             <div class="panel-search-wrap">
                 <div class="panel-search">
                     <i class="fa-solid fa-magnifying-glass" style="color:var(--text-3);font-size:13px;"></i>
-                    <input id="shopSearchInput" type="search" placeholder="Search shop name…"
+                    <input id="shopSearchInput" type="text" placeholder="Search shop name…"
                         oninput="filterShopList(this.value)">
                     <button id="shopSearchClear" onclick="clearShopSearch()"
                         style="display:none;background:none;border:none;color:var(--text-3);cursor:pointer;font-size:13px;padding:0;">
@@ -1155,47 +1381,209 @@
             </div>
         </div>
 
-        {{-- ══ PROFILE PANEL ══ --}}
+        {{-- ══ PROFILE PANEL (overview) ══ --}}
         <div id="profilePanel" class="panel">
 
+            {{-- Hero --}}
+            <div class="prof-hero">
+                <div class="prof-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
+                <div>
+                    <div class="prof-hero-name">{{ Auth::user()->name }}</div>
+                    <div class="prof-hero-email">{{ Auth::user()->email }}</div>
+                </div>
+                <div class="prof-hero-badge"><i class="fa-solid fa-shield-halved" style="margin-right:4px;"></i>Motorist
+                    Account</div>
+            </div>
+
+            <div style="padding:20px 14px 48px;display:flex;flex-direction:column;gap:22px;overflow-y:auto;">
+
+                {{-- Ride info --}}
+                <div>
+                    <p class="prof-section-label">Ride Information</p>
+                    <div class="prof-group">
+                        <button class="prof-row" onclick="openSubPanel('editMotoPanel')">
+                            <div class="prof-row-icon"><i class="fa-solid fa-motorcycle"></i></div>
+                            <div class="prof-row-body">
+                                <div class="prof-row-title">My Motorcycle</div>
+                                <div id="profMotoSub" class="prof-row-sub empty">Tap to add — make, model, plate</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right prof-row-chevron"></i>
+                        </button>
+                        <button class="prof-row" onclick="openSubPanel('editContactPanel')">
+                            <div class="prof-row-icon"><i class="fa-solid fa-phone"></i></div>
+                            <div class="prof-row-body">
+                                <div class="prof-row-title">Dispatch Contact</div>
+                                <div id="profContactSub" class="prof-row-sub empty">Tap to add — name &amp; phone number
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right prof-row-chevron"></i>
+                        </button>
+                    </div>
+                    <p style="font-size:10px;color:var(--text-3);margin-top:6px;padding:0 4px;line-height:1.5;">
+                        <i class="fa-solid fa-circle-info" style="margin-right:3px;"></i>
+                        This info is shared with the mechanic when you request rescue.
+                    </p>
+                </div>
+
+                {{-- Account --}}
+                <div>
+                    <p class="prof-section-label">Account &amp; Security</p>
+                    <div class="prof-group">
+                        <button class="prof-row" onclick="openSubPanel('changePasswordPanel')">
+                            <div class="prof-row-icon"><i class="fa-solid fa-lock"></i></div>
+                            <div class="prof-row-body">
+                                <div class="prof-row-title">Change Password</div>
+                                <div class="prof-row-sub">Update your login password</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-right prof-row-chevron"></i>
+                        </button>
+                    </div>
+                </div>
+
+                {{-- Logout --}}
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="logout-btn">
+                        <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                    </button>
+                </form>
+
+            </div>
+        </div>
+
+        {{-- ══ EDIT MOTORCYCLE SUB-PANEL ══ --}}
+        <div id="editMotoPanel" class="panel" style="display:none;">
             <div class="ph">
-                <button class="ph-back" onclick="closePanel('profilePanel');showTab('map')">
+                <button class="ph-back" onclick="closeSubPanel('editMotoPanel')">
                     <i class="fa-solid fa-arrow-left"></i>
                 </button>
                 <div style="flex:1;">
-                    <div class="ph-title">My Profile</div>
-                    <div class="ph-subtitle">Saved locally on this device</div>
+                    <div class="ph-title">My Motorcycle</div>
                 </div>
-                <button onclick="saveProfileAndClose()"
-                    style="background:var(--action);color:#fff;font-size:13px;font-weight:700;border-radius:var(--r1);padding:8px 16px;border:none;cursor:pointer;">
-                    Save
-                </button>
+                <button onclick="saveMoto()"
+                    style="background:var(--action);color:#fff;font-size:13px;font-weight:700;border-radius:var(--r1);padding:8px 18px;border:none;cursor:pointer;">Save</button>
             </div>
+            <div style="padding:16px 14px 40px;display:flex;flex-direction:column;gap:16px;">
 
-            <div style="padding:12px 14px 32px;display:flex;flex-direction:column;gap:16px;">
-
-                <div>
-                    <p
-                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);margin-bottom:8px;">
-                        Personal Info</p>
-                    <div style="display:flex;flex-direction:column;gap:8px;">
-                        <input id="pName" class="mf-input" placeholder="Full name">
-                        <input id="pContact" class="mf-input" type="tel"
-                            placeholder="Contact number (09171234567)">
-                    </div>
+                <div class="info-banner">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>This info is shared with the mechanic when you request a rescue. Keep it accurate so they can
+                        identify your bike.</span>
                 </div>
 
-                <div>
-                    <p
-                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);margin-bottom:8px;">
-                        Motorcycle</p>
-                    <div style="display:flex;flex-direction:column;gap:8px;">
-                        <input id="pMakeModel" class="mf-input" placeholder="Make &amp; model (e.g. Honda Wave 110)">
-                        <input id="pColor" class="mf-input" placeholder="Color / variant (e.g. Black, Alpha)">
-                        <input id="pPlate" class="mf-input" placeholder="Plate or temporary number">
-                    </div>
+                <div class="field-group">
+                    <label class="field-label" for="pMakeModel">Make &amp; Model <span
+                            style="color:var(--red);">*</span></label>
+                    <input id="pMakeModel" class="mf-input" placeholder="e.g. Honda Wave 110, Yamaha Mio">
+                    <span class="field-hint">The brand and model of your motorcycle</span>
                 </div>
 
+                <div class="field-group">
+                    <label class="field-label" for="pColor">Color &amp; Variant</label>
+                    <input id="pColor" class="mf-input" placeholder="e.g. Black Alpha, Red Sports">
+                    <span class="field-hint">Color and edition — helps the mechanic spot your bike</span>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="pPlate">Plate / Conduction Number</label>
+                    <input id="pPlate" class="mf-input" placeholder="e.g. ABC 1234 or conduction sticker">
+                    <span class="field-hint">Official plate or temporary conduction number</span>
+                </div>
+
+            </div>
+        </div>
+
+        {{-- ══ EDIT CONTACT SUB-PANEL ══ --}}
+        <div id="editContactPanel" class="panel" style="display:none;">
+            <div class="ph">
+                <button class="ph-back" onclick="closeSubPanel('editContactPanel')">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div style="flex:1;">
+                    <div class="ph-title">Dispatch Contact</div>
+                </div>
+                <button onclick="saveContact()"
+                    style="background:var(--action);color:#fff;font-size:13px;font-weight:700;border-radius:var(--r1);padding:8px 18px;border:none;cursor:pointer;">Save</button>
+            </div>
+            <div style="padding:16px 14px 40px;display:flex;flex-direction:column;gap:16px;">
+
+                <div class="info-banner">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>The mechanic uses this to contact you during a rescue. Make sure the number can receive calls and
+                        SMS.</span>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="pName">Your Name <span style="color:var(--red);">*</span></label>
+                    <input id="pName" class="mf-input" placeholder="e.g. Juan Dela Cruz">
+                    <span class="field-hint">Your name as it appears to the mechanic</span>
+                </div>
+
+                <div class="field-group">
+                    <label class="field-label" for="pContact">Mobile Number <span
+                            style="color:var(--red);">*</span></label>
+                    <input id="pContact" class="mf-input" type="tel" placeholder="e.g. 09171234567">
+                    <span class="field-hint">Philippine mobile number — must be reachable for rescue coordination</span>
+                </div>
+
+            </div>
+        </div>
+
+        {{-- ══ CHANGE PASSWORD SUB-PANEL ══ --}}
+        <div id="changePasswordPanel" class="panel" style="display:none;">
+            <div class="ph">
+                <button class="ph-back" onclick="closeSubPanel('changePasswordPanel')">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div>
+                    <div class="ph-title">Change Password</div>
+                </div>
+            </div>
+            <div style="padding:16px 14px 40px;display:flex;flex-direction:column;gap:16px;">
+
+                <div class="info-banner">
+                    <i class="fa-solid fa-lock"></i>
+                    <span>For your security, enter your current password first. Your new password must be at least 6
+                        characters.</span>
+                </div>
+
+                @if ($errors->has('current_password'))
+                    <div
+                        style="background:rgba(239,68,68,.1);border:1px solid var(--red);border-radius:var(--r2);padding:11px 13px;font-size:12px;color:var(--red);display:flex;gap:8px;align-items:flex-start;">
+                        <i class="fa-solid fa-circle-exclamation" style="margin-top:1px;flex-shrink:0;"></i>
+                        <span>{{ $errors->first('current_password') }}</span>
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('motorist.profile.password') }}"
+                    style="display:flex;flex-direction:column;gap:16px;">
+                    @csrf
+
+                    <div class="field-group">
+                        <label class="field-label" for="cur_pw">Current Password</label>
+                        <input id="cur_pw" name="current_password" class="mf-input" type="password"
+                            placeholder="Your existing password" required autocomplete="current-password">
+                        <span class="field-hint">Enter the password you currently use to log in</span>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label" for="new_pw">New Password</label>
+                        <input id="new_pw" name="password" class="mf-input" type="password"
+                            placeholder="At least 6 characters" required autocomplete="new-password">
+                        <span class="field-hint">Choose a strong password you haven't used before</span>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label" for="new_pw_conf">Confirm New Password</label>
+                        <input id="new_pw_conf" name="password_confirmation" class="mf-input" type="password"
+                            placeholder="Re-enter your new password" required autocomplete="new-password">
+                        <span class="field-hint">Must match the new password above</span>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="margin-top:4px;">
+                        <i class="fa-solid fa-lock"></i> Update Password
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -1220,6 +1608,9 @@
             </div>
         </div>
 
+        {{-- TOAST --}}
+        <div id="mfToast"></div>
+
         {{-- BOTTOM NAV --}}
         <nav id="bottomNav">
             <button class="nav-btn active" id="navMap" onclick="showTab('map')">
@@ -1243,8 +1634,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                               MECHFINDER — APP LOGIC
-                               ══════════════════════════════════════════════ */
+                                                       MECHFINDER — APP LOGIC
+                                                       ══════════════════════════════════════════════ */
 
         const STATUS_LABEL = {
             requested: '<i class="fa-solid fa-hourglass-half"></i> Finding nearest shop…',
@@ -1301,10 +1692,16 @@
 
         /* ── BOOT ── */
         document.addEventListener('DOMContentLoaded', () => {
-            loadProfileInputs();
             initMap();
             locateUser();
             if (currentRequestId) resumeActiveRequest(currentRequestId);
+            @if (session('pw_success'))
+                showToast('{{ session('pw_success') }}', 'success');
+            @endif
+            @if ($errors->hasAny())
+                showTab('profile');
+                openSubPanel('changePasswordPanel');
+            @endif
         });
 
         /* ── MAP ── */
@@ -1491,6 +1888,16 @@
 
         function closePanel(id) {
             document.getElementById(id).classList.remove('open');
+        }
+
+        let _toastTimer;
+
+        function showToast(msg, type = '') {
+            const t = document.getElementById('mfToast');
+            t.textContent = msg;
+            t.className = 'show' + (type ? ' ' + type : '');
+            clearTimeout(_toastTimer);
+            _toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
         }
 
         function refreshIdentityCard() {
@@ -1734,29 +2141,71 @@
                 closePanel('requestsPanel');
                 closePanel('rescuePanel');
                 closePanel('shopsPanel');
-                loadProfileInputs();
+                renderProfileSummary();
                 openPanel('profilePanel');
             }
         }
 
         /* ── PROFILE ── */
-        function loadProfileInputs() {
+        function renderProfileSummary() {
             const id = mfIdentity();
-            document.getElementById('pName').value = id.owner_name;
-            document.getElementById('pContact').value = id.contact_number;
-            document.getElementById('pMakeModel').value = id.vehicle_make_model;
-            document.getElementById('pColor').value = id.vehicle_variant_color;
-            document.getElementById('pPlate').value = id.plate_temp_number;
+            // Motorcycle
+            const motoSub = document.getElementById('profMotoSub');
+            if (id.vehicle_make_model) {
+                const parts = [id.vehicle_make_model, id.vehicle_variant_color, id.plate_temp_number].filter(Boolean);
+                motoSub.textContent = parts.join(' · ');
+                motoSub.classList.remove('empty');
+            } else {
+                motoSub.textContent = 'Tap to add — make, model, plate';
+                motoSub.classList.add('empty');
+            }
+            // Contact
+            const contactSub = document.getElementById('profContactSub');
+            if (id.owner_name || id.contact_number) {
+                const parts = [id.owner_name, id.contact_number].filter(Boolean);
+                contactSub.textContent = parts.join(' · ');
+                contactSub.classList.remove('empty');
+            } else {
+                contactSub.textContent = 'Tap to add — name & phone number';
+                contactSub.classList.add('empty');
+            }
         }
 
-        function saveProfileAndClose() {
-            LS.set('mf_owner_name', document.getElementById('pName').value.trim());
-            LS.set('mf_contact_number', document.getElementById('pContact').value.trim());
+        function openSubPanel(id) {
+            // Load current values into sub-panel inputs before showing
+            const identity = mfIdentity();
+            if (id === 'editMotoPanel') {
+                document.getElementById('pMakeModel').value = identity.vehicle_make_model;
+                document.getElementById('pColor').value = identity.vehicle_variant_color;
+                document.getElementById('pPlate').value = identity.plate_temp_number;
+            } else if (id === 'editContactPanel') {
+                document.getElementById('pName').value = identity.owner_name;
+                document.getElementById('pContact').value = identity.contact_number;
+            }
+            document.getElementById(id).style.display = 'block';
+            requestAnimationFrame(() => document.getElementById(id).classList.add('open'));
+        }
+
+        function closeSubPanel(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('open');
+            setTimeout(() => {
+                el.style.display = 'none';
+            }, 320);
+            renderProfileSummary();
+        }
+
+        function saveMoto() {
             LS.set('mf_vehicle_make_model', document.getElementById('pMakeModel').value.trim());
             LS.set('mf_vehicle_variant_color', document.getElementById('pColor').value.trim());
             LS.set('mf_plate_temp_number', document.getElementById('pPlate').value.trim());
-            closePanel('profilePanel');
-            showTab('map');
+            closeSubPanel('editMotoPanel');
+        }
+
+        function saveContact() {
+            LS.set('mf_owner_name', document.getElementById('pName').value.trim());
+            LS.set('mf_contact_number', document.getElementById('pContact').value.trim());
+            closeSubPanel('editContactPanel');
         }
 
         /* ── REQUEST HISTORY ── */
