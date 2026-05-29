@@ -1,310 +1,1047 @@
 @extends('layouts.motorist')
 
+@section('main-class', '')
+
 @section('content')
-    <header class="flex justify-between items-center mb-4">
-        <div>
-            <h1 class="font-black text-2xl tracking-tight">MECHFINDER</h1>
-            <p class="text-gray-400 text-xs">Emergency motorcycle repair assistant</p>
-        </div>
-        <button onclick="openProfileModal()" class="px-3 py-2 rounded-2xl text-sm dark-btn">
-            👤
-        </button>
-    </header>
+    <style>
+        /* ══════════════════════════════════════════════
+           MECHFINDER — PROFESSIONAL LIGHT THEME
+           ══════════════════════════════════════════════ */
+        :root {
+            --nav-h: 60px;
+            --bar-h: 70px;
+            --brand: #F7941D;
+            --brand-dk: #C87010;
+            --brand-bg: rgba(247, 148, 29, .09);
+            --surface: #FFFFFF;
+            --surface-2: #F5F6F8;
+            --border: #E4E7EC;
+            --border-2: #CDD1D9;
+            --text-1: #111827;
+            --text-2: #6B7280;
+            --text-3: #9CA3AF;
+            --red: #EF4444;
+            --green: #10B981;
+            --blue: #3B82F6;
+            /* action color — buttons (not orange) */
+            --action: #1E293B;
+            --action-2: #2D3F55;
+            --action-bg: rgba(30, 41, 59, .06);
+            /* radius scale */
+            --r1: 6px;
+            --r2: 10px;
+            --r3: 14px;
+            /* shadows */
+            --sh-float: 0 4px 18px rgba(0, 0, 0, .12);
+            --sh-card: 0 1px 4px rgba(0, 0, 0, .08);
+        }
 
-    <section class="mb-4 p-4 rounded-3xl glass">
-        <div class="flex justify-between items-center mb-3">
-            <div>
-                <p class="text-gray-400 text-xs uppercase tracking-widest">Current Location</p>
-                <p id="locationText" class="font-bold text-sm">Detecting your location...</p>
-            </div>
-            <button onclick="locateUser()" class="px-4 py-2 rounded-2xl text-sm brand-btn">Locate</button>
-        </div>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        #mfApp {
+            height: 100dvh;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: #E8ECF0;
+            font-family: Inter, system-ui, -apple-system, sans-serif;
+            color: var(--text-1);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── MAP ── */
+        #map {
+            position: absolute;
+            inset: 0;
+            bottom: calc(var(--nav-h) + var(--bar-h));
+            z-index: 1;
+        }
+
+        /* ── TOP BAR ── */
+        #topBar {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            z-index: 20;
+        }
+
+        .top-card {
+            background: var(--surface);
+            border-radius: var(--r3);
+            box-shadow: var(--sh-float);
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .top-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--r1);
+            background: var(--brand);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .top-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .app-name {
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .location-line {
+            font-size: 11px;
+            color: var(--text-2);
+            margin-top: 1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--r1);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: var(--text-2);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        /* ── STATUS STRIP ── */
+        #statusStrip {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            top: 74px;
+            z-index: 22;
+            border-radius: var(--r3);
+            overflow: hidden;
+            box-shadow: var(--sh-float);
+            cursor: pointer;
+            transform: translateY(-140%);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform .3s ease, opacity .3s ease;
+        }
+
+        #statusStrip.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .strip-body {
+            background: var(--brand);
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .strip-label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: rgba(0, 0, 0, .45);
+        }
+
+        #stripText {
+            font-size: 12px;
+            font-weight: 700;
+            color: #111;
+            margin-top: 2px;
+        }
+
+        .strip-cta {
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(0, 0, 0, .45);
+        }
+
+        .strip-track {
+            height: 3px;
+            background: rgba(0, 0, 0, .12);
+        }
+
+        #stripBar {
+            height: 100%;
+            background: rgba(255, 255, 255, .6);
+            transition: width .5s ease;
+            width: 0%;
+        }
+
+        /* ── LOCATE FAB ── */
+        #locateFab {
+            position: absolute;
+            right: 12px;
+            bottom: calc(var(--nav-h) + var(--bar-h) + 12px);
+            z-index: 21;
+            width: 42px;
+            height: 42px;
+            border-radius: var(--r2);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: var(--sh-float);
+            color: var(--text-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* ── RESCUE BAR ── */
+        #rescueBar {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: var(--nav-h);
+            height: var(--bar-h);
+            z-index: 20;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, .06);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .shops-stat {
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .shops-stat .s-num {
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text-1);
+        }
+
+        .shops-stat .s-num span {
+            color: var(--brand);
+        }
+
+        .shops-stat .s-lbl {
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--text-3);
+            margin-top: 1px;
+        }
+
+        .divider-v {
+            width: 1px;
+            height: 36px;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+
+        .btn-rescue {
+            flex: 1;
+            background: var(--action);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: var(--r2);
+            padding: 13px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background .15s;
+        }
+
+        .btn-rescue:active {
+            background: var(--action-2);
+        }
+
+        /* ── PANELS ── */
+        .panel {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: var(--nav-h);
+            z-index: 30;
+            background: var(--surface-2);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            transform: translateY(100%);
+            transition: transform .33s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .panel.open {
+            transform: translateY(0);
+        }
+
+        .ph {
+            /* panel header */
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 13px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .ph-back {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--r1);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: var(--text-2);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .ph-title {
+            font-size: 17px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .ph-subtitle {
+            font-size: 11px;
+            color: var(--text-2);
+            margin-top: 1px;
+        }
+
+        /* ── ISSUE TILES ── */
+        .issue-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .issue-tile {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--r2);
+            padding: 12px 4px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            transition: border-color .15s, background .15s;
+        }
+
+        .issue-tile .t-icon {
+            font-size: 19px;
+            color: var(--text-3);
+            line-height: 1;
+        }
+
+        .issue-tile .t-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-2);
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .issue-tile.sel {
+            border-color: var(--action);
+            background: var(--action-bg);
+        }
+
+        .issue-tile.sel .t-icon,
+        .issue-tile.sel .t-label {
+            color: var(--action);
+        }
+
+        /* ── INPUTS ── */
+        .mf-input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border-2);
+            border-radius: var(--r1);
+            padding: 11px 12px;
+            font-size: 14px;
+            color: var(--text-1);
+            font-family: inherit;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .mf-input:focus {
+            border-color: var(--action);
+        }
+
+        .mf-input::placeholder {
+            color: var(--text-3);
+        }
+
+        /* ── BUTTONS ── */
+        .btn-primary {
+            width: 100%;
+            background: var(--action);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: var(--r2);
+            padding: 14px;
+            border: none;
+            cursor: pointer;
+            transition: opacity .15s;
+        }
+
+        .btn-primary:disabled {
+            opacity: .35;
+            cursor: not-allowed;
+        }
+
+        .btn-primary:not(:disabled):active {
+            opacity: .85;
+        }
+
+        /* ── SEARCH OVERLAY ── */
+        #searchOverlay {
+            position: absolute;
+            inset: 0;
+            z-index: 50;
+            background: rgba(249, 250, 251, .97);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s ease;
+        }
+
+        #searchOverlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .radar-wrap {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .radar-ring {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: 2px solid var(--action);
+            opacity: 0;
+            animation: radarPulse 2.1s ease-out infinite;
+        }
+
+        .radar-ring:nth-child(2) {
+            animation-delay: .7s;
+        }
+
+        .radar-ring:nth-child(3) {
+            animation-delay: 1.4s;
+        }
+
+        @keyframes radarPulse {
+            0% {
+                transform: scale(.25);
+                opacity: .6;
+            }
+
+            100% {
+                transform: scale(1.8);
+                opacity: 0;
+            }
+        }
+
+        .radar-center {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--action);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 20px rgba(30, 41, 59, .3);
+        }
+
+        /* Pulse the status strip when waiting for shop to accept */
+        #statusStrip.searching .strip-body {
+            animation: stripPulse 1.8s ease-in-out infinite;
+        }
+
+        @keyframes stripPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .7;
+            }
+        }
+
+        /* ── BOTTOM NAV ── */
+        #bottomNav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: var(--nav-h);
+            z-index: 40;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: stretch;
+        }
+
+        .nav-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            cursor: pointer;
+            color: var(--text-3);
+            background: none;
+            border: none;
+            transition: color .15s;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+        }
+
+        .nav-btn.active {
+            color: var(--brand);
+        }
+
+        .n-icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+
+        .n-label {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .nav-badge {
+            position: absolute;
+            top: 10px;
+            right: calc(50% - 15px);
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--brand);
+            border: 2px solid var(--surface);
+            display: none;
+        }
+
+        .nav-badge.show {
+            display: block;
+        }
+
+        /* ── REQUEST CARD ── */
+        .req-card {
+            background: var(--surface);
+            border-radius: var(--r2);
+            border: 1px solid var(--border);
+            padding: 14px;
+            margin-bottom: 8px;
+            box-shadow: var(--sh-card);
+        }
+
+        .req-steps {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .rs-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: var(--border-2);
+            transition: background .3s;
+        }
+
+        .rs-dot.done {
+            background: var(--brand);
+        }
+
+        .rs-dot.active {
+            background: var(--brand);
+            box-shadow: 0 0 0 3px var(--brand-bg);
+        }
+
+        .rs-line {
+            flex: 1;
+            height: 2px;
+            background: var(--border);
+            transition: background .3s;
+        }
+
+        .rs-line.done {
+            background: var(--brand);
+        }
+
+        /* ── MAP PINS ── */
+        .mf-pin {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .22);
+        }
+
+        .mf-pin-open {
+            background: var(--brand);
+            color: #fff;
+            border: 2.5px solid #fff;
+        }
+
+        .mf-pin-closed {
+            background: #6B7280;
+            color: #fff;
+            border: 2.5px solid #fff;
+        }
+
+        .mf-pin-you {
+            background: #fff;
+            color: var(--blue);
+            border: 3px solid var(--blue);
+            box-shadow: 0 0 0 5px rgba(59, 130, 246, .18);
+        }
+
+        /* Leaflet overrides */
+        .leaflet-popup-content-wrapper {
+            background: var(--surface);
+            color: var(--text-1);
+            border-radius: var(--r2);
+            box-shadow: var(--sh-float);
+            border: 1px solid var(--border);
+        }
+
+        .leaflet-popup-tip {
+            background: var(--surface);
+        }
+
+        .leaflet-popup-content {
+            margin: 10px 12px;
+            font-family: Inter, sans-serif;
+        }
+    </style>
+
+    <div id="mfApp">
+
+        {{-- MAP --}}
         <div id="map"></div>
-    </section>
 
-    <section class="mb-4">
-        <div class="flex justify-between items-center mb-3">
-            <h2 class="font-black text-lg">Nearby Motor Shops</h2>
-            <span id="shopCount" class="text-gray-400 text-xs">Loading...</span>
-        </div>
-        <div id="shopsList" class="space-y-3"></div>
-    </section>
-
-    {{-- Profile Modal --}}
-    <div id="profileModal" class="hidden z-50 fixed inset-0 bg-black/80 p-4">
-        <div class="mx-auto mt-10 p-5 rounded-3xl max-w-md glass">
-            <h2 class="mb-1 font-black text-xl">Your Info</h2>
-            <p class="mb-4 text-gray-400 text-xs">Used when requesting a mechanic. Saved on this device only.</p>
-            <div class="space-y-3">
-                <input id="ownerName" class="bg-black/40 px-4 py-3 border border-white/10 rounded-2xl w-full"
-                    placeholder="Your full name">
-                <input id="contactNumber" class="bg-black/40 px-4 py-3 border border-white/10 rounded-2xl w-full"
-                    placeholder="Contact number">
-                <input id="vehicleMakeModel" class="bg-black/40 px-4 py-3 border border-white/10 rounded-2xl w-full"
-                    placeholder="Motorcycle make & model (e.g. Yamaha Mio)">
-                <input id="vehicleVariantColor" class="bg-black/40 px-4 py-3 border border-white/10 rounded-2xl w-full"
-                    placeholder="Color / variant">
-                <input id="plateTempNumber" class="bg-black/40 px-4 py-3 border border-white/10 rounded-2xl w-full"
-                    placeholder="Plate / temporary number">
-            </div>
-            <div class="gap-3 grid grid-cols-2 mt-5">
-                <button onclick="closeProfileModal()" class="py-3 rounded-2xl font-bold dark-btn">Cancel</button>
-                <button onclick="saveProfile()" class="py-3 rounded-2xl brand-btn">Save</button>
-            </div>
-        </div>
-    </div>
-
-    {{-- Dispatch Modal --}}
-    <div id="dispatchModal" class="hidden z-50 fixed inset-0 bg-black/80 p-4 overflow-y-auto">
-        <div class="mx-auto mt-8 mb-8 p-5 rounded-3xl max-w-md glass">
-
-            {{-- Header --}}
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h2 class="font-black text-xl leading-tight">Request a Mechanic</h2>
-                    <p id="selectedShopName" class="mt-0.5 font-bold text-orange-400 text-sm"></p>
+        {{-- TOP BAR --}}
+        <header id="topBar">
+            <div class="top-card">
+                <div class="top-logo"><i class="fa-solid fa-wrench"></i></div>
+                <div class="top-info">
+                    <div class="app-name">MechFinder</div>
+                    <div class="location-line" id="locationLine">Detecting location…</div>
                 </div>
-                <button onclick="closeDispatchModal()"
-                    class="mt-1 text-gray-500 hover:text-white text-xl leading-none">✕</button>
-            </div>
-
-            {{-- How it works --}}
-            <div class="bg-orange-500/10 mb-4 p-3 border border-orange-500/20 rounded-2xl">
-                <p class="mb-2 font-bold text-orange-300 text-xs uppercase tracking-widest">How it works</p>
-                <div class="space-y-1.5 text-gray-300 text-xs">
-                    <div class="flex items-center gap-2"><span class="font-black text-orange-400">1.</span> You describe
-                        your issue and send the request</div>
-                    <div class="flex items-center gap-2"><span class="font-black text-orange-400">2.</span> The shop reviews
-                        and accepts your request</div>
-                    <div class="flex items-center gap-2"><span class="font-black text-orange-400">3.</span> A mechanic is
-                        dispatched to your location</div>
-                    <div class="flex items-center gap-2"><span class="font-black text-orange-400">4.</span> You get
-                        real-time status updates here</div>
-                </div>
-            </div>
-
-            <input type="hidden" id="selectedShopId">
-
-            <div class="space-y-3">
-                <div>
-                    <label class="block mb-1 text-gray-400 text-xs uppercase tracking-widest">What's the problem?</label>
-                    <select id="issueType" class="bg-black/40 px-4 py-3 border border-white/10 rounded-2xl w-full">
-                        <option value="">Select issue type</option>
-                        <option value="Flat Tire">🔧 Flat Tire</option>
-                        <option value="Engine Stall">⚙️ Engine Stall</option>
-                        <option value="Battery Problem">🔋 Battery Problem</option>
-                        <option value="Brake Problem">🛑 Brake Problem</option>
-                        <option value="Chain Problem">⛓️ Chain Problem</option>
-                        <option value="Other">❓ Other</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block mb-1 text-gray-400 text-xs uppercase tracking-widest">Additional details</label>
-                    <textarea id="description" class="bg-black/40 px-4 py-3 border border-white/10 rounded-2xl w-full" rows="3"
-                        placeholder="Describe your situation (optional)..."></textarea>
-                </div>
-            </div>
-
-            <p class="mt-3 text-gray-500 text-xs">📍 Your current GPS location will be shared with the shop.</p>
-
-            <div class="gap-3 grid grid-cols-2 mt-4">
-                <button onclick="closeDispatchModal()" class="py-3 rounded-2xl font-bold dark-btn">Cancel</button>
-                <button onclick="submitDispatch()" id="submitDispatchBtn" class="py-3 rounded-2xl font-black brand-btn">
-                    Send Request
+                <button class="icon-btn" onclick="showTab('profile')">
+                    <i class="fa-solid fa-user"></i>
                 </button>
             </div>
+        </header>
+
+        {{-- ACTIVE REQUEST STRIP --}}
+        <div id="statusStrip" onclick="showTab('requests')">
+            <div class="strip-body">
+                <div>
+                    <div class="strip-label">Active Rescue</div>
+                    <div id="stripText">Finding nearest shop…</div>
+                </div>
+                <span class="strip-cta">Details →</span>
+            </div>
+            <div class="strip-track">
+                <div id="stripBar"></div>
+            </div>
         </div>
-    </div>
 
-    {{-- Active Request Status Box (bottom sheet style) --}}
-    <div id="statusBox" class="hidden right-0 bottom-0 left-0 z-40 fixed">
-        <div class="mx-auto p-4 max-w-md">
-            <div class="p-4 border border-orange-500/20 rounded-3xl glass">
+        {{-- LOCATE FAB --}}
+        <button id="locateFab" onclick="locateUser()" title="Find my location">
+            <i class="fa-solid fa-crosshairs"></i>
+        </button>
 
-                <div class="flex justify-between items-start mb-3">
-                    <div>
-                        <p class="font-bold text-orange-400 text-xs uppercase tracking-widest">Active Request</p>
-                        <h3 id="statusTitle" class="mt-0.5 font-black text-lg leading-tight">Waiting...</h3>
-                        <p id="statusDetail" class="mt-0.5 text-gray-400 text-xs"></p>
+        {{-- RESCUE BAR --}}
+        <div id="rescueBar">
+            <div class="shops-stat">
+                <div class="s-num"><span id="openShopsCount">…</span></div>
+                <div class="s-lbl">Open shops</div>
+            </div>
+            <div class="divider-v"></div>
+            <button class="btn-rescue" onclick="openPanel('rescuePanel')">
+                <i class="fa-solid fa-triangle-exclamation"></i> Request Rescue
+            </button>
+        </div>
+
+        {{-- SEARCH OVERLAY --}}
+        <div id="searchOverlay">
+            <div class="radar-wrap">
+                <div class="radar-ring"></div>
+                <div class="radar-ring"></div>
+                <div class="radar-ring"></div>
+                <div class="radar-center"><i class="fa-solid fa-magnifying-glass"></i></div>
+            </div>
+            <div style="text-align:center;padding:0 32px;">
+                <div style="font-size:18px;font-weight:700;color:var(--text-1);margin-bottom:6px;">Searching for nearest
+                    shop</div>
+                <div style="font-size:13px;color:var(--text-2);line-height:1.6;">Finding the closest available shop in your
+                    area…</div>
+            </div>
+        </div>
+
+        {{-- ══ RESCUE PANEL ══ --}}
+        <div id="rescuePanel" class="panel">
+
+            <div class="ph">
+                <button class="ph-back" onclick="closePanel('rescuePanel')">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div>
+                    <div class="ph-title">Request Rescue</div>
+                    <div class="ph-subtitle">Nearest available shop will be dispatched</div>
+                </div>
+            </div>
+
+            <div style="padding:12px 14px 32px; display:flex; flex-direction:column; gap:14px;">
+
+                {{-- Identity summary --}}
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <span
+                            style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);">Rescuing</span>
+                        <button onclick="showTab('profile')"
+                            style="font-size:11px;font-weight:600;color:var(--action);background:none;border:none;cursor:pointer;">
+                            Edit <i class="fa-solid fa-pen" style="font-size:9px;"></i>
+                        </button>
                     </div>
-                    <button onclick="dismissStatus()" class="text-gray-600 hover:text-gray-400 text-sm">✕</button>
+                    <div id="identityBody" style="font-size:13px;line-height:1.7;color:var(--text-1);"></div>
                 </div>
 
-                {{-- Step progress --}}
-                <div class="flex items-center gap-1 mt-2" id="statusSteps">
-                    <div class="flex-1 bg-white/10 rounded-full h-1.5 step-dot" data-step="requested"></div>
-                    <div class="flex-1 bg-white/10 rounded-full h-1.5 step-dot" data-step="accepted"></div>
-                    <div class="flex-1 bg-white/10 rounded-full h-1.5 step-dot" data-step="en_route"></div>
-                    <div class="flex-1 bg-white/10 rounded-full h-1.5 step-dot" data-step="arrived"></div>
-                    <div class="flex-1 bg-white/10 rounded-full h-1.5 step-dot" data-step="in_progress"></div>
-                    <div class="flex-1 bg-white/10 rounded-full h-1.5 step-dot" data-step="completed"></div>
-                </div>
-                <div class="flex justify-between mt-1">
-                    <span class="text-[9px] text-gray-600">Sent</span>
-                    <span class="text-[9px] text-gray-600">Accepted</span>
-                    <span class="text-[9px] text-gray-600">En Route</span>
-                    <span class="text-[9px] text-gray-600">Arrived</span>
-                    <span class="text-[9px] text-gray-600">Working</span>
-                    <span class="text-[9px] text-gray-600">Done</span>
+                {{-- Issue type --}}
+                <div>
+                    <p
+                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);margin-bottom:8px;">
+                        What's the problem?</p>
+                    <div class="issue-grid">
+                        <button class="issue-tile" onclick="selectIssue(this,'Flat Tire')">
+                            <span class="t-icon"><i class="fa-solid fa-wrench"></i></span><span class="t-label">Flat
+                                Tire</span>
+                        </button>
+                        <button class="issue-tile" onclick="selectIssue(this,'Engine Stall')">
+                            <span class="t-icon"><i class="fa-solid fa-gear"></i></span><span class="t-label">Engine
+                                Stall</span>
+                        </button>
+                        <button class="issue-tile" onclick="selectIssue(this,'Battery')">
+                            <span class="t-icon"><i class="fa-solid fa-battery-half"></i></span><span
+                                class="t-label">Battery</span>
+                        </button>
+                        <button class="issue-tile" onclick="selectIssue(this,'Brake Problem')">
+                            <span class="t-icon"><i class="fa-solid fa-circle-stop"></i></span><span
+                                class="t-label">Brake</span>
+                        </button>
+                        <button class="issue-tile" onclick="selectIssue(this,'Chain Problem')">
+                            <span class="t-icon"><i class="fa-solid fa-link"></i></span><span class="t-label">Chain</span>
+                        </button>
+                        <button class="issue-tile" onclick="selectIssue(this,'Other')">
+                            <span class="t-icon"><i class="fa-solid fa-circle-question"></i></span><span
+                                class="t-label">Other</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div id="statusDeclinedMsg"
-                    class="hidden bg-red-500/10 mt-3 p-3 border border-red-500/20 rounded-xl text-red-300 text-xs">
-                    Your request was declined by the shop. Please try another shop nearby.
-                    <button onclick="clearDeclinedRequest()"
-                        class="ml-2 font-bold text-red-400 underline">Dismiss</button>
+                {{-- Description --}}
+                <div>
+                    <p
+                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);margin-bottom:8px;">
+                        Description <span
+                            style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-3);">—
+                            optional</span></p>
+                    <textarea id="dispatchDesc" class="mf-input" rows="3" placeholder="Describe your situation…"
+                        style="resize:none;"></textarea>
+                </div>
+
+                {{-- GPS note --}}
+                <div
+                    style="display:flex;align-items:center;gap:8px;padding:9px 11px;background:var(--action-bg);border-radius:var(--r1);font-size:11px;color:var(--action);border:1px solid rgba(30,41,59,.12);">
+                    <i class="fa-solid fa-location-dot"></i>
+                    Your GPS location will be shared with the dispatched shop
+                </div>
+
+                {{-- Submit --}}
+                <button id="rescueBtn" onclick="submitDispatch()" class="btn-primary" disabled>
+                    <i class="fa-solid fa-triangle-exclamation"></i> Send Rescue Request
+                </button>
+
+                <p id="noShopWarning"
+                    style="display:none;text-align:center;font-size:11px;color:var(--red);margin-top:-6px;">
+                    <i class="fa-solid fa-circle-exclamation"></i> No open shops found nearby. Your request has been saved.
+                </p>
+
+            </div>
+        </div>
+
+        {{-- ══ PROFILE PANEL ══ --}}
+        <div id="profilePanel" class="panel">
+
+            <div class="ph">
+                <button class="ph-back" onclick="closePanel('profilePanel');showTab('map')">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div style="flex:1;">
+                    <div class="ph-title">My Profile</div>
+                    <div class="ph-subtitle">Saved locally on this device</div>
+                </div>
+                <button onclick="saveProfileAndClose()"
+                    style="background:var(--action);color:#fff;font-size:13px;font-weight:700;border-radius:var(--r1);padding:8px 16px;border:none;cursor:pointer;">
+                    Save
+                </button>
+            </div>
+
+            <div style="padding:12px 14px 32px;display:flex;flex-direction:column;gap:16px;">
+
+                <div>
+                    <p
+                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);margin-bottom:8px;">
+                        Personal Info</p>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <input id="pName" class="mf-input" placeholder="Full name">
+                        <input id="pContact" class="mf-input" type="tel"
+                            placeholder="Contact number (09171234567)">
+                    </div>
+                </div>
+
+                <div>
+                    <p
+                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--text-3);margin-bottom:8px;">
+                        Motorcycle</p>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <input id="pMakeModel" class="mf-input" placeholder="Make &amp; model (e.g. Honda Wave 110)">
+                        <input id="pColor" class="mf-input" placeholder="Color / variant (e.g. Black, Alpha)">
+                        <input id="pPlate" class="mf-input" placeholder="Plate or temporary number">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        {{-- ══ REQUESTS PANEL ══ --}}
+        <div id="requestsPanel" class="panel">
+
+            <div class="ph">
+                <button class="ph-back" onclick="showTab('map')">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div>
+                    <div class="ph-title">My Requests</div>
+                    <div class="ph-subtitle">Recent rescue history from this device</div>
+                </div>
+            </div>
+
+            <div style="padding:12px 14px;" id="requestsList">
+                <div style="text-align:center;padding:48px 0;color:var(--text-3);font-size:13px;line-height:1.8;">
+                    No requests yet.<br>
+                    <span style="font-size:11px;color:var(--text-3);">Use the Map tab to request rescue.</span>
                 </div>
             </div>
         </div>
-    </div>
+
+        {{-- BOTTOM NAV --}}
+        <nav id="bottomNav">
+            <button class="nav-btn active" id="navMap" onclick="showTab('map')">
+                <span class="n-icon"><i class="fa-solid fa-map"></i></span>
+                <span class="n-label">Map</span>
+            </button>
+            <button class="nav-btn" id="navRequests" onclick="showTab('requests')">
+                <span class="n-icon"><i class="fa-solid fa-list"></i></span>
+                <span class="n-label">Requests</span>
+                <span class="nav-badge" id="reqBadge"></span>
+            </button>
+            <button class="nav-btn" id="navProfile" onclick="showTab('profile')">
+                <span class="n-icon"><i class="fa-solid fa-user"></i></span>
+                <span class="n-label">Profile</span>
+            </button>
+        </nav>
+
+    </div>{{-- #mfApp --}}
 @endsection
 
 @section('scripts')
     <script>
-        let map;
-        let userMarker;
-        let shopMarkers = [];
-        let userLat = 14.8386;
-        let userLng = 120.2842;
-        let selectedShop = null;
-        let currentRequestId = localStorage.getItem('mf_current_request_id');
-        let dispatchPusher = null;
+        /* ══════════════════════════════════════════════
+           MECHFINDER — APP LOGIC
+           ══════════════════════════════════════════════ */
 
-        const STATUS_LABELS = {
-            requested: 'Waiting for shop to accept...',
-            accepted: '✅ Request Accepted!',
-            en_route: '🏍️ Mechanic is on the way',
-            arrived: '📍 Mechanic has arrived',
-            in_progress: '🔧 Repair in progress',
-            completed: '✅ All done!',
-            declined: '❌ Request declined',
+        const STATUS_LABEL = {
+            requested: '<i class="fa-solid fa-hourglass-half"></i> Finding nearest shop…',
+            accepted: '<i class="fa-solid fa-circle-check"></i> Shop accepted your request',
+            en_route: '<i class="fa-solid fa-motorcycle"></i> Mechanic is on the way',
+            arrived: '<i class="fa-solid fa-location-dot"></i> Mechanic has arrived',
+            in_progress: '<i class="fa-solid fa-wrench"></i> Repair in progress',
+            completed: '<i class="fa-solid fa-circle-check"></i> All done!',
+            declined: '<i class="fa-solid fa-circle-xmark"></i> No shops available',
+        };
+        const STEP_ORDER = ['requested', 'accepted', 'en_route', 'arrived', 'in_progress', 'completed'];
+        const STEP_PROGRESS = {
+            requested: 10,
+            accepted: 25,
+            en_route: 48,
+            arrived: 65,
+            in_progress: 82,
+            completed: 100
         };
 
-        // Step order for progress bar
-        const STEP_ORDER = ['requested', 'accepted', 'en_route', 'arrived', 'in_progress', 'completed'];
+        const LS = {
+            get: (k) => localStorage.getItem(k),
+            set: (k, v) => localStorage.setItem(k, v),
+            del: (k) => localStorage.removeItem(k)
+        };
 
+        /* ── STATE ── */
+        let map, userMarker, shopMarkers = [];
+        let userLat = 14.8386,
+            userLng = 120.2842;
+        let selectedIssue = null;
+        let currentRequestId = LS.get('mf_current_request_id');
+        let pusherClient = null;
+
+        /* ── IDENTITY ── */
+        function genToken() {
+            const t = 'mf_' + Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
+            LS.set('mf_guest_token', t);
+            return t;
+        }
+
+        function mfIdentity() {
+            return {
+                guest_token: LS.get('mf_guest_token') || genToken(),
+                owner_name: LS.get('mf_owner_name') || '',
+                contact_number: LS.get('mf_contact_number') || '',
+                vehicle_make_model: LS.get('mf_vehicle_make_model') || '',
+                vehicle_variant_color: LS.get('mf_vehicle_variant_color') || '',
+                plate_temp_number: LS.get('mf_plate_temp_number') || '',
+            };
+        }
+
+        /* ── BOOT ── */
         document.addEventListener('DOMContentLoaded', () => {
-            initProfileInputs();
+            loadProfileInputs();
             initMap();
             locateUser();
-
-            if (currentRequestId) {
-                fetchCurrentStatus(currentRequestId).then(() => {
-                    subscribeToDispatch(currentRequestId);
-                });
-            }
+            if (currentRequestId) resumeActiveRequest(currentRequestId);
         });
 
-        // ── Pusher ──────────────────────────────────────────────────────────────
-
-        function subscribeToDispatch(requestId) {
-            if (!window.pusherKey || !requestId) return;
-
-            if (dispatchPusher) dispatchPusher.disconnect();
-
-            dispatchPusher = new Pusher(window.pusherKey, {
-                cluster: window.pusherCluster,
-                forceTLS: true,
-            });
-
-            const channel = dispatchPusher.subscribe('dispatch-status.' + requestId);
-
-            channel.bind('dispatch.status', (data) => {
-                showStatusBox(data.status);
-
-                if (data.status === 'completed') {
-                    setTimeout(() => {
-                        localStorage.removeItem('mf_current_request_id');
-                        currentRequestId = null;
-                        if (dispatchPusher) dispatchPusher.disconnect();
-                        document.getElementById('statusBox').classList.add('hidden');
-                    }, 8000);
-                }
-            });
-        }
-
-        async function fetchCurrentStatus(requestId) {
-            try {
-                const res = await fetch(`/motorist/request/${requestId}`);
-                if (!res.ok) return;
-                const data = await res.json();
-                showStatusBox(data.status, data.shop_name, data.issue_type);
-            } catch (e) {
-                /* ignore */ }
-        }
-
-        function showStatusBox(status, shopName, issueType) {
-            const box = document.getElementById('statusBox');
-            const title = document.getElementById('statusTitle');
-            const detail = document.getElementById('statusDetail');
-            const declined = document.getElementById('statusDeclinedMsg');
-
-            box.classList.remove('hidden');
-            title.innerText = STATUS_LABELS[status] || status.replace(/_/g, ' ').toUpperCase();
-
-            if (shopName || issueType) {
-                detail.innerText = [shopName, issueType].filter(Boolean).join(' • ');
-            }
-
-            // Update step progress bar
-            const stepIndex = STEP_ORDER.indexOf(status);
-            document.querySelectorAll('#statusSteps .step-dot').forEach((dot, i) => {
-                dot.style.background = i <= stepIndex ?
-                    'linear-gradient(90deg, #ffbf2f, #f7941d)' :
-                    'rgba(255,255,255,0.1)';
-            });
-
-            // Show declined message
-            if (status === 'declined') {
-                declined.classList.remove('hidden');
-                // Reset steps to empty for declined
-                document.querySelectorAll('#statusSteps .step-dot').forEach(dot => {
-                    dot.style.background = 'rgba(255, 100, 100, 0.3)';
-                });
-            } else {
-                declined.classList.add('hidden');
-            }
-        }
-
-        function dismissStatus() {
-            document.getElementById('statusBox').classList.add('hidden');
-        }
-
-        function clearDeclinedRequest() {
-            localStorage.removeItem('mf_current_request_id');
-            currentRequestId = null;
-            if (dispatchPusher) dispatchPusher.disconnect();
-            document.getElementById('statusBox').classList.add('hidden');
-        }
-
-        // ── Map ─────────────────────────────────────────────────────────────────
-
+        /* ── MAP ── */
         function initMap() {
-            map = L.map('map').setView([userLat, userLng], 14);
+            map = L.map('map', {
+                    zoomControl: false,
+                    attributionControl: false
+                })
+                .setView([userLat, userLng], 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
+                maxZoom: 19
+            }).addTo(map);
+            L.control.attribution({
+                prefix: '© OpenStreetMap',
+                position: 'bottomleft'
             }).addTo(map);
         }
 
         function locateUser() {
+            const line = document.getElementById('locationLine');
             if (!navigator.geolocation) {
-                document.getElementById('locationText').innerText = 'Geolocation not supported.';
+                line.textContent = 'GPS not supported';
                 loadShops();
                 return;
             }
 
-            navigator.geolocation.getCurrentPosition(position => {
-                userLat = position.coords.latitude;
-                userLng = position.coords.longitude;
+            navigator.geolocation.getCurrentPosition(pos => {
+                userLat = pos.coords.latitude;
+                userLng = pos.coords.longitude;
 
-                document.getElementById('locationText').innerText = 'Location detected';
+                fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLng}&format=json`)
+                    .then(r => r.json())
+                    .then(d => {
+                        const p = (d.display_name || '').split(',');
+                        line.textContent = p.slice(0, 2).join(',').trim() || 'Location detected';
+                    })
+                    .catch(() => {
+                        line.textContent = 'Location detected';
+                    });
 
                 if (userMarker) map.removeLayer(userMarker);
-                userMarker = L.marker([userLat, userLng]).addTo(map).bindPopup('You are here').openPopup();
+                userMarker = L.marker([userLat, userLng], {
+                    icon: L.divIcon({
+                        className: '',
+                        html: '<div class="mf-pin mf-pin-you"><i class="fa-solid fa-location-dot"></i></div>',
+                        iconSize: [34, 34],
+                        iconAnchor: [17, 17]
+                    }),
+                    zIndexOffset: 1000,
+                }).addTo(map).bindPopup('<div style="font-weight:700">You are here</div>');
+
                 map.setView([userLat, userLng], 15);
                 loadShops();
             }, () => {
-                document.getElementById('locationText').innerText = 'Using default Olongapo location';
+                line.textContent = 'Using Olongapo default';
                 loadShops();
             }, {
                 enableHighAccuracy: true,
@@ -313,176 +1050,120 @@
             });
         }
 
-        // ── Shop list ────────────────────────────────────────────────────────────
-
+        /* ── SHOPS (pins only) ── */
         async function loadShops() {
-            const res = await fetch(`/motorist/shops?lat=${userLat}&lng=${userLng}`);
-            const shops = await res.json();
+            try {
+                const shops = await fetch(`/motorist/shops?lat=${userLat}&lng=${userLng}`).then(r => r.json());
+                renderShopPins(shops);
+            } catch {
+                /* non-critical */
+            }
+        }
 
-            document.getElementById('shopCount').innerText = `${shops.length} shops`;
-
+        function renderShopPins(shops) {
             shopMarkers.forEach(m => map.removeLayer(m));
             shopMarkers = [];
-
-            const list = document.getElementById('shopsList');
-            list.innerHTML = '';
+            document.getElementById('openShopsCount').textContent = shops.filter(s => s.status === 'open').length;
 
             shops.forEach(shop => {
-                if (shop.latitude && shop.longitude) {
-                    const m = L.marker([shop.latitude, shop.longitude])
-                        .addTo(map)
-                        .bindPopup(`<b>${shop.shop_name ?? shop.name}</b><br>${shop.address ?? ''}`);
-                    shopMarkers.push(m);
-                }
+                if (!shop.latitude || !shop.longitude) return;
+                const open = shop.status === 'open';
+                const name = shop.shop_name || shop.name || 'Shop';
+                const addr = shop.address || '';
+                const stars = Number(shop.rating || 0).toFixed(1);
 
-                const isOpen = shop.status === 'open';
-                const shopName = shop.shop_name ?? shop.name ?? 'Shop';
-
-                list.innerHTML += `
-                <div class="rounded-3xl overflow-hidden glass">
-
-                    {{-- Shop header --}}
-                    <div class="flex justify-between items-start p-4 pb-3">
-                        <div class="flex-1 min-w-0">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <h3 class="font-black text-base">${shopName}</h3>
-                                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${isOpen ? 'bg-green-500/20 text-green-300' : 'bg-gray-500/20 text-gray-400'}">
-                                    ${isOpen ? '● OPEN' : '● CLOSED'}
-                                </span>
-                            </div>
-                            <p class="mt-0.5 text-gray-400 text-xs truncate">${shop.address ?? 'No address'}</p>
-                            <div class="flex items-center gap-3 mt-1 text-gray-400 text-xs">
-                                <span>⭐ ${Number(shop.rating ?? 0).toFixed(1)} <span class="text-gray-600">(${shop.review_count ?? 0})</span></span>
-                                ${shop.distance ? `<span>📍 ${shop.distance} km</span>` : ''}
-                                ${shop.eta ? `<span>⏱ ~${shop.eta} min</span>` : ''}
-                            </div>
-                        </div>
-                    </div>
-
-                    ${isOpen ? `
-                        {{-- Primary CTA: Request mechanic --}}
-                        <div class="px-4 pb-2">
-                            <button onclick='openDispatchModal(${JSON.stringify(shop)})'
-                                class="flex justify-center items-center gap-2 py-3 rounded-2xl w-full font-black text-sm brand-btn">
-                                🔧 Request a Mechanic
-                            </button>
-                            <p class="mt-1.5 text-[10px] text-gray-500 text-center">Shop will review your request and send a mechanic to you</p>
-                        </div>
-                        ` : `
-                        <div class="px-4 pb-2">
-                            <div class="bg-white/5 py-3 border border-white/10 rounded-2xl w-full font-bold text-gray-500 text-sm text-center">
-                                Shop is currently closed
-                            </div>
-                        </div>
-                        `}
-
-                    {{-- Secondary actions --}}
-                    <div class="flex gap-2 mt-1 px-4 pb-4">
-                        ${shop.latitude && shop.longitude ? `
-                            <button onclick="getDirections(${shop.latitude}, ${shop.longitude}, '${(shopName).replace(/'/g, "\\'")}')"
-                                class="flex flex-1 justify-center items-center gap-1.5 py-2.5 rounded-2xl font-bold text-xs dark-btn">
-                                🗺️ Get Directions
-                            </button>
-                            ` : ''}
-                        ${shop.phone ? `
-                            <a href="tel:${shop.phone}"
-                                class="flex flex-1 justify-center items-center gap-1.5 py-2.5 rounded-2xl font-bold text-xs dark-btn">
-                                📞 Call Shop
-                            </a>
-                            ` : ''}
-                        <button onclick="openReviewPrompt(${shop.id})"
-                            class="flex flex-1 justify-center items-center gap-1.5 py-2.5 rounded-2xl font-bold text-xs dark-btn">
-                            ⭐ Review
-                        </button>
-                    </div>
-                </div>`;
+                const m = L.marker([shop.latitude, shop.longitude], {
+                    icon: L.divIcon({
+                        className: '',
+                        html: `<div class="mf-pin ${open?'mf-pin-open':'mf-pin-closed'}"><i class="fa-solid fa-wrench"></i></div>`,
+                        iconSize: [34, 34],
+                        iconAnchor: [17, 17],
+                    })
+                }).addTo(map).bindPopup(`
+      <div style="font-family:Inter,sans-serif;min-width:130px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${name}</div>
+        <div style="font-size:11px;color:#6B7280;margin-bottom:5px;">${addr}</div>
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;
+          ${open?'background:#FFF3E0;color:#C87010':'background:#F3F4F6;color:#6B7280'}">
+          ${open?'● Open':'● Closed'}
+        </span>
+        ${open?`<span style="font-size:11px;color:#6B7280;margin-left:6px;"><i class="fa-solid fa-star" style="color:#F59E0B;font-size:10px;"></i> ${stars}</span>`:''}
+      </div>
+    `);
+                shopMarkers.push(m);
             });
         }
 
-        // ── Directions ───────────────────────────────────────────────────────────
-
-        function getDirections(lat, lng, name) {
-            // Opens Google Maps directions from user location to shop
-            const origin = `${userLat},${userLng}`;
-            const dest = `${lat},${lng}`;
-            const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}&travelmode=driving`;
-            window.open(url, '_blank');
+        /* ── RESCUE FORM ── */
+        function openPanel(id) {
+            if (id === 'rescuePanel') refreshIdentityCard();
+            document.getElementById(id).classList.add('open');
         }
 
-        // ── Profile modal ────────────────────────────────────────────────────────
-
-        function openProfileModal() {
-            initProfileInputs();
-            document.getElementById('profileModal').classList.remove('hidden');
+        function closePanel(id) {
+            document.getElementById(id).classList.remove('open');
         }
 
-        function closeProfileModal() {
-            document.getElementById('profileModal').classList.add('hidden');
-        }
-
-        function initProfileInputs() {
+        function refreshIdentityCard() {
             const id = mfIdentity();
-            ownerName.value = id.owner_name;
-            contactNumber.value = id.contact_number;
-            vehicleMakeModel.value = id.vehicle_make_model;
-            vehicleVariantColor.value = id.vehicle_variant_color;
-            plateTempNumber.value = id.plate_temp_number;
-        }
+            const body = document.getElementById('identityBody');
+            const btn = document.getElementById('rescueBtn');
 
-        function saveProfile() {
-            localStorage.setItem('mf_owner_name', ownerName.value.trim());
-            localStorage.setItem('mf_contact_number', contactNumber.value.trim());
-            localStorage.setItem('mf_vehicle_make_model', vehicleMakeModel.value.trim());
-            localStorage.setItem('mf_vehicle_variant_color', vehicleVariantColor.value.trim());
-            localStorage.setItem('mf_plate_temp_number', plateTempNumber.value.trim());
-            closeProfileModal();
-        }
-
-        // ── Dispatch modal ───────────────────────────────────────────────────────
-
-        function openDispatchModal(shop) {
-            const id = mfIdentity();
-
-            if (!id.owner_name || !id.contact_number) {
-                openProfileModal();
+            if (!id.owner_name) {
+                body.innerHTML =
+                    '<span style="color:var(--red);font-size:12px;"><i class="fa-solid fa-circle-exclamation"></i> Profile incomplete — fill in your name and contact first.</span>';
+                btn.disabled = true;
                 return;
             }
-
-            selectedShop = shop;
-            document.getElementById('selectedShopId').value = shop.id;
-            document.getElementById('selectedShopName').innerText = shop.shop_name ?? shop.name ?? '';
-            document.getElementById('issueType').value = '';
-            document.getElementById('description').value = '';
-            document.getElementById('dispatchModal').classList.remove('hidden');
+            let html = `<div style="font-weight:700;margin-bottom:2px;">${id.owner_name}</div>`;
+            if (id.contact_number) html +=
+                `<div style="color:var(--text-2);font-size:12px;"><i class="fa-solid fa-phone" style="width:14px;font-size:10px;"></i> ${id.contact_number}</div>`;
+            if (id.vehicle_make_model) html +=
+                `<div style="color:var(--text-2);font-size:12px;"><i class="fa-solid fa-motorcycle" style="width:14px;font-size:10px;"></i> ${id.vehicle_make_model}${id.vehicle_variant_color?' · '+id.vehicle_variant_color:''}</div>`;
+            if (id.plate_temp_number) html +=
+                `<div style="color:var(--text-2);font-size:12px;"><i class="fa-solid fa-id-card" style="width:14px;font-size:10px;"></i> ${id.plate_temp_number}</div>`;
+            body.innerHTML = html;
+            if (selectedIssue) btn.disabled = false;
         }
 
-        function closeDispatchModal() {
-            document.getElementById('dispatchModal').classList.add('hidden');
+        function selectIssue(tile, issue) {
+            document.querySelectorAll('.issue-tile').forEach(t => t.classList.remove('sel'));
+            tile.classList.add('sel');
+            selectedIssue = issue;
+            const btn = document.getElementById('rescueBtn');
+            const id = mfIdentity();
+            btn.disabled = !id.owner_name;
         }
 
+        /* ── DISPATCH SUBMISSION ── */
         async function submitDispatch() {
             const id = mfIdentity();
-
-            if (!document.getElementById('issueType').value) {
+            if (!id.owner_name || !id.contact_number) {
+                closePanel('rescuePanel');
+                showTab('profile');
+                alert('Please fill in your name and contact number first.');
+                return;
+            }
+            if (!selectedIssue) {
                 alert('Please select an issue type.');
                 return;
             }
 
-            const btn = document.getElementById('submitDispatchBtn');
+            const btn = document.getElementById('rescueBtn');
             btn.disabled = true;
-            btn.innerText = 'Sending...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending…';
+            document.getElementById('searchOverlay').classList.add('show');
 
             const payload = {
-                shop_id: document.getElementById('selectedShopId').value,
                 guest_token: id.guest_token,
                 owner_name: id.owner_name,
                 contact_number: id.contact_number,
                 vehicle_make_model: id.vehicle_make_model,
                 vehicle_variant_color: id.vehicle_variant_color,
                 plate_temp_number: id.plate_temp_number,
-                issue_type: document.getElementById('issueType').value,
-                description: document.getElementById('description').value,
-                location: `Lat: ${userLat}, Lng: ${userLng}`,
+                issue_type: selectedIssue,
+                description: document.getElementById('dispatchDesc').value.trim(),
+                location: `${userLat.toFixed(5)}, ${userLng.toFixed(5)}`,
                 latitude: userLat,
                 longitude: userLng,
             };
@@ -496,56 +1177,213 @@
                     },
                     body: JSON.stringify(payload),
                 });
-
                 const data = await res.json();
 
+                document.getElementById('searchOverlay').classList.remove('show');
                 if (data.success) {
-                    localStorage.setItem('mf_current_request_id', data.request_id);
                     currentRequestId = data.request_id;
-                    closeDispatchModal();
-                    showStatusBox('requested', selectedShop?.shop_name ?? selectedShop?.name, payload.issue_type);
+                    LS.set('mf_current_request_id', data.request_id);
+                    saveRequestHistory({
+                        id: data.request_id,
+                        issueType: selectedIssue
+                    });
+
+                    closePanel('rescuePanel');
+                    // reset form
+                    document.querySelectorAll('.issue-tile').forEach(t => t.classList.remove('sel'));
+                    document.getElementById('dispatchDesc').value = '';
+                    selectedIssue = null;
+                    btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Send Rescue Request';
+
+                    showStatusStrip('requested');
                     subscribeToDispatch(data.request_id);
+                    document.getElementById('reqBadge').classList.add('show');
+
+                    if (!data.shop_found) {
+                        document.getElementById('noShopWarning').style.display = 'block';
+                    }
                 } else {
-                    alert('Failed to send request. Please try again.');
+                    alert('Failed to send. Please try again.');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Send Rescue Request';
                 }
-            } catch (e) {
-                alert('Network error. Please check your connection.');
-            } finally {
+            } catch {
+                document.getElementById('searchOverlay').classList.remove('show');
+                alert('Network error. Check your connection and try again.');
                 btn.disabled = false;
-                btn.innerText = 'Send Request';
+                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Send Rescue Request';
             }
         }
 
-        // ── Review ───────────────────────────────────────────────────────────────
-
-        async function openReviewPrompt(shopId) {
-            const id = mfIdentity();
-
-            const rating = prompt('Rate this shop (1–5):');
-            if (!rating || rating < 1 || rating > 5) return;
-
-            const comment = prompt('Leave a comment (optional):') || '';
-
-            const res = await fetch('/motorist/review', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': window.csrfToken
-                },
-                body: JSON.stringify({
-                    shop_id: shopId,
-                    guest_token: id.guest_token,
-                    owner_name: id.owner_name || 'Motorist',
-                    rating,
-                    comment,
-                }),
+        /* ── REAL-TIME STATUS ── */
+        function subscribeToDispatch(requestId) {
+            if (!window.pusherKey || !requestId) return;
+            if (pusherClient) pusherClient.disconnect();
+            pusherClient = new Pusher(window.pusherKey, {
+                cluster: window.pusherCluster,
+                forceTLS: true
             });
+            pusherClient.subscribe('dispatch-status.' + requestId).bind('dispatch.status', ({
+                status
+            }) => {
+                showStatusStrip(status);
+                if (status === 'completed' || status === 'declined') {
+                    setTimeout(() => {
+                        LS.del('mf_current_request_id');
+                        currentRequestId = null;
+                        if (pusherClient) pusherClient.disconnect();
+                        document.getElementById('statusStrip').classList.remove('show');
+                        document.getElementById('reqBadge').classList.remove('show');
+                    }, status === 'completed' ? 12000 : 5000);
+                }
+            });
+        }
 
-            const data = await res.json();
-            if (data.success) {
-                alert('Review submitted. Thank you!');
-                loadShops();
+        async function resumeActiveRequest(requestId) {
+            try {
+                const res = await fetch(`/motorist/request/${requestId}`);
+                if (!res.ok) {
+                    LS.del('mf_current_request_id');
+                    return;
+                }
+                const d = await res.json();
+                if (!['completed', 'declined'].includes(d.status)) {
+                    showStatusStrip(d.status);
+                    subscribeToDispatch(requestId);
+                    document.getElementById('reqBadge').classList.add('show');
+                }
+            } catch {}
+        }
+
+        function showStatusStrip(status) {
+            document.getElementById('stripText').innerHTML = STATUS_LABEL[status] ?? status;
+            document.getElementById('stripBar').style.width = (STEP_PROGRESS[status] ?? 0) + '%';
+            const strip = document.getElementById('statusStrip');
+            strip.classList.add('show');
+            strip.classList.toggle('searching', status === 'requested');
+        }
+
+        /* ── NAVIGATION ── */
+        function showTab(tab) {
+            ['map', 'requests', 'profile'].forEach(t => {
+                document.getElementById('nav' + t[0].toUpperCase() + t.slice(1))
+                    .classList.toggle('active', t === tab);
+            });
+            if (tab === 'map') {
+                closePanel('requestsPanel');
+                closePanel('profilePanel');
+                closePanel('rescuePanel');
+                setTimeout(() => map.invalidateSize(), 350);
+            } else if (tab === 'requests') {
+                closePanel('profilePanel');
+                closePanel('rescuePanel');
+                openPanel('requestsPanel');
+                loadRequests();
+            } else if (tab === 'profile') {
+                closePanel('requestsPanel');
+                closePanel('rescuePanel');
+                loadProfileInputs();
+                openPanel('profilePanel');
             }
+        }
+
+        /* ── PROFILE ── */
+        function loadProfileInputs() {
+            const id = mfIdentity();
+            document.getElementById('pName').value = id.owner_name;
+            document.getElementById('pContact').value = id.contact_number;
+            document.getElementById('pMakeModel').value = id.vehicle_make_model;
+            document.getElementById('pColor').value = id.vehicle_variant_color;
+            document.getElementById('pPlate').value = id.plate_temp_number;
+        }
+
+        function saveProfileAndClose() {
+            LS.set('mf_owner_name', document.getElementById('pName').value.trim());
+            LS.set('mf_contact_number', document.getElementById('pContact').value.trim());
+            LS.set('mf_vehicle_make_model', document.getElementById('pMakeModel').value.trim());
+            LS.set('mf_vehicle_variant_color', document.getElementById('pColor').value.trim());
+            LS.set('mf_plate_temp_number', document.getElementById('pPlate').value.trim());
+            closePanel('profilePanel');
+            showTab('map');
+        }
+
+        /* ── REQUEST HISTORY ── */
+        function saveRequestHistory(entry) {
+            const h = JSON.parse(LS.get('mf_request_history') ?? '[]');
+            h.unshift({
+                ...entry,
+                time: new Date().toISOString()
+            });
+            LS.set('mf_request_history', JSON.stringify(h.slice(0, 10)));
+        }
+
+        async function loadRequests() {
+            const hist = JSON.parse(LS.get('mf_request_history') ?? '[]');
+            const list = document.getElementById('requestsList');
+            if (!hist.length) {
+                list.innerHTML =
+                    '<div style="text-align:center;padding:48px 0;color:var(--text-3);font-size:13px;line-height:1.8;">No requests yet.<br><span style="font-size:11px;">Use the Map tab to request rescue.</span></div>';
+                return;
+            }
+            list.innerHTML =
+                '<div style="padding:12px 0;color:var(--text-3);font-size:12px;text-align:center;">Loading…</div>';
+            const cards = await Promise.all(hist.map(async entry => {
+                let status = 'unknown',
+                    shopName = entry.shopName ?? null,
+                    issueType = entry.issueType ?? '';
+                try {
+                    const r = await fetch(`/motorist/request/${entry.id}`);
+                    if (r.ok) {
+                        const d = await r.json();
+                        status = d.status ?? 'unknown';
+                        shopName = d.shop_name ?? shopName;
+                        issueType = d.issue_type ?? issueType;
+                    }
+                } catch {}
+                return buildRequestCard(entry.id, shopName, issueType, status, entry.time);
+            }));
+            list.innerHTML = cards.join('');
+        }
+
+        function buildRequestCard(id, shopName, issueType, status, timeStr) {
+            const stepIdx = STEP_ORDER.indexOf(status);
+            const isActive = !['completed', 'declined', 'unknown'].includes(status);
+            const timeLabel = timeStr ? formatTimeAgo(new Date(timeStr)) : '';
+            const sc = isActive ? 'var(--brand)' : status === 'completed' ? 'var(--green)' : status === 'declined' ?
+                'var(--red)' : 'var(--text-3)';
+
+            const stepsHtml = STEP_ORDER.map((s, i) => {
+                const d = i < stepIdx,
+                    a = i === stepIdx;
+                return `<div class="rs-dot ${d?'done':a?'active':''}"></div>${i<STEP_ORDER.length-1?`<div class="rs-line ${d?'done':''}"></div>`:''}`;
+            }).join('');
+
+            const shopLine = shopName ?
+                `<span> · <i class="fa-solid fa-store" style="font-size:9px;"></i> ${shopName}</span>` :
+                '<span style="color:var(--text-3);"> · Finding shop…</span>';
+
+            return `<div class="req-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+      <div style="flex:1;min-width:0;margin-right:10px;">
+        <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${issueType||'Rescue Request'}</div>
+        <div style="font-size:11px;color:var(--text-2);">${timeLabel}${shopLine}</div>
+      </div>
+      <span style="font-size:10px;font-weight:700;color:${sc};flex-shrink:0;text-align:right;line-height:1.6;">${STATUS_LABEL[status]??status}</span>
+    </div>
+    <div class="req-steps">${stepsHtml}</div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:var(--text-3);">
+      <span>Sent</span><span>Accepted</span><span>En Route</span><span>Arrived</span><span>Working</span><span>Done</span>
+    </div>
+  </div>`;
+        }
+
+        function formatTimeAgo(date) {
+            const m = Math.round((Date.now() - date.getTime()) / 60000);
+            if (m < 1) return 'just now';
+            if (m < 60) return m + 'm ago';
+            const h = Math.round(m / 60);
+            if (h < 24) return h + 'h ago';
+            return Math.round(h / 24) + 'd ago';
         }
     </script>
 @endsection

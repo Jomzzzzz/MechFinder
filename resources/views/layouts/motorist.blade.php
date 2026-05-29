@@ -21,15 +21,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
         html,
         body {
             margin: 0;
-            min-height: 100%;
-            background: #050505;
-            color: white;
+            padding: 0;
+            height: 100%;
+            background: #E8ECF0;
             font-family: Inter, system-ui, sans-serif;
+            overscroll-behavior: none;
         }
 
         .motorist-app {
@@ -62,24 +64,13 @@
             border: 1px solid rgba(255, 255, 255, .1);
         }
 
-        #map {
-            height: 330px;
-            border-radius: 22px;
-            overflow: hidden;
-            background: #111;
-        }
-
-        .leaflet-popup-content-wrapper,
-        .leaflet-popup-tip {
-            background: #111;
-            color: #fff;
-        }
+        /* Map sizing is controlled per-view */
     </style>
 </head>
 
 <body>
     <div class="motorist-app">
-        <main class="px-4 pt-4 pb-8 phone">
+        <main class="@yield('main-class', 'px-4 pt-4 pb-8') phone">
             @yield('content')
         </main>
     </div>
@@ -153,7 +144,8 @@
                 banner.classList.add('hidden');
             } else {
                 alert(
-                    'Android: tap browser menu then Add to Home screen.\n\niPhone: tap Share then Add to Home Screen.');
+                    'Android: tap browser menu then Add to Home screen.\n\niPhone: tap Share then Add to Home Screen.'
+                );
             }
         });
 

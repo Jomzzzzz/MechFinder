@@ -104,18 +104,17 @@ class MotoristController extends Controller
   public function storeDispatch(Request $request)
   {
     $validated = $request->validate([
-      "shop_id" => "required|exists:shops,id",
-      "guest_token" => "nullable|string|max:100",
-      "owner_name" => "required|string|max:150",
-      "contact_number" => "required|string|max:50",
-      "vehicle_make_model" => "nullable|string|max:150",
+      "guest_token"           => "nullable|string|max:100",
+      "owner_name"            => "required|string|max:150",
+      "contact_number"        => "required|string|max:50",
+      "vehicle_make_model"    => "nullable|string|max:150",
       "vehicle_variant_color" => "nullable|string|max:150",
-      "plate_temp_number" => "nullable|string|max:80",
-      "issue_type" => "required|string|max:150",
-      "description" => "nullable|string",
-      "location" => "nullable|string|max:255",
-      "latitude" => "nullable|numeric",
-      "longitude" => "nullable|numeric",
+      "plate_temp_number"     => "nullable|string|max:80",
+      "issue_type"            => "required|string|max:150",
+      "description"           => "nullable|string",
+      "location"              => "nullable|string|max:255",
+      "latitude"              => "nullable|numeric",
+      "longitude"             => "nullable|numeric",
     ]);
 
     // Persist guest identity in guest_profiles (normalised away from dispatch_requests)
@@ -130,8 +129,13 @@ class MotoristController extends Controller
       );
     }
 
+    // Auto-assign to the nearest open shop — motorist does not choose
+    $lat    = isset($validated["latitude"])  ? (float) $validated["latitude"]  : null;
+    $lng    = isset($validated["longitude"]) ? (float) $validated["longitude"] : null;
+    $shopId = $this->findNearestOpenShop($lat, $lng);
+
     $id = DB::table("dispatch_requests")->insertGetId([
-      "shop_id"              => $validated["shop_id"],
+      "shop_id"              => $shopId,
       "guest_token"          => $validated["guest_token"] ?? null,
       "guest_name"           => $validated["owner_name"],   // kept for COALESCE display queries
       "vehicle_make_model"   => $validated["vehicle_make_model"] ?? null,
@@ -148,8 +152,9 @@ class MotoristController extends Controller
       "updated_at"           => now(),
     ]);
 
-    broadcast(
-      new DispatchRequestCreated((int) $validated["shop_id"], [
+    if ($shopId) {
+      broadcast(
+        new DispatchRequestCreated((int) $shopId, [
         "id" => $id,
         "issue_type" => $validated["issue_type"],
         "owner_name" => $validated["owner_name"],
@@ -162,13 +167,45 @@ class MotoristController extends Controller
         "status" => "requested",
         "created_at" => now()->toDateTimeString(),
       ])
-    )->toOthers();
+      )->toOthers();
+    }
 
     return response()->json([
-      "success" => true,
+      "success"    => true,
       "request_id" => $id,
-      "message" => "Dispatch request sent successfully.",
+      "shop_found" => $shopId !== null,
+      "message"    => $shopId
+        ? "Your rescue request has been sent. A nearby shop will respond shortly."
+        : "No open shops available right now. Your request has been saved.",
     ]);
+  }
+
+  protected function findNearestOpenShop(?float $lat, ?float $lng, array $excludeIds = []): ?int
+  {
+    $query = DB::table("shops")->where("status", "open");
+
+    if (!empty($excludeIds)) {
+      $query->whereNotIn("id", $excludeIds);
+    }
+
+    $shops = $query->select("id", "latitude", "longitude")->get();
+
+    if ($shops->isEmpty()) {
+      return null;
+    }
+
+    if (!$lat || !$lng) {
+      return $shops->first()->id;
+    }
+
+    return $shops
+      ->sortBy(function ($shop) use ($lat, $lng) {
+        if (!$shop->latitude || !$shop->longitude) {
+          return 9999;
+        }
+        return $this->distanceKm($lat, $lng, $shop->latitude, $shop->longitude);
+      })
+      ->first()?->id;
   }
 
   public function requestStatus($id)

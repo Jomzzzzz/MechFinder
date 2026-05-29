@@ -287,17 +287,95 @@ class ShopController extends Controller
 
   public function decline(int $id)
   {
-    DB::table("dispatch_requests")
+    $shopId = $this->getCurrentShopId();
+
+    $req = DB::table("dispatch_requests")
       ->where("id", $id)
-      ->where("shop_id", $this->getCurrentShopId())
-      ->update([
-        "status" => "declined",
-        "updated_at" => now(),
-      ]);
+      ->where("shop_id", $shopId)
+      ->where("status", "requested")
+      ->first();
 
-    broadcast(new DispatchStatusUpdated($id, "declined"));
+    if (!$req) {
+      return response()->json(["success" => false, "message" => "Not authorized or request no longer pending."], 403);
+    }
 
-    return response()->json(["success" => true, "status" => "declined"]);
+    // Try to find the next nearest open shop (skip the one that just declined)
+    $lat        = $req->latitude  ? (float) $req->latitude  : null;
+    $lng        = $req->longitude ? (float) $req->longitude : null;
+    $nextShopId = $this->findNearestOpenShop($lat, $lng, [$shopId]);
+
+    if ($nextShopId) {
+      // Reassign to next shop — stays "requested"
+      DB::table("dispatch_requests")
+        ->where("id", $id)
+        ->update(["shop_id" => $nextShopId, "updated_at" => now()]);
+
+      $reqData = DB::table("dispatch_requests")
+        ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
+        ->where("dispatch_requests.id", $id)
+        ->select("dispatch_requests.*", "gp.owner_name", "gp.contact_number")
+        ->first();
+
+      broadcast(new DispatchRequestCreated((int) $nextShopId, [
+        "id"                    => $id,
+        "issue_type"            => $reqData->issue_type,
+        "owner_name"            => $reqData->owner_name ?? $reqData->guest_name ?? "Unknown",
+        "contact_number"        => $reqData->contact_number ?? "",
+        "vehicle_make_model"    => $reqData->vehicle_make_model ?? null,
+        "vehicle_variant_color" => $reqData->vehicle_variant_color ?? null,
+        "plate_temp_number"     => $reqData->plate_temp_number ?? null,
+        "description"           => $reqData->description ?? null,
+        "location"              => $reqData->location ?? null,
+        "status"                => "requested",
+        "created_at"            => $reqData->created_at,
+      ]))->toOthers();
+    } else {
+      // No other open shops available — notify motorist
+      DB::table("dispatch_requests")
+        ->where("id", $id)
+        ->update(["status" => "declined", "updated_at" => now()]);
+
+      broadcast(new DispatchStatusUpdated($id, "declined"));
+    }
+
+    return response()->json(["success" => true]);
+  }
+
+  protected function findNearestOpenShop(?float $lat, ?float $lng, array $excludeIds = []): ?int
+  {
+    $query = DB::table("shops")->where("status", "open");
+
+    if (!empty($excludeIds)) {
+      $query->whereNotIn("id", $excludeIds);
+    }
+
+    $shops = $query->select("id", "latitude", "longitude")->get();
+
+    if ($shops->isEmpty()) {
+      return null;
+    }
+
+    if (!$lat || !$lng) {
+      return $shops->first()->id;
+    }
+
+    return $shops
+      ->sortBy(function ($shop) use ($lat, $lng) {
+        if (!$shop->latitude || !$shop->longitude) {
+          return 9999;
+        }
+        return $this->distanceKm($lat, $lng, (float)$shop->latitude, (float)$shop->longitude);
+      })
+      ->first()?->id;
+  }
+
+  protected function distanceKm(float $lat1, float $lon1, float $lat2, float $lon2): float
+  {
+    $R    = 6371;
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLon = deg2rad($lon2 - $lon1);
+    $a    = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
+    return round($R * 2 * atan2(sqrt($a), sqrt(1 - $a)), 2);
   }
 
   public function updateRequestStatus(Request $request, int $id)
