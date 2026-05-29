@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,9 +49,8 @@
         <!-- LEFT SIDE - IMAGE -->
         <div class="hidden lg:flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-300 p-12">
             <div class="max-w-sm w-full">
-                <img src="{{ asset('images/login-image.jpg') }}" alt="Motorcycle Rider"
-                     alt="Motorcycle"
-                     class="w-full h-auto object-contain filter brightness-110">
+                <img src="{{ asset('images/login-image.jpg') }}" alt="Motorcycle Rider" alt="Motorcycle"
+                    class="w-full h-auto object-contain filter brightness-110">
             </div>
         </div>
 
@@ -61,7 +61,8 @@
                 <!-- HEADER -->
                 <div class="mb-12">
                     <a href="/" class="flex items-center gap-3 mb-8">
-                        <div class="w-10 h-10 rounded-lg bg-[#F7941D] flex items-center justify-center text-white font-black">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-[#F7941D] flex items-center justify-center text-white font-black">
                             ⚙
                         </div>
                         <span class="text-xl font-bold text-gray-900">MechFinder</span>
@@ -100,29 +101,23 @@
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input type="email"
-                               name="email"
-                               value="{{ old('email') }}"
-                               required
-                               placeholder="you@example.com"
-                               class="input-smooth w-full px-4 py-3 rounded-lg text-base">
+                        <input type="email" name="email" value="{{ old('email') }}" required
+                            placeholder="you@example.com" class="input-smooth w-full px-4 py-3 rounded-lg text-base">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                         <div class="relative">
-                            <input id="password"
-                                   type="password"
-                                   name="password"
-                                   required
-                                   placeholder="••••••••"
-                                   class="input-smooth w-full px-4 py-3 rounded-lg text-base pr-12">
-                            <button type="button"
-                                    onclick="togglePassword()"
-                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            <input id="password" type="password" name="password" required placeholder="••••••••"
+                                class="input-smooth w-full px-4 py-3 rounded-lg text-base pr-12">
+                            <button type="button" onclick="togglePassword()"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
                             </button>
                         </div>
@@ -138,30 +133,11 @@
                         </a>
                     </div>
 
-                    <button type="submit" class="btn-smooth w-full bg-[#F7941D] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg mt-6">
+                    <button type="submit"
+                        class="btn-smooth w-full bg-[#F7941D] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg mt-6">
                         Sign in
                     </button>
                 </form>
-
-                <!-- DIVIDER -->
-                <div class="flex items-center gap-3 my-8">
-                    <div class="flex-1 h-px bg-gray-200"></div>
-                    <span class="text-xs text-gray-500 font-medium">OR</span>
-                    <div class="flex-1 h-px bg-gray-200"></div>
-                </div>
-
-                <!-- SOCIAL -->
-                <div class="flex gap-3">
-                    <button type="button" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.834 8.207 11.387.6.11.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v-3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
-                    </button>
-                    <button type="button" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.85-3.08.4-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.48-2.53 3.2l-.42-.07z"/></svg>
-                    </button>
-                    <a href="{{ route('auth.google.login') }}" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="14" font-weight="bold" fill="currentColor">G</text></svg>
-                    </a>
-                </div>
 
                 <!-- SIGNUP LINK -->
                 <p class="text-center mt-8 text-gray-600 text-sm">
@@ -190,4 +166,5 @@
     </script>
 
 </body>
+
 </html>
