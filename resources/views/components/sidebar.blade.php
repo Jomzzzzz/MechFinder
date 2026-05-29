@@ -5,19 +5,6 @@
             return request()->is($path) || request()->is($path . '/*') ? 'active' : '';
         }
     }
-
-    $sidebarStatus = 'closed';
-    if (Auth::check()) {
-        $user = Auth::user();
-        $shopId = !empty($user->shop_id)
-            ? $user->shop_id
-            : \Illuminate\Support\Facades\DB::table('shops')->where('owner_id', $user->id)->value('id');
-        if ($shopId) {
-            $sidebarStatus = strtolower(
-                \Illuminate\Support\Facades\DB::table('shops')->where('id', $shopId)->value('status') ?? 'closed',
-            );
-        }
-    }
 @endphp
 
 <aside class="t-sidebar">
@@ -82,14 +69,36 @@
         return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     }
 
+    /* STATUS_MAP is injected by layouts/shop.blade.php from the
+       shop_statuses DB table (cached 24 h), keyed by integer ID.
+       Each entry: { id, slug, label, color, bg, next_label, next_color }
+       Edit that table to change labels or colours — no deploy needed. */
+    const STATUS_MAP = window.STATUS_MAP || {};
+    const STATUS_FALLBACK = Object.values(STATUS_MAP).find(c => c.slug === 'closed') ||
+        {
+            id: 4,
+            slug: 'closed',
+            label: 'Closed',
+            color: '#d63939',
+            bg: '#fde8e8',
+            next_label: 'Open Shop',
+            next_color: '#2fb344'
+        };
+
+    function getStatusConfig(statusKey) {
+        // statusKey can be an integer ID (as string or number) or a slug string
+        return STATUS_MAP[String(statusKey)] ||
+            Object.values(STATUS_MAP).find(c => c.slug === statusKey) ||
+            STATUS_FALLBACK;
+    }
+
     async function toggleShopStatus() {
-        const textEl = document.getElementById('topbar-status-text');
-        const currentStatus = textEl ? textEl.textContent.trim().toLowerCase() : 'unknown';
-        const isOpen = currentStatus === 'open';
-        const nextLabel = isOpen ? 'CLOSED' : 'OPEN';
+        const pill = document.getElementById('topbar-status-pill');
+        const currentStatus = pill ? (pill.dataset.status || '4') : '4';
+        const cfg = getStatusConfig(currentStatus);
         showConfirmModal(
-            `Toggle Shop Status`,
-            `Are you sure you want to set the shop to ${nextLabel}?`,
+            'Toggle Shop Status',
+            `Set shop to: ${cfg.next_label}?`,
             async function() {
                     const toggleBtn = document.querySelector('[onclick="toggleShopStatus()"]');
                     if (toggleBtn) {
@@ -107,12 +116,12 @@
                         });
                         const data = await res.json();
                         if (res.ok && data.success) {
-                            updateStatusUI(data.status);
+                            updateStatusUI(data.status_id);
                             localStorage.setItem('shopStatus', data.status);
+                            localStorage.setItem('shopStatusId', data.status_id);
                             localStorage.setItem('shopStatusUpdated', Date.now());
-                            if (typeof showToast === 'function') {
-                                showToast('Shop status set to ' + data.status + '.', 'success');
-                            }
+                            if (typeof showToast === 'function') showToast('Shop status set to ' + data.status +
+                                '.', 'success');
                         } else {
                             const msg = data.message || ('Error ' + res.status);
                             if (typeof showToast === 'function') showToast('Toggle failed: ' + msg, 'error');
@@ -130,32 +139,36 @@
                         }
                     }
                 },
-                isOpen ? 'Set Closed' : 'Set Open',
-                isOpen ? '#d63939' : '#2fb344'
+                cfg.next_label,
+                cfg.next_color
         );
     }
 
-    function updateStatusUI(status) {
-        const isOpen = status === 'open';
-        const isBusy = status === 'busy';
-        const color = isOpen ? '#2fb344' : (isBusy ? '#f76707' : '#d63939');
-        const bg = isOpen ? '#d1f7d6' : (isBusy ? '#ffe4cc' : '#fde8e8');
-        const label = isOpen ? 'Open' : (isBusy ? 'Busy' : 'Closed');
+    function updateStatusUI(statusKey) {
+        const cfg = getStatusConfig(statusKey);
+        const tbPill = document.getElementById('topbar-status-pill');
         const tbDot = document.getElementById('topbar-status-dot');
         const tbText = document.getElementById('topbar-status-text');
-        const tbPill = tbDot ? tbDot.parentElement : null;
-        if (tbDot) tbDot.style.background = color;
-        if (tbText) {
-            tbText.textContent = label;
-            tbText.style.color = color;
+        if (tbPill) {
+            tbPill.style.background = cfg.bg;
+            tbPill.dataset.status = String(cfg.id);
         }
-        if (tbPill) tbPill.style.background = bg;
+        if (tbDot) tbDot.style.background = cfg.color;
+        if (tbText) {
+            tbText.textContent = cfg.label;
+            tbText.style.color = cfg.color;
+        }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const pill = document.getElementById('topbar-status-pill');
+        if (pill) updateStatusUI(pill.dataset.status || '4');
+    });
 
     window.addEventListener('storage', (e) => {
         if (e.key === 'shopStatusUpdated') {
-            const s = localStorage.getItem('shopStatus');
-            if (s) updateStatusUI(s);
+            const id = localStorage.getItem('shopStatusId');
+            if (id) updateStatusUI(id);
         }
     });
 </script>

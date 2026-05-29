@@ -33,10 +33,14 @@ class ShopController extends Controller
 
   protected function getShop()
   {
-    return DB::table("shops")->where("id", $this->getCurrentShopId())->first();
+    return DB::table("shops")
+      ->join("shop_statuses", "shops.status_id", "=", "shop_statuses.id")
+      ->where("shops.id", $this->getCurrentShopId())
+      ->select("shops.*", "shop_statuses.slug as status")
+      ->first();
   }
 
-  protected function getShopStatus()
+  protected function getShopStatus(): string
   {
     $shop = $this->getShop();
 
@@ -49,7 +53,12 @@ class ShopController extends Controller
 
     $requests = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
-      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
+      ->leftJoin(
+        "guest_profiles as gp",
+        "dispatch_requests.guest_token",
+        "=",
+        "gp.guest_token"
+      )
       ->where("dispatch_requests.shop_id", $shopId)
       ->where("dispatch_requests.status", "requested")
       ->select(
@@ -65,7 +74,12 @@ class ShopController extends Controller
 
     $jobs = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
-      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
+      ->leftJoin(
+        "guest_profiles as gp",
+        "dispatch_requests.guest_token",
+        "=",
+        "gp.guest_token"
+      )
       ->where("dispatch_requests.shop_id", $shopId)
       ->whereIn("dispatch_requests.status", [
         "accepted",
@@ -104,6 +118,7 @@ class ShopController extends Controller
 
     $shop = $this->getShop();
     $shopStatus = $this->getShopStatus();
+    $shopStatusId = $shop ? (int) $shop->status_id : null;
 
     $needsProfileCompletion =
       !$shop ||
@@ -122,6 +137,7 @@ class ShopController extends Controller
         "activeJobsCount",
         "shop",
         "shopStatus",
+        "shopStatusId",
         "needsProfileCompletion"
       )
     );
@@ -133,7 +149,12 @@ class ShopController extends Controller
 
     $requests = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
-      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
+      ->leftJoin(
+        "guest_profiles as gp",
+        "dispatch_requests.guest_token",
+        "=",
+        "gp.guest_token"
+      )
       ->where("dispatch_requests.shop_id", $shopId)
       ->where("dispatch_requests.status", "requested")
       ->select(
@@ -165,7 +186,12 @@ class ShopController extends Controller
 
     $query = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
-      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
+      ->leftJoin(
+        "guest_profiles as gp",
+        "dispatch_requests.guest_token",
+        "=",
+        "gp.guest_token"
+      )
       ->where("dispatch_requests.shop_id", $shopId)
       ->select(
         "dispatch_requests.*",
@@ -192,7 +218,12 @@ class ShopController extends Controller
 
     $jobs = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
-      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
+      ->leftJoin(
+        "guest_profiles as gp",
+        "dispatch_requests.guest_token",
+        "=",
+        "gp.guest_token"
+      )
       ->where("dispatch_requests.shop_id", $shopId)
       ->whereIn("dispatch_requests.status", [
         "accepted",
@@ -219,15 +250,16 @@ class ShopController extends Controller
     $shopId = $this->getCurrentShopId();
 
     $shop = DB::table("shops")
-      ->where("id", $shopId)
+      ->join("shop_statuses", "shops.status_id", "=", "shop_statuses.id")
+      ->where("shops.id", $shopId)
       ->select(
-        "id",
-        "shop_name",
-        "address",
-        "location",
-        "latitude",
-        "longitude",
-        "status"
+        "shops.id",
+        "shops.shop_name",
+        "shops.address",
+        "shops.location",
+        "shops.latitude",
+        "shops.longitude",
+        "shop_statuses.slug as status"
       )
       ->first();
 
@@ -295,12 +327,18 @@ class ShopController extends Controller
       ->first();
 
     if (!$req) {
-      return response()->json(["success" => false, "message" => "Not authorized or request no longer pending."], 403);
+      return response()->json(
+        [
+          "success" => false,
+          "message" => "Not authorized or request no longer pending.",
+        ],
+        403
+      );
     }
 
     // Try to find the next nearest open shop (skip the one that just declined)
-    $lat        = $req->latitude  ? (float) $req->latitude  : null;
-    $lng        = $req->longitude ? (float) $req->longitude : null;
+    $lat = $req->latitude ? (float) $req->latitude : null;
+    $lng = $req->longitude ? (float) $req->longitude : null;
     $nextShopId = $this->findNearestOpenShop($lat, $lng, [$shopId]);
 
     if ($nextShopId) {
@@ -310,24 +348,32 @@ class ShopController extends Controller
         ->update(["shop_id" => $nextShopId, "updated_at" => now()]);
 
       $reqData = DB::table("dispatch_requests")
-        ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
+        ->leftJoin(
+          "guest_profiles as gp",
+          "dispatch_requests.guest_token",
+          "=",
+          "gp.guest_token"
+        )
         ->where("dispatch_requests.id", $id)
         ->select("dispatch_requests.*", "gp.owner_name", "gp.contact_number")
         ->first();
 
-      broadcast(new DispatchRequestCreated((int) $nextShopId, [
-        "id"                    => $id,
-        "issue_type"            => $reqData->issue_type,
-        "owner_name"            => $reqData->owner_name ?? $reqData->guest_name ?? "Unknown",
-        "contact_number"        => $reqData->contact_number ?? "",
-        "vehicle_make_model"    => $reqData->vehicle_make_model ?? null,
-        "vehicle_variant_color" => $reqData->vehicle_variant_color ?? null,
-        "plate_temp_number"     => $reqData->plate_temp_number ?? null,
-        "description"           => $reqData->description ?? null,
-        "location"              => $reqData->location ?? null,
-        "status"                => "requested",
-        "created_at"            => $reqData->created_at,
-      ]))->toOthers();
+      broadcast(
+        new DispatchRequestCreated((int) $nextShopId, [
+          "id" => $id,
+          "issue_type" => $reqData->issue_type,
+          "owner_name" =>
+            $reqData->owner_name ?? ($reqData->guest_name ?? "Unknown"),
+          "contact_number" => $reqData->contact_number ?? "",
+          "vehicle_make_model" => $reqData->vehicle_make_model ?? null,
+          "vehicle_variant_color" => $reqData->vehicle_variant_color ?? null,
+          "plate_temp_number" => $reqData->plate_temp_number ?? null,
+          "description" => $reqData->description ?? null,
+          "location" => $reqData->location ?? null,
+          "status" => "requested",
+          "created_at" => $reqData->created_at,
+        ])
+      )->toOthers();
     } else {
       // No other open shops available — notify motorist
       DB::table("dispatch_requests")
@@ -340,9 +386,16 @@ class ShopController extends Controller
     return response()->json(["success" => true]);
   }
 
-  protected function findNearestOpenShop(?float $lat, ?float $lng, array $excludeIds = []): ?int
-  {
-    $query = DB::table("shops")->where("status", "open");
+  protected function findNearestOpenShop(
+    ?float $lat,
+    ?float $lng,
+    array $excludeIds = []
+  ): ?int {
+    $openStatusId = DB::table("shop_statuses")
+      ->where("slug", "open")
+      ->value("id");
+
+    $query = DB::table("shops")->where("status_id", $openStatusId);
 
     if (!empty($excludeIds)) {
       $query->whereNotIn("id", $excludeIds);
@@ -363,17 +416,28 @@ class ShopController extends Controller
         if (!$shop->latitude || !$shop->longitude) {
           return 9999;
         }
-        return $this->distanceKm($lat, $lng, (float)$shop->latitude, (float)$shop->longitude);
+        return $this->distanceKm(
+          $lat,
+          $lng,
+          (float) $shop->latitude,
+          (float) $shop->longitude
+        );
       })
       ->first()?->id;
   }
 
-  protected function distanceKm(float $lat1, float $lon1, float $lat2, float $lon2): float
-  {
-    $R    = 6371;
+  protected function distanceKm(
+    float $lat1,
+    float $lon1,
+    float $lat2,
+    float $lon2
+  ): float {
+    $R = 6371;
     $dLat = deg2rad($lat2 - $lat1);
     $dLon = deg2rad($lon2 - $lon1);
-    $a    = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
+    $a =
+      sin($dLat / 2) ** 2 +
+      cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLon / 2) ** 2;
     return round($R * 2 * atan2(sqrt($a), sqrt(1 - $a)), 2);
   }
 
@@ -421,12 +485,12 @@ class ShopController extends Controller
   public function uploadImages(Request $request)
   {
     $request->validate([
-      "logo"        => "nullable|image|mimes:jpeg,jpg,png,webp|max:2048",
+      "logo" => "nullable|image|mimes:jpeg,jpg,png,webp|max:2048",
       "cover_photo" => "nullable|image|mimes:jpeg,jpg,png,webp|max:4096",
     ]);
 
     $shopId = $this->getCurrentShopId();
-    $shop   = $this->getShop();
+    $shop = $this->getShop();
     $update = ["updated_at" => now()];
 
     if ($request->hasFile("logo")) {
@@ -440,7 +504,9 @@ class ShopController extends Controller
       if ($shop && $shop->cover_photo) {
         Storage::disk("public")->delete($shop->cover_photo);
       }
-      $update["cover_photo"] = $request->file("cover_photo")->store("shops/covers", "public");
+      $update["cover_photo"] = $request
+        ->file("cover_photo")
+        ->store("shops/covers", "public");
     }
 
     DB::table("shops")->where("id", $shopId)->update($update);
@@ -459,7 +525,7 @@ class ShopController extends Controller
       "longitude" => "required|numeric",
       "phone" => "nullable|string|max:50",
       "email" => "nullable|email|max:255",
-      "status" => "required|in:open,busy,closed,maintenance",
+      "status_id" => "required|exists:shop_statuses,id",
     ]);
 
     DB::table("shops")
@@ -472,7 +538,7 @@ class ShopController extends Controller
         "longitude" => $validated["longitude"],
         "phone" => $validated["phone"] ?? null,
         "email" => $validated["email"] ?? null,
-        "status" => $validated["status"],
+        "status_id" => $validated["status_id"],
         "updated_at" => now(),
       ]);
 
@@ -499,8 +565,14 @@ class ShopController extends Controller
       ->get();
 
     $shopStatus = $this->getShopStatus();
+    $shopStatusId = $this->getCurrentShopId()
+      ? (int) optional($this->getShop())->status_id
+      : null;
 
-    return view("shop.messages", compact("conversations", "shopStatus"));
+    return view(
+      "shop.messages",
+      compact("conversations", "shopStatus", "shopStatusId")
+    );
   }
 
   public function reviews()
@@ -550,6 +622,7 @@ class ShopController extends Controller
     ];
 
     $shopStatus = $this->getShopStatus();
+    $shopStatusId = (int) optional($this->getShop())->status_id ?: null;
 
     return view(
       "shop.reviews",
@@ -559,7 +632,8 @@ class ShopController extends Controller
         "averageRating",
         "positivePercentage",
         "ratingBreakdown",
-        "shopStatus"
+        "shopStatus",
+        "shopStatusId"
       )
     );
   }
@@ -568,8 +642,13 @@ class ShopController extends Controller
   {
     $shop = $this->getShop();
     $shopStatus = $this->getShopStatus();
+    $shopStatusId = $shop ? (int) $shop->status_id : null;
+    $shopStatuses = DB::table("shop_statuses")->orderBy("sort_order")->get();
 
-    return view("shop.settings", compact("shop", "shopStatus"));
+    return view(
+      "shop.settings",
+      compact("shop", "shopStatus", "shopStatusId", "shopStatuses")
+    );
   }
 
   public function toggleStatus()
@@ -580,26 +659,34 @@ class ShopController extends Controller
 
     if (!$shop) {
       return response()->json(
-        [
-          "success" => false,
-          "message" => "Shop not found.",
-        ],
+        ["success" => false, "message" => "Shop not found."],
         404
       );
     }
 
-    $newStatus = $shop->status === "open" ? "closed" : "open";
+    $currentStatus = DB::table("shop_statuses")
+      ->where("id", $shop->status_id)
+      ->first();
+
+    if (!$currentStatus || !$currentStatus->toggles_to_id) {
+      return response()->json(
+        ["success" => false, "message" => "Cannot toggle this status."],
+        422
+      );
+    }
+
+    $newStatusId = $currentStatus->toggles_to_id;
 
     DB::table("shops")
       ->where("id", $shopId)
-      ->update([
-        "status" => $newStatus,
-        "updated_at" => now(),
-      ]);
+      ->update(["status_id" => $newStatusId, "updated_at" => now()]);
+
+    $newStatus = DB::table("shop_statuses")->where("id", $newStatusId)->first();
 
     return response()->json([
       "success" => true,
-      "status" => $newStatus,
+      "status" => $newStatus->slug,
+      "status_id" => $newStatusId,
     ]);
   }
 
@@ -653,7 +740,12 @@ class ShopController extends Controller
 
     $jobs = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
-      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
+      ->leftJoin(
+        "guest_profiles as gp",
+        "dispatch_requests.guest_token",
+        "=",
+        "gp.guest_token"
+      )
       ->where("dispatch_requests.shop_id", $shopId)
       ->whereIn("dispatch_requests.status", [
         "accepted",

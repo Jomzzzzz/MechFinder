@@ -188,6 +188,43 @@
         #modal-live-map {
             flex: 1;
         }
+
+        .map-loader-wrap {
+            position: relative;
+        }
+
+        .map-loader-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 500;
+            background: #e8edf2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: opacity .3s;
+            pointer-events: none;
+        }
+
+        .map-loader-overlay.modal-variant {
+            background: #f4f6fb;
+            border-radius: 0;
+        }
+
+        .map-spinner {
+            width: 34px;
+            height: 34px;
+            border: 3px solid #d0d7de;
+            border-top-color: #206bc4;
+            border-radius: 50%;
+            animation: mapSpin .75s linear infinite;
+        }
+
+        @keyframes mapSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 
     <div id="dash-toast"></div>
@@ -200,8 +237,8 @@
             <h1 class="page-title">{{ $shopName }}</h1>
         </div>
         <div style="display:flex; align-items:center; gap:10px;">
-            <a href="{{ route('shop.requests') }}" class="btn btn-outline-primary btn-sm">
-                <i class="fas fa-list-ul"></i> All Requests
+            <a href="{{ route('shop.requests') }}" class="btn-outline-primary btn btn-sm">
+                <i class="fa-list-ul fas"></i> All Requests
             </a>
         </div>
     </div>
@@ -340,7 +377,12 @@
                     <button onclick="openLiveMapModal()" class="btn btn-secondary btn-sm"><i class="fas fa-expand"></i>
                         Expand</button>
                 </div>
-                <div id="shop-live-map"></div>
+                <div class="map-loader-wrap">
+                    <div id="shop-live-map"></div>
+                    <div id="small-map-loader" class="map-loader-overlay">
+                        <div class="map-spinner"></div>
+                    </div>
+                </div>
                 <div style="display:flex; gap:16px; margin-top:8px;">
                     <span style="display:flex; align-items:center; gap:5px; font-size:11px; color:#667382;"><span
                             style="width:8px; height:8px; border-radius:50%; background:#206bc4; display:inline-block;"></span>
@@ -447,7 +489,12 @@
                 <button onclick="closeLiveMapModal()" class="btn btn-secondary btn-sm"><i class="fas fa-xmark"></i>
                     Close</button>
             </div>
-            <div id="modal-live-map" style="flex:1; min-height:400px;"></div>
+            <div style="flex:1; min-height:400px; position:relative;">
+                <div id="modal-live-map" style="width:100%; height:100%; min-height:400px;"></div>
+                <div id="modal-map-loader" class="map-loader-overlay modal-variant">
+                    <div class="map-spinner" style="width:42px;height:42px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -566,51 +613,51 @@
 
         async function acceptRequest(id) {
             showConfirmModal('Accept Request', 'Accept this dispatch request and notify the motorist?',
-        async function() {
-                try {
-                    var r = await fetch('/shop/accept/' + id, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': getCsrfToken(),
-                            'Accept': 'application/json'
-                        }
-                    });
-                    var d = await r.json();
-                    if (d.success) {
-                        showToast('Request accepted.', 'success');
-                        var c = document.getElementById('req-' + id);
-                        if (c) c.remove();
-                        adjustCount('stat-pending', -1);
-                        adjustCount('pending-badge', -1, ' new');
-                    } else showToast(d.message || 'Failed.', 'error');
-                } catch (e) {
-                    showToast('Network error.', 'error');
-                }
-            }, 'Accept', '#2fb344');
+                async function() {
+                    try {
+                        var r = await fetch('/shop/accept/' + id, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': getCsrfToken(),
+                                'Accept': 'application/json'
+                            }
+                        });
+                        var d = await r.json();
+                        if (d.success) {
+                            showToast('Request accepted.', 'success');
+                            var c = document.getElementById('req-' + id);
+                            if (c) c.remove();
+                            adjustCount('stat-pending', -1);
+                            adjustCount('pending-badge', -1, ' new');
+                        } else showToast(d.message || 'Failed.', 'error');
+                    } catch (e) {
+                        showToast('Network error.', 'error');
+                    }
+                }, 'Accept', '#2fb344');
         }
         async function declineRequest(id) {
             showConfirmModal('Decline Request', 'Decline this request? The motorist will be notified.',
-        async function() {
-                try {
-                    var r = await fetch('/shop/decline/' + id, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': getCsrfToken(),
-                            'Accept': 'application/json'
-                        }
-                    });
-                    var d = await r.json();
-                    if (d.success) {
-                        showToast('Request declined.', 'info');
-                        var c = document.getElementById('req-' + id);
-                        if (c) c.remove();
-                        adjustCount('stat-pending', -1);
-                        adjustCount('pending-badge', -1, ' new');
-                    } else showToast(d.message || 'Failed.', 'error');
-                } catch (e) {
-                    showToast('Network error.', 'error');
-                }
-            }, 'Decline', '#d63939');
+                async function() {
+                    try {
+                        var r = await fetch('/shop/decline/' + id, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': getCsrfToken(),
+                                'Accept': 'application/json'
+                            }
+                        });
+                        var d = await r.json();
+                        if (d.success) {
+                            showToast('Request declined.', 'info');
+                            var c = document.getElementById('req-' + id);
+                            if (c) c.remove();
+                            adjustCount('stat-pending', -1);
+                            adjustCount('pending-badge', -1, ' new');
+                        } else showToast(d.message || 'Failed.', 'error');
+                    } catch (e) {
+                        showToast('Network error.', 'error');
+                    }
+                }, 'Decline', '#d63939');
         }
         async function updateRequestStatus(id, status) {
             try {
@@ -728,12 +775,23 @@
         }
 
         function openLiveMapModal() {
+            var ml = document.getElementById('modal-map-loader');
+            if (ml) {
+                ml.style.opacity = '1';
+                ml.style.display = 'flex';
+            }
             document.getElementById('liveMapModal').style.display = 'flex';
             initModalMap();
             setTimeout(function() {
                 modalMap.invalidateSize();
                 renderMkrs(modalMap, true);
                 fitMap(modalMap);
+                if (ml) {
+                    ml.style.opacity = '0';
+                    setTimeout(function() {
+                        ml.style.display = 'none';
+                    }, 300);
+                }
             }, 200);
         }
 
@@ -756,6 +814,13 @@
                 latestRequests = d.requests || [];
                 renderMkrs(smallMap, false);
                 fitMap(smallMap);
+                var sl = document.getElementById('small-map-loader');
+                if (sl && sl.style.display !== 'none') {
+                    sl.style.opacity = '0';
+                    setTimeout(function() {
+                        sl.style.display = 'none';
+                    }, 300);
+                }
                 if (modalMap && document.getElementById('liveMapModal').style.display !== 'none') {
                     renderMkrs(modalMap, true);
                     fitMap(modalMap);

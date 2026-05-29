@@ -7,6 +7,7 @@ use App\Models\Shop;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
@@ -73,12 +74,15 @@ class AuthController extends Controller
 
     $email = strtolower(trim($request->email));
 
+    $closedStatusId =
+      DB::table("shop_statuses")->where("slug", "closed")->value("id") ?? 4;
+
     $shop = Shop::create([
       "shop_name" => $request->shop_name,
       "address" => $request->address,
       "phone" => $request->phone,
       "email" => $email,
-      "status" => "closed",
+      "status_id" => $closedStatusId,
     ]);
 
     $user = User::create([
@@ -116,7 +120,7 @@ class AuthController extends Controller
       return back()->withInput()->with("error", "Incorrect password.");
     }
 
-    Auth::login($user, $request->boolean('remember'));
+    Auth::login($user, $request->boolean("remember"));
     $request->session()->regenerate();
 
     return redirect($this->redirectByRole($user->role));

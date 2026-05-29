@@ -67,10 +67,12 @@ class AdminController extends Controller
   public function shops()
   {
     $shops = DB::table("shops")
+      ->join("shop_statuses", "shops.status_id", "=", "shop_statuses.id")
       ->leftJoin("users", "shops.owner_id", "=", "users.id")
       ->leftJoin("reviews", "shops.id", "=", "reviews.shop_id")
       ->select(
         "shops.*",
+        "shop_statuses.slug as status",
         "users.name as owner_name",
         "users.email as owner_email",
         DB::raw("COALESCE(AVG(reviews.rating), 0) as avg_rating"),
@@ -86,9 +88,10 @@ class AdminController extends Controller
         "shops.latitude",
         "shops.longitude",
         "shops.location",
-        "shops.status",
+        "shops.status_id",
         "shops.created_at",
         "shops.updated_at",
+        "shop_statuses.slug",
         "users.name",
         "users.email"
       )

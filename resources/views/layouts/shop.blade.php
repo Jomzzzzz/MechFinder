@@ -15,6 +15,7 @@
 
     <script>
         window.shopId = {{ Auth::check() && Auth::user()->shop_id ? (int) Auth::user()->shop_id : 'null' }};
+        window.STATUS_MAP = @json($shopStatusConfigs ?? []);
     </script>
 
     <style>
@@ -377,21 +378,12 @@
             <header
                 style="background:#fff; border-bottom:1px solid #e6e7eb; padding:0 24px; height:56px; display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-shrink:0; position:sticky; top:0; z-index:200;">
 
-                {{-- Shop Status Pill --}}
-                @php
-                    $topbarStatus = $sidebarStatus ?? 'closed';
-                    $topbarOpen = $topbarStatus === 'open';
-                    $topbarBusy = $topbarStatus === 'busy';
-                    $topbarColor = $topbarOpen ? '#2fb344' : ($topbarBusy ? '#f76707' : '#d63939');
-                    $topbarBg = $topbarOpen ? '#d1f7d6' : ($topbarBusy ? '#ffe4cc' : '#fde8e8');
-                    $topbarLabel = ucfirst($topbarStatus);
-                @endphp
-                <div
-                    style="display:flex; align-items:center; gap:6px; padding:4px 10px 4px 8px; background:{{ $topbarBg }}; border-radius:20px;">
+                {{-- Shop Status Pill — styled entirely by updateStatusUI() on load --}}
+                <div id="topbar-status-pill" data-status="{{ $shopStatusId ?? 4 }}"
+                    style="display:flex; align-items:center; gap:6px; padding:4px 10px 4px 8px; border-radius:20px;">
                     <span id="topbar-status-dot"
-                        style="width:8px; height:8px; border-radius:50%; background:{{ $topbarColor }}; flex-shrink:0;"></span>
-                    <span id="topbar-status-text"
-                        style="font-size:12px; font-weight:700; color:{{ $topbarColor }};">{{ $topbarLabel }}</span>
+                        style="width:8px; height:8px; border-radius:50%; flex-shrink:0;"></span>
+                    <span id="topbar-status-text" style="font-size:12px; font-weight:700;"></span>
                 </div>
                 <button onclick="toggleShopStatus()"
                     style="font-size:12px; font-weight:600; color:#667382; background:#f4f6fb; border:1px solid #e6e7eb; border-radius:6px; padding:5px 12px; cursor:pointer; transition:all .15s; white-space:nowrap;"

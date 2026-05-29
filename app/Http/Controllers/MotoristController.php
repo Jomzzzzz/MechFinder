@@ -26,6 +26,7 @@ class MotoristController extends Controller
     $lng = $request->query("lng");
 
     $shops = DB::table("shops")
+      ->join("shop_statuses", "shops.status_id", "=", "shop_statuses.id")
       ->leftJoin("reviews", "shops.id", "=", "reviews.shop_id")
       ->select(
         "shops.id",
@@ -34,7 +35,7 @@ class MotoristController extends Controller
         "shops.phone",
         "shops.latitude",
         "shops.longitude",
-        "shops.status",
+        "shop_statuses.slug as status",
         "shops.logo",
         "shops.cover_photo",
         DB::raw("COALESCE(AVG(reviews.rating), 0) as rating"),
@@ -47,7 +48,7 @@ class MotoristController extends Controller
         "shops.phone",
         "shops.latitude",
         "shops.longitude",
-        "shops.status",
+        "shop_statuses.slug",
         "shops.logo",
         "shops.cover_photo"
       )
@@ -84,7 +85,11 @@ class MotoristController extends Controller
 
   public function showShop($id)
   {
-    $shop = DB::table("shops")->where("id", $id)->first();
+    $shop = DB::table("shops")
+      ->join("shop_statuses", "shops.status_id", "=", "shop_statuses.id")
+      ->where("shops.id", $id)
+      ->select("shops.*", "shop_statuses.slug as status")
+      ->first();
 
     if (!$shop) {
       abort(404);
@@ -105,17 +110,17 @@ class MotoristController extends Controller
   public function storeDispatch(Request $request)
   {
     $validated = $request->validate([
-      "guest_token"           => "nullable|string|max:100",
-      "owner_name"            => "required|string|max:150",
-      "contact_number"        => "required|string|max:50",
-      "vehicle_make_model"    => "nullable|string|max:150",
+      "guest_token" => "nullable|string|max:100",
+      "owner_name" => "required|string|max:150",
+      "contact_number" => "required|string|max:50",
+      "vehicle_make_model" => "nullable|string|max:150",
       "vehicle_variant_color" => "nullable|string|max:150",
-      "plate_temp_number"     => "nullable|string|max:80",
-      "issue_type"            => "required|string|max:150",
-      "description"           => "nullable|string",
-      "location"              => "nullable|string|max:255",
-      "latitude"              => "nullable|numeric",
-      "longitude"             => "nullable|numeric",
+      "plate_temp_number" => "nullable|string|max:80",
+      "issue_type" => "required|string|max:150",
+      "description" => "nullable|string",
+      "location" => "nullable|string|max:255",
+      "latitude" => "nullable|numeric",
+      "longitude" => "nullable|numeric",
     ]);
 
     // Persist guest identity in guest_profiles (normalised away from dispatch_requests)
@@ -123,67 +128,79 @@ class MotoristController extends Controller
       DB::table("guest_profiles")->updateOrInsert(
         ["guest_token" => $validated["guest_token"]],
         [
-          "owner_name"     => $validated["owner_name"],
+          "owner_name" => $validated["owner_name"],
           "contact_number" => $validated["contact_number"],
-          "updated_at"     => now(),
+          "updated_at" => now(),
         ]
       );
     }
 
     // Auto-assign to the nearest open shop — motorist does not choose
-    $lat    = isset($validated["latitude"])  ? (float) $validated["latitude"]  : null;
-    $lng    = isset($validated["longitude"]) ? (float) $validated["longitude"] : null;
+    $lat = isset($validated["latitude"])
+      ? (float) $validated["latitude"]
+      : null;
+    $lng = isset($validated["longitude"])
+      ? (float) $validated["longitude"]
+      : null;
     $shopId = $this->findNearestOpenShop($lat, $lng);
 
     $id = DB::table("dispatch_requests")->insertGetId([
-      "shop_id"              => $shopId,
-      "guest_token"          => $validated["guest_token"] ?? null,
-      "guest_name"           => $validated["owner_name"],   // kept for COALESCE display queries
-      "vehicle_make_model"   => $validated["vehicle_make_model"] ?? null,
+      "shop_id" => $shopId,
+      "guest_token" => $validated["guest_token"] ?? null,
+      "guest_name" => $validated["owner_name"], // kept for COALESCE display queries
+      "vehicle_make_model" => $validated["vehicle_make_model"] ?? null,
       "vehicle_variant_color" => $validated["vehicle_variant_color"] ?? null,
-      "plate_temp_number"    => $validated["plate_temp_number"] ?? null,
-      "issue_type"           => $validated["issue_type"],
-      "description"          => $validated["description"] ?? null,
-      "location"             => $validated["location"] ?? null,
-      "latitude"             => $validated["latitude"] ?? null,
-      "longitude"            => $validated["longitude"] ?? null,
-      "status"               => "requested",
-      "price"                => 0,
-      "created_at"           => now(),
-      "updated_at"           => now(),
+      "plate_temp_number" => $validated["plate_temp_number"] ?? null,
+      "issue_type" => $validated["issue_type"],
+      "description" => $validated["description"] ?? null,
+      "location" => $validated["location"] ?? null,
+      "latitude" => $validated["latitude"] ?? null,
+      "longitude" => $validated["longitude"] ?? null,
+      "status" => "requested",
+      "price" => 0,
+      "created_at" => now(),
+      "updated_at" => now(),
     ]);
 
     if ($shopId) {
       broadcast(
         new DispatchRequestCreated((int) $shopId, [
-        "id" => $id,
-        "issue_type" => $validated["issue_type"],
-        "owner_name" => $validated["owner_name"],
-        "contact_number" => $validated["contact_number"],
-        "vehicle_make_model" => $validated["vehicle_make_model"] ?? null,
-        "vehicle_variant_color" => $validated["vehicle_variant_color"] ?? null,
-        "plate_temp_number" => $validated["plate_temp_number"] ?? null,
-        "description" => $validated["description"] ?? null,
-        "location" => $validated["location"] ?? null,
-        "status" => "requested",
-        "created_at" => now()->toDateTimeString(),
-      ])
+          "id" => $id,
+          "issue_type" => $validated["issue_type"],
+          "owner_name" => $validated["owner_name"],
+          "contact_number" => $validated["contact_number"],
+          "vehicle_make_model" => $validated["vehicle_make_model"] ?? null,
+          "vehicle_variant_color" =>
+            $validated["vehicle_variant_color"] ?? null,
+          "plate_temp_number" => $validated["plate_temp_number"] ?? null,
+          "description" => $validated["description"] ?? null,
+          "location" => $validated["location"] ?? null,
+          "status" => "requested",
+          "created_at" => now()->toDateTimeString(),
+        ])
       )->toOthers();
     }
 
     return response()->json([
-      "success"    => true,
+      "success" => true,
       "request_id" => $id,
       "shop_found" => $shopId !== null,
-      "message"    => $shopId
+      "message" => $shopId
         ? "Your rescue request has been sent. A nearby shop will respond shortly."
         : "No open shops available right now. Your request has been saved.",
     ]);
   }
 
-  protected function findNearestOpenShop(?float $lat, ?float $lng, array $excludeIds = []): ?int
-  {
-    $query = DB::table("shops")->where("status", "open");
+  protected function findNearestOpenShop(
+    ?float $lat,
+    ?float $lng,
+    array $excludeIds = []
+  ): ?int {
+    $openStatusId = DB::table("shop_statuses")
+      ->where("slug", "open")
+      ->value("id");
+
+    $query = DB::table("shops")->where("status_id", $openStatusId);
 
     if (!empty($excludeIds)) {
       $query->whereNotIn("id", $excludeIds);
@@ -237,7 +254,10 @@ class MotoristController extends Controller
       ->update(["status" => "cancelled", "updated_at" => now()]);
 
     if (!$updated) {
-      return response()->json(["error" => "Cannot cancel — request not found or already accepted."], 422);
+      return response()->json(
+        ["error" => "Cannot cancel — request not found or already accepted."],
+        422
+      );
     }
 
     event(new \App\Events\DispatchStatusUpdated($id, "cancelled"));
@@ -248,37 +268,41 @@ class MotoristController extends Controller
   public function changePassword(Request $request)
   {
     $request->validate([
-      'current_password' => ['required'],
-      'password'         => ['required', 'string', 'min:6', 'confirmed'],
+      "current_password" => ["required"],
+      "password" => ["required", "string", "min:6", "confirmed"],
     ]);
 
     $user = Auth::user();
 
     if (!Hash::check($request->current_password, $user->password)) {
-      return back()->withErrors(['current_password' => 'Current password is incorrect.']);
+      return back()->withErrors([
+        "current_password" => "Current password is incorrect.",
+      ]);
     }
 
-    $user->update(['password' => Hash::make($request->password)]);
+    $user->update(["password" => Hash::make($request->password)]);
 
-    return redirect()->route('motorist.index')->with('pw_success', 'Password updated successfully.');
+    return redirect()
+      ->route("motorist.index")
+      ->with("pw_success", "Password updated successfully.");
   }
 
   public function storeReview(Request $request)
   {
     $validated = $request->validate([
-      "shop_id"     => "required|exists:shops,id",
+      "shop_id" => "required|exists:shops,id",
       "dispatch_id" => "nullable|exists:dispatch_requests,id",
-      "rating"      => "required|integer|min:1|max:5",
-      "comment"     => "nullable|string",
+      "rating" => "required|integer|min:1|max:5",
+      "comment" => "nullable|string",
     ]);
 
     DB::table("reviews")->insert([
-      "shop_id"     => $validated["shop_id"],
+      "shop_id" => $validated["shop_id"],
       "dispatch_id" => $validated["dispatch_id"] ?? null,
-      "rating"      => $validated["rating"],
-      "comment"     => $validated["comment"] ?? null,
-      "created_at"  => now(),
-      "updated_at"  => now(),
+      "rating" => $validated["rating"],
+      "comment" => $validated["comment"] ?? null,
+      "created_at" => now(),
+      "updated_at" => now(),
     ]);
 
     return response()->json([
@@ -293,6 +317,7 @@ class MotoristController extends Controller
     $lng = $request->query("lng");
 
     $shops = DB::table("shops")
+      ->join("shop_statuses", "shops.status_id", "=", "shop_statuses.id")
       ->leftJoin("reviews", "shops.id", "=", "reviews.shop_id")
       ->select(
         "shops.id",
@@ -301,7 +326,7 @@ class MotoristController extends Controller
         "shops.phone",
         "shops.latitude",
         "shops.longitude",
-        "shops.status",
+        "shop_statuses.slug as status",
         DB::raw("COALESCE(AVG(reviews.rating), 0) as rating"),
         DB::raw("COUNT(reviews.id) as review_count")
       )
@@ -312,7 +337,7 @@ class MotoristController extends Controller
         "shops.phone",
         "shops.latitude",
         "shops.longitude",
-        "shops.status"
+        "shop_statuses.slug"
       )
       ->get()
       ->map(function ($shop) use ($lat, $lng) {
@@ -418,20 +443,20 @@ class MotoristController extends Controller
     $guest_token = request()->query("guest_token");
     $motorist_id = request()->query("motorist_id");
 
-    $query = DB::table("shop_messages")
-      ->where("shop_id", $shopId);
+    $query = DB::table("shop_messages")->where("shop_id", $shopId);
 
     if ($guest_token) {
       $query->where("guest_token", $guest_token);
     } elseif ($motorist_id) {
       $query->where("motorist_id", $motorist_id);
     } else {
-      return response()->json(["error" => "No guest_token or motorist_id provided"], 400);
+      return response()->json(
+        ["error" => "No guest_token or motorist_id provided"],
+        400
+      );
     }
 
-    $messages = $query
-      ->orderBy("created_at", "asc")
-      ->get();
+    $messages = $query->orderBy("created_at", "asc")->get();
 
     return response()->json($messages);
   }
@@ -447,9 +472,12 @@ class MotoristController extends Controller
     ]);
 
     if (!$validated["motorist_id"] && !$validated["guest_token"]) {
-      return response()->json([
-        "error" => "Either motorist_id or guest_token must be provided",
-      ], 422);
+      return response()->json(
+        [
+          "error" => "Either motorist_id or guest_token must be provided",
+        ],
+        422
+      );
     }
 
     DB::table("shop_messages")->insert([

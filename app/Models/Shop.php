@@ -15,7 +15,7 @@ class Shop extends Model
     "latitude",
     "longitude",
     "location",
-    "status",
+    "status_id",
   ];
 
   public function owner()
