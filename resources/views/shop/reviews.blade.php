@@ -1,149 +1,90 @@
-@extends('layouts.shop')
+﻿@extends('layouts.shop')
 
 @section('content')
 
-<div class="mb-8">
-    <h2 class="heading-font text-3xl mb-2">Customer Reviews</h2>
-    <p class="text-gray-400">Feedback from motorists who completed jobs with your shop.</p>
+<div class="page-header">
+    <div class="page-pretitle">Shop</div>
+    <h1 class="page-title">Reviews</h1>
 </div>
 
-<!-- SUMMARY CARDS -->
-<div class="grid md:grid-cols-3 gap-4 mb-8">
-
-    <div class="bg-[#121214] border border-white/5 rounded-xl p-6">
-        <p class="text-xs text-gray-500 font-bold uppercase">Average Rating</p>
-
-        @if($totalReviews > 0)
-            <p class="text-4xl font-black text-[#F7941D] mt-3">
-                ⭐ {{ $averageRating }}
-            </p>
-            <p class="text-gray-400 text-sm mt-1">Out of 5 stars</p>
-        @else
-            <p class="text-3xl font-black text-gray-500 mt-3">0.0</p>
-            <p class="text-gray-500 text-sm mt-1">No ratings yet</p>
-        @endif
+{{-- Summary Cards --}}
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:16px; margin-bottom:24px;">
+    <div class="t-card" style="padding:20px 24px;">
+        <p style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 8px;">Average Rating</p>
+        <div style="display:flex; align-items:baseline; gap:6px;">
+            <span style="font-size:32px; font-weight:700; color:#1d273b;">{{ number_format($averageRating, 1) }}</span>
+            <span style="font-size:14px; color:#f76707; font-weight:600;">/ 5.0</span>
+        </div>
+        <div style="margin-top:6px; font-size:18px; color:#f76707;">
+            @for($s=1;$s<=5;$s++)
+                @if($s <= round($averageRating))★@else☆@endif
+            @endfor
+        </div>
     </div>
-
-    <div class="bg-[#121214] border border-white/5 rounded-xl p-6">
-        <p class="text-xs text-gray-500 font-bold uppercase">Total Reviews</p>
-        <p class="text-4xl font-black text-white mt-3">{{ $totalReviews }}</p>
-        <p class="text-gray-400 text-sm mt-1">Customer feedback</p>
+    <div class="t-card" style="padding:20px 24px;">
+        <p style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 8px;">Total Reviews</p>
+        <p style="font-size:32px; font-weight:700; color:#1d273b; margin:0;">{{ $totalReviews }}</p>
+        <p style="font-size:13px; color:#a0a8b1; margin:6px 0 0;">motorist reviews</p>
     </div>
-
-    <div class="bg-[#121214] border border-white/5 rounded-xl p-6">
-        <p class="text-xs text-gray-500 font-bold uppercase">Positive Feedback</p>
-
-        @if($totalReviews > 0)
-            <p class="text-4xl font-black text-green-400 mt-3">{{ $positivePercentage }}%</p>
-            <p class="text-gray-400 text-sm mt-1">4 stars and above</p>
-        @else
-            <p class="text-4xl font-black text-gray-500 mt-3">0%</p>
-            <p class="text-gray-500 text-sm mt-1">No feedback yet</p>
-        @endif
+    <div class="t-card" style="padding:20px 24px;">
+        <p style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 8px;">Positive Reviews</p>
+        <p style="font-size:32px; font-weight:700; color:#2fb344; margin:0;">{{ $positivePercentage }}%</p>
+        <p style="font-size:13px; color:#a0a8b1; margin:6px 0 0;">4★ and 5★ combined</p>
     </div>
-
 </div>
 
-<!-- RATING BREAKDOWN -->
-<div class="bg-[#121214] border border-white/5 rounded-xl p-6 mb-8">
-    <h3 class="text-lg font-black text-white mb-5">Rating Breakdown</h3>
+<div style="display:grid; grid-template-columns:260px 1fr; gap:20px; align-items:start;">
 
-    @if($totalReviews > 0)
-        @foreach($ratingBreakdown as $star => $count)
-            @php
-                $percentage = $totalReviews > 0 ? ($count / $totalReviews) * 100 : 0;
-            @endphp
+    {{-- Rating Breakdown --}}
+    <div class="t-card" style="padding:20px 24px;">
+        <h3 style="font-size:14px; font-weight:700; color:#1d273b; margin:0 0 16px;">Breakdown</h3>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            @for($star=5; $star>=1; $star--)
+                @php $cnt = $ratingBreakdown[$star] ?? 0; $pct = $totalReviews > 0 ? round(($cnt/$totalReviews)*100) : 0; @endphp
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:13px; color:#f76707; width:24px; font-weight:600;">{{ $star }}★</span>
+                    <div style="flex:1; background:#f0f2f5; border-radius:20px; height:8px; overflow:hidden;">
+                        <div style="background:#f76707; width:{{ $pct }}%; height:100%; border-radius:20px; transition:width .3s;"></div>
+                    </div>
+                    <span style="font-size:12px; color:#667382; width:28px; text-align:right;">{{ $cnt }}</span>
+                </div>
+            @endfor
+        </div>
+    </div>
 
-            <div class="flex items-center gap-3 mb-3">
-                <span class="w-12 text-sm text-gray-300">{{ $star }} ⭐</span>
-
-                <div class="flex-1 bg-white/10 h-3 rounded-full overflow-hidden">
-                    <div
-                        class="bg-[#F7941D] h-3 rounded-full"
-                        style="width: {{ $percentage }}%">
+    {{-- Reviews List --}}
+    <div style="display:flex; flex-direction:column; gap:12px;">
+        @forelse($reviews ?? [] as $review)
+        @php
+            $rName = $review->motorist->name ?? $review->guest_name ?? 'Anonymous';
+        @endphp
+        <div class="t-card" style="padding:18px 20px;">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:36px; height:36px; background:#206bc4; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <span style="font-size:13px; font-weight:700; color:#fff;">{{ strtoupper(substr($rName, 0, 1)) }}</span>
+                    </div>
+                    <div>
+                        <p style="font-size:14px; font-weight:600; color:#1d273b; margin:0;">{{ $rName }}</p>
+                        <p style="font-size:11px; color:#a0a8b1; margin:2px 0 0;">{{ \Carbon\Carbon::parse($review->created_at)->format('M d, Y') }}</p>
                     </div>
                 </div>
-
-                <span class="text-xs text-gray-400 w-8 text-right">{{ $count }}</span>
+                <div style="display:flex; gap:2px; font-size:16px; color:#f76707;">
+                    @for($s=1;$s<=5;$s++)@if($s<=$review->rating)★@else<span style="color:#e6e7eb;">★</span>@endif@endfor
+                </div>
             </div>
-        @endforeach
-    @else
-        <div class="text-center py-8">
-            <p class="text-gray-400">No rating data yet.</p>
-            <p class="text-gray-500 text-sm mt-1">Rating breakdown will appear after customer reviews.</p>
-        </div>
-    @endif
-</div>
-
-<!-- REVIEWS LIST -->
-<div class="space-y-4">
-
-    @forelse($reviews as $review)
-
-        <div class="bg-[#121214] border border-white/5 rounded-xl p-5 hover:border-white/10 transition">
-
-            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
-
-                <div>
-                    <h4 class="font-black text-white">
-                        {{ $review->motorist_name ?? 'Guest Motorist' }}
-                    </h4>
-
-                    <p class="text-xs text-gray-500 mt-1">
-                        {{ \Carbon\Carbon::parse($review->created_at)->format('M d, Y • h:i A') }}
-                    </p>
-                </div>
-
-                <div class="text-[#F7941D] font-black text-lg">
-                    ⭐ {{ $review->rating }}/5
-                </div>
-
-            </div>
-
-            @if(!empty($review->issue_type))
-                <div class="mb-3">
-                    <span class="text-xs bg-white/5 border border-white/10 text-gray-300 px-3 py-1 rounded-full">
-                        Job: {{ $review->issue_type }}
-                    </span>
-                </div>
-            @endif
-
-            @if(!empty($review->request_type))
-                <div class="mb-3">
-                    <span class="text-xs bg-blue-500/10 border border-blue-500/20 text-blue-300 px-3 py-1 rounded-full">
-                        {{ strtoupper(str_replace('_', ' ', $review->request_type)) }}
-                    </span>
-                </div>
-            @endif
-
             @if(!empty($review->comment))
-                <p class="text-gray-300 text-sm leading-relaxed">
-                    “{{ $review->comment }}”
-                </p>
-            @else
-                <p class="text-gray-500 text-sm italic">
-                    No written comment.
-                </p>
+            <p style="font-size:13px; color:#1d273b; line-height:1.6; margin:0;">{{ $review->comment }}</p>
             @endif
-
-            <p class="text-xs text-gray-500 mt-4">
-                {{ \Carbon\Carbon::parse($review->created_at)->diffForHumans() }}
-            </p>
-
         </div>
-
-    @empty
-
-        <div class="text-center py-20 bg-[#121214] border border-white/5 rounded-xl">
-            <div class="text-5xl mb-4">⭐</div>
-            <p class="text-gray-400 text-lg font-bold">No reviews yet</p>
-            <p class="text-gray-500 text-sm mt-1">
-                New shops will show empty until motorists submit reviews.
-            </p>
+        @empty
+        <div class="t-card" style="padding:56px 24px; text-align:center;">
+            <i class="fas fa-star" style="font-size:32px; color:#c8ccd0; margin-bottom:12px; display:block;"></i>
+            <p style="font-size:15px; font-weight:600; color:#667382; margin:0 0 4px;">No reviews yet</p>
+            <p style="font-size:13px; color:#a0a8b1; margin:0;">Reviews will appear here after motorists complete service.</p>
         </div>
-
-    @endforelse
-
+        @endforelse
+    </div>
 </div>
 
 @endsection

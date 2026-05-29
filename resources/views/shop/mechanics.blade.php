@@ -1,145 +1,148 @@
-@extends('layouts.shop')
+﻿@extends('layouts.shop')
 
 @section('content')
 
-    <div class="flex justify-between items-center mb-8">
+    <div class="page-header"
+        style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
         <div>
-            <h2 class="text-white text-3xl heading-font">Mechanics</h2>
-            <p class="mt-1 text-gray-400">Manage your shop's mechanics</p>
+            <div class="page-pretitle">Shop</div>
+            <h1 class="page-title">Mechanics</h1>
         </div>
-        <button onclick="document.getElementById('add-mechanic-modal').classList.remove('hidden')"
-            class="bg-orange-500 hover:bg-orange-600 px-5 py-2.5 rounded-lg font-semibold text-white text-sm transition">
-            + Add Mechanic
+        <button onclick="document.getElementById('add-mechanic-modal').style.display='flex'" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Mechanic
         </button>
     </div>
 
     @if (session('success'))
-        <div class="bg-green-500/10 mb-6 p-4 border border-green-500/30 rounded-lg">
-            <p class="text-green-400 text-sm">{{ session('success') }}</p>
+        <div class="alert alert-success"><i class="fas fa-circle-check" style="margin-right:6px;"></i>{{ session('success') }}
         </div>
     @endif
-
     @if ($errors->any())
-        <div class="bg-red-500/10 mb-6 p-4 border border-red-500/30 rounded-lg">
-            <ul class="space-y-1 text-red-400 text-sm">
-                @foreach ($errors->all() as $error)
-                    <li>• {{ $error }}</li>
+        <div class="alert alert-danger">
+            <ul style="margin:0; padding-left:18px;">
+                @foreach ($errors->all() as $e)
+                    <li>{{ $e }}</li>
                 @endforeach
             </ul>
         </div>
     @endif
 
-    {{-- Mechanics table --}}
     @if ($mechanics->isEmpty())
-        <div class="py-16 text-gray-500 text-center">
-            <p class="mb-4 text-5xl">🔧</p>
-            <p class="text-lg">No mechanics added yet.</p>
-            <p class="mt-2 text-sm">Click <strong class="text-orange-400">+ Add Mechanic</strong> to get started.</p>
+        <div class="t-card" style="padding:56px 24px; text-align:center;">
+            <i class="fas fa-tools" style="font-size:36px; color:#c8ccd0; margin-bottom:14px; display:block;"></i>
+            <p style="font-size:16px; font-weight:600; color:#667382; margin:0 0 6px;">No mechanics added yet</p>
+            <p style="font-size:13px; color:#a0a8b1; margin:0;">Click <strong>Add Mechanic</strong> to get started.</p>
         </div>
     @else
-        <div class="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="border-white/10 border-b text-gray-400 text-xs uppercase tracking-wider">
-                        <th class="px-6 py-4 text-left">Name</th>
-                        <th class="px-6 py-4 text-left">Email</th>
-                        <th class="px-6 py-4 text-left">Plate Number</th>
-                        <th class="px-6 py-4 text-left">Phone</th>
-                        <th class="px-6 py-4 text-left">Status</th>
-                        <th class="px-6 py-4 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-white/5">
-                    @foreach ($mechanics as $profile)
-                        <tr class="hover:bg-white/5 transition">
-                            <td class="px-6 py-4 font-medium text-white">{{ $profile->user->name ?? '—' }}</td>
-                            <td class="px-6 py-4 text-gray-400">{{ $profile->user->email ?? '—' }}</td>
-                            <td class="px-6 py-4 font-mono text-orange-400">{{ $profile->plate_number ?? '—' }}</td>
-                            <td class="px-6 py-4 text-gray-400">{{ $profile->phone ?? '—' }}</td>
-                            <td class="px-6 py-4">
-                                <span
-                                    class="px-2 py-1 rounded-full text-xs font-bold
-                        @if ($profile->status === 'dispatched') bg-yellow-500/20 text-yellow-400
-                        @elseif($profile->status === 'off_duty') bg-gray-500/20 text-gray-400
-                        @else bg-green-500/20 text-green-400 @endif
-                    ">
-                                    {{ strtoupper(str_replace('_', ' ', $profile->status)) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <form method="POST" action="{{ route('shop.mechanics.delete', $profile->id) }}"
-                                    onsubmit="return confirm('Remove {{ addslashes($profile->user->name ?? 'this mechanic') }}?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                        class="font-semibold text-red-400 hover:text-red-300 text-xs transition">
-                                        Remove
-                                    </button>
-                                </form>
-                            </td>
+        <div class="t-card" style="overflow:hidden;">
+            <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #e6e7eb;">
+                            <th
+                                style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; letter-spacing:.04em;">
+                                Name</th>
+                            <th
+                                style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; letter-spacing:.04em;">
+                                Email</th>
+                            <th
+                                style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; letter-spacing:.04em;">
+                                Plate</th>
+                            <th
+                                style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; letter-spacing:.04em;">
+                                Phone</th>
+                            <th
+                                style="padding:12px 16px; text-align:left; font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; letter-spacing:.04em;">
+                                Status</th>
+                            <th
+                                style="padding:12px 16px; text-align:right; font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; letter-spacing:.04em;">
+                                Actions</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach ($mechanics as $profile)
+                            @php
+                                $mStatus = $profile->status ?? 'available';
+                                $mBadge = match ($mStatus) {
+                                    'dispatched' => 'badge-warning',
+                                    'off_duty' => 'badge-secondary',
+                                    default => 'badge-success',
+                                };
+                            @endphp
+                            <tr style="border-bottom:1px solid #f0f2f5; transition:background .1s;"
+                                onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
+                                <td style="padding:12px 16px; font-size:14px; font-weight:600; color:#1d273b;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <div
+                                            style="width:32px; height:32px; background:#206bc4; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                            <span
+                                                style="font-size:12px; font-weight:700; color:#fff;">{{ strtoupper(substr($profile->user->name ?? 'M', 0, 1)) }}</span>
+                                        </div>
+                                        {{ $profile->user->name ?? '—' }}
+                                    </div>
+                                </td>
+                                <td style="padding:12px 16px; font-size:13px; color:#667382;">
+                                    {{ $profile->user->email ?? '—' }}</td>
+                                <td
+                                    style="padding:12px 16px; font-size:13px; font-family:monospace; color:#206bc4; font-weight:600;">
+                                    {{ $profile->plate_number ?? '—' }}</td>
+                                <td style="padding:12px 16px; font-size:13px; color:#667382;">{{ $profile->phone ?? '—' }}
+                                </td>
+                                <td style="padding:12px 16px;">
+                                    <span
+                                        class="badge {{ $mBadge }}">{{ strtoupper(str_replace('_', ' ', $mStatus)) }}</span>
+                                </td>
+                                <td style="padding:12px 16px; text-align:right;">
+                                    <form method="POST" action="{{ route('shop.mechanics.delete', $profile->id) }}"
+                                        id="del-mech-{{ $profile->id }}" onsubmit="return false;">
+                                        @csrf @method('DELETE')
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                            onclick="showConfirmModal('Remove Mechanic','Remove {{ addslashes($profile->user->name ?? 'this mechanic') }} from your shop?',function(){document.getElementById('del-mech-{{ $profile->id }}').onsubmit=null;document.getElementById('del-mech-{{ $profile->id }}').submit();},'Remove','#d63939')">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     @endif
 
     {{-- Add Mechanic Modal --}}
-    <div id="add-mechanic-modal" class="hidden z-50 fixed inset-0 flex justify-center items-center bg-black/70 px-4">
-        <div class="bg-[#18181b] p-8 border border-white/10 rounded-2xl w-full max-w-md">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-white text-xl heading-font">Add Mechanic</h3>
-                <button onclick="document.getElementById('add-mechanic-modal').classList.add('hidden')"
-                    class="text-gray-500 hover:text-white text-2xl leading-none">&times;</button>
+    <div id="add-mechanic-modal"
+        style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.5); align-items:center; justify-content:center; padding:16px;">
+        <div style="width:100%; max-width:460px; background:#fff; border-radius:10px; padding:28px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h3 style="font-size:17px; font-weight:700; color:#1d273b; margin:0;">Add Mechanic</h3>
+                <button onclick="document.getElementById('add-mechanic-modal').style.display='none'"
+                    style="background:none; border:none; font-size:20px; color:#667382; cursor:pointer; line-height:1;">&times;</button>
             </div>
-
-            <form method="POST" action="{{ route('shop.mechanics.store') }}" class="space-y-4">
+            <form method="POST" action="{{ route('shop.mechanics.store') }}"
+                style="display:flex; flex-direction:column; gap:14px;">
                 @csrf
-
-                <div>
-                    <label class="block mb-2 font-semibold text-gray-300 text-sm">Full Name</label>
-                    <input type="text" name="name" required placeholder="Juan dela Cruz"
-                        class="bg-white/10 px-4 py-3 border border-white/10 focus:border-orange-500 rounded-lg focus:outline-none w-full text-white placeholder-gray-500">
+                <div><label class="form-label">Full Name</label><input type="text" name="name" required
+                        placeholder="Juan dela Cruz" class="form-control"></div>
+                <div><label class="form-label">Email Address</label><input type="email" name="email" required
+                        placeholder="mechanic@example.com" class="form-control"></div>
+                <div><label class="form-label">Temporary Password</label><input type="password" name="password" required
+                        placeholder="Minimum 6 characters" class="form-control"></div>
+                <div><label class="form-label">Plate Number <span
+                            style="color:#a0a8b1; font-weight:400;">(optional)</span></label><input type="text"
+                        name="plate_number" placeholder="ABC 1234" class="form-control" style="text-transform:uppercase;">
                 </div>
-
-                <div>
-                    <label class="block mb-2 font-semibold text-gray-300 text-sm">Email Address</label>
-                    <input type="email" name="email" required placeholder="mechanic@example.com"
-                        class="bg-white/10 px-4 py-3 border border-white/10 focus:border-orange-500 rounded-lg focus:outline-none w-full text-white placeholder-gray-500">
-                </div>
-
-                <div>
-                    <label class="block mb-2 font-semibold text-gray-300 text-sm">Temporary Password</label>
-                    <input type="password" name="password" required placeholder="Minimum 6 characters"
-                        class="bg-white/10 px-4 py-3 border border-white/10 focus:border-orange-500 rounded-lg focus:outline-none w-full text-white placeholder-gray-500">
-                </div>
-
-                <div>
-                    <label class="block mb-2 font-semibold text-gray-300 text-sm">Plate Number <span
-                            class="font-normal text-gray-500">(optional)</span></label>
-                    <input type="text" name="plate_number" placeholder="e.g. ABC 1234"
-                        class="bg-white/10 px-4 py-3 border border-white/10 focus:border-orange-500 rounded-lg focus:outline-none w-full font-mono text-white uppercase placeholder-gray-500">
-                </div>
-
-                <div>
-                    <label class="block mb-2 font-semibold text-gray-300 text-sm">Phone <span
-                            class="font-normal text-gray-500">(optional)</span></label>
-                    <input type="text" name="phone" placeholder="09XXXXXXXXX"
-                        class="bg-white/10 px-4 py-3 border border-white/10 focus:border-orange-500 rounded-lg focus:outline-none w-full text-white placeholder-gray-500">
-                </div>
-
-                <button type="submit"
-                    class="bg-orange-500 hover:bg-orange-600 mt-2 py-3 rounded-lg w-full font-bold text-white transition">
-                    Add Mechanic
-                </button>
+                <div><label class="form-label">Phone <span
+                            style="color:#a0a8b1; font-weight:400;">(optional)</span></label><input type="text"
+                        name="phone" placeholder="09XXXXXXXXX" class="form-control"></div>
+                <button type="submit" class="btn btn-primary"
+                    style="width:100%; justify-content:center; margin-top:4px;">Add Mechanic</button>
             </form>
         </div>
     </div>
 
     @if ($errors->any())
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                document.getElementById('add-mechanic-modal').classList.remove('hidden');
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('add-mechanic-modal').style.display = 'flex';
             });
         </script>
     @endif

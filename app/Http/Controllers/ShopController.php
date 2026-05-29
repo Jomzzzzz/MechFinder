@@ -254,8 +254,6 @@ class ShopController extends Controller
         "dispatch_requests.longitude",
         "dispatch_requests.location",
         "dispatch_requests.guest_name",
-        "dispatch_requests.motorist_uid",
-        "dispatch_requests.motor_type",
         DB::raw(
           'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
         )
@@ -493,8 +491,6 @@ class ShopController extends Controller
         "dispatch_requests.issue_type",
         "dispatch_requests.status",
         "dispatch_requests.guest_name",
-        "dispatch_requests.motorist_uid",
-        "dispatch_requests.motor_type",
         DB::raw(
           'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
         )

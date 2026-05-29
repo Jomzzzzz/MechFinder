@@ -1,253 +1,133 @@
-@extends('layouts.shop')
+﻿@extends('layouts.shop')
 
 @section('content')
 
-<div class="mb-8">
-    <h2 class="heading-font text-3xl mb-2">Messages</h2>
-    <p class="text-gray-400">Chat with motorists connected to dispatch requests.</p>
+<div class="page-header">
+    <div class="page-pretitle">Shop</div>
+    <h1 class="page-title">Messages</h1>
 </div>
 
-<div class="h-[calc(100vh-180px)] flex bg-[#0F0F0F] text-white rounded-2xl overflow-hidden border border-white/10">
+<div class="t-card" style="overflow:hidden; height:calc(100vh - 160px); min-height:400px; display:flex;">
 
-    <!-- LEFT: CONVERSATIONS -->
-    <div class="w-full md:w-1/3 border-r border-white/10 bg-[#121214] overflow-y-auto">
-
-        <div class="p-4 font-black text-xl border-b border-white/10 flex items-center justify-between">
-            <span>Conversations</span>
-            <span class="text-xs px-3 py-1 rounded-full bg-white/5 text-gray-400">
-                {{ $conversations->count() }}
-            </span>
+    {{-- Conversations List --}}
+    <div id="conv-list" style="width:300px; flex-shrink:0; border-right:1px solid #e6e7eb; overflow-y:auto;">
+        <div style="padding:14px 16px; border-bottom:1px solid #e6e7eb;">
+            <p style="font-size:13px; font-weight:700; color:#1d273b; margin:0;">Conversations</p>
         </div>
-
-        @forelse($conversations as $c)
-            <button
-                onclick="openChat({{ $c->dispatch_id }}, @js($c->motorist_name), @js($c->issue_type))"
-                id="conversation-{{ $c->dispatch_id }}"
-                class="w-full text-left p-4 border-b border-white/5 cursor-pointer hover:bg-white/5 transition conversation-item"
-            >
-                <div class="flex justify-between gap-3">
-                    <div>
-                        <div class="font-bold text-white">
-                            {{ $c->motorist_name ?? 'Unknown Motorist' }}
-                        </div>
-
-                        <div class="text-xs text-gray-400 mt-1">
-                            {{ $c->issue_type ?? 'Motorcycle Issue' }}
-                        </div>
-
-                        <div class="text-xs text-gray-500 mt-1">
-                            Status: {{ strtoupper(str_replace('_', ' ', $c->status ?? 'unknown')) }}
-                        </div>
-                    </div>
-
-                    <div class="text-xs text-[#F7941D] font-bold">
-                        #{{ $c->dispatch_id }}
-                    </div>
+        @forelse($conversations as $conv)
+        @php
+            $partner = ($conv->sender_id === auth()->id()) ? $conv->receiver : $conv->sender;
+            $lastMsg  = $conv->messages->last();
+        @endphp
+        <div onclick="openChat({{ $partner->id ?? 0 }}, '{{ addslashes($partner->name ?? 'Unknown') }}')"
+             id="conv-item-{{ $partner->id ?? 0 }}"
+             style="padding:12px 16px; cursor:pointer; border-bottom:1px solid #f0f2f5; transition:background .1s;"
+             onmouseover="this.style.background='#f4f6fb'" onmouseout="this.style.background=activeConvId==={{ $partner->id ?? 0 }}?'#edf2f9':''">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:36px; height:36px; background:#206bc4; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <span style="font-size:13px; font-weight:700; color:#fff;">{{ strtoupper(substr($partner->name ?? 'U', 0, 1)) }}</span>
                 </div>
-            </button>
-        @empty
-            <div class="p-6 text-center">
-                <p class="text-gray-400">No conversations yet.</p>
-                <p class="text-gray-500 text-sm mt-1">
-                    Messages will appear after motorists send requests.
-                </p>
+                <div style="min-width:0; flex:1;">
+                    <p style="font-size:13px; font-weight:600; color:#1d273b; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $partner->name ?? 'Unknown' }}</p>
+                    <p style="font-size:12px; color:#a0a8b1; margin:2px 0 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $lastMsg ? Str::limit($lastMsg->message, 30) : 'No messages' }}</p>
+                </div>
             </div>
+        </div>
+        @empty
+        <div style="padding:32px 16px; text-align:center;">
+            <i class="fas fa-comment-slash" style="font-size:28px; color:#c8ccd0; display:block; margin-bottom:8px;"></i>
+            <p style="font-size:13px; color:#a0a8b1; margin:0;">No conversations yet</p>
+        </div>
         @endforelse
-
     </div>
 
-    <!-- RIGHT: CHAT -->
-    <div class="hidden md:flex flex-1 flex-col" id="chatPanel">
+    {{-- Chat Panel --}}
+    <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
 
-        <div class="p-4 border-b border-white/10 bg-[#121214]">
-            <div class="font-black text-white" id="chatTitle">
-                Select conversation
-            </div>
-            <div class="text-xs text-gray-400 mt-1" id="chatSubtitle">
-                Choose a motorist conversation from the left.
-            </div>
+        {{-- Empty state --}}
+        <div id="chat-empty" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#a0a8b1;">
+            <i class="fas fa-comments" style="font-size:40px; margin-bottom:12px;"></i>
+            <p style="font-size:14px; margin:0;">Select a conversation to start messaging</p>
         </div>
 
-        <div id="chatBox" class="flex-1 p-4 overflow-y-auto space-y-3 bg-[#0F0F0F]">
-            <div class="h-full flex items-center justify-center text-center">
-                <div>
-                    <p class="text-gray-400 text-lg">No chat selected</p>
-                    <p class="text-gray-500 text-sm mt-1">Select a conversation to start messaging.</p>
+        {{-- Active chat --}}
+        <div id="chat-active" style="display:none; flex:1; flex-direction:column;">
+            <div style="padding:12px 18px; border-bottom:1px solid #e6e7eb; display:flex; align-items:center; gap:10px;">
+                <div style="width:34px; height:34px; background:#206bc4; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <span id="chat-avatar" style="font-size:13px; font-weight:700; color:#fff;">?</span>
                 </div>
+                <p id="chat-name" style="font-size:14px; font-weight:700; color:#1d273b; margin:0;">—</p>
+            </div>
+            <div id="chat-messages" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:8px;"></div>
+            <div style="padding:12px 16px; border-top:1px solid #e6e7eb; display:flex; gap:8px;">
+                <input id="msg-input" type="text" placeholder="Type a message..." class="form-control" style="flex:1;"
+                    onkeydown="if(event.key==='Enter')sendMsg()">
+                <button onclick="sendMsg()" class="btn btn-primary" style="flex-shrink:0;"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
-
-        <div class="p-4 border-t border-white/10 bg-[#121214] flex gap-2">
-            <input
-                id="msgInput"
-                class="flex-1 bg-white/5 border border-white/10 p-3 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-orange-500"
-                placeholder="Type message..."
-                disabled
-                onkeydown="if(event.key === 'Enter') sendMsg()"
-            >
-
-            <button
-                onclick="sendMsg()"
-                id="sendButton"
-                disabled
-                class="bg-[#F7941D] px-5 rounded-xl text-black font-black disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                Send
-            </button>
-        </div>
-
     </div>
 </div>
 
 <script>
-let dispatchId = null;
-let refreshInterval = null;
+let activeConvId = null;
+let msgInterval  = null;
 
-function getCsrfToken() {
-    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-}
-
-function openChat(id, name, issue) {
-    dispatchId = id;
-
-    document.querySelectorAll('.conversation-item').forEach(item => {
-        item.classList.remove('bg-white/10', 'border-orange-500/30');
-    });
-
-    const selected = document.getElementById(`conversation-${id}`);
-    if (selected) {
-        selected.classList.add('bg-white/10', 'border-orange-500/30');
-    }
-
-    document.getElementById('chatPanel').classList.remove('hidden');
-    document.getElementById('chatPanel').classList.add('flex');
-
-    document.getElementById('chatTitle').innerText = name || 'Unknown Motorist';
-    document.getElementById('chatSubtitle').innerText = issue || 'Motorcycle Issue';
-
-    document.getElementById('msgInput').disabled = false;
-    document.getElementById('sendButton').disabled = false;
-
+function openChat(partnerId, partnerName) {
+    activeConvId = partnerId;
+    document.getElementById('chat-empty').style.display  = 'none';
+    document.getElementById('chat-active').style.display = 'flex';
+    document.getElementById('chat-name').textContent     = partnerName;
+    document.getElementById('chat-avatar').textContent   = partnerName.charAt(0).toUpperCase();
+    document.querySelectorAll('[id^="conv-item-"]').forEach(el => el.style.background = '');
+    const ci = document.getElementById('conv-item-'+partnerId);
+    if(ci) ci.style.background = '#edf2f9';
     loadMessages();
-
-    if (refreshInterval) clearInterval(refreshInterval);
-    refreshInterval = setInterval(loadMessages, 3000);
+    if(msgInterval) clearInterval(msgInterval);
+    msgInterval = setInterval(loadMessages, 3000);
 }
 
-async function loadMessages() {
-    if (!dispatchId) return;
-
-    try {
-        const res = await fetch(`/api/shop/messages/${dispatchId}`, {
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-
-        const data = await res.json();
-        const box = document.getElementById('chatBox');
-
-        box.innerHTML = '';
-
-        if (!data.messages || data.messages.length === 0) {
-            box.innerHTML = `
-                <div class="h-full flex items-center justify-center text-center">
-                    <div>
-                        <p class="text-gray-400">No messages yet.</p>
-                        <p class="text-gray-500 text-sm mt-1">Send the first message to the motorist.</p>
-                    </div>
-                </div>
-            `;
-            return;
-        }
-
-        data.messages.forEach(msg => {
-            const isShop = msg.sender_type === 'shop';
-
-            box.innerHTML += `
-                <div class="${isShop ? 'text-right' : 'text-left'}">
-                    <div class="inline-block max-w-[75%] px-4 py-3 rounded-2xl text-sm ${
-                        isShop
-                            ? 'bg-[#F7941D] text-black rounded-br-sm'
-                            : 'bg-white/10 text-white rounded-bl-sm'
-                    }">
-                        <div>${escapeHtml(msg.message)}</div>
-                        <div class="text-[10px] mt-1 opacity-60">
-                            ${formatTime(msg.created_at)}
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        box.scrollTop = box.scrollHeight;
-
-    } catch (error) {
-        console.error(error);
-    }
+function loadMessages() {
+    if(!activeConvId) return;
+    fetch(`/api/shop/messages/${activeConvId}`)
+        .then(r => r.json())
+        .then(msgs => {
+            const box = document.getElementById('chat-messages');
+            const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+            box.innerHTML = '';
+            msgs.forEach(msg => {
+                const mine = msg.sender_id === {{ auth()->id() }};
+                const div = document.createElement('div');
+                div.style.cssText = `display:flex; justify-content:${mine ? 'flex-end' : 'flex-start'};`;
+                div.innerHTML = `<div style="max-width:68%; padding:8px 12px; border-radius:${mine ? '12px 12px 2px 12px' : '12px 12px 12px 2px'};
+                    background:${mine ? '#206bc4' : '#f4f6fb'}; color:${mine ? '#fff' : '#1d273b'}; font-size:13px; line-height:1.5;">
+                    ${escapeHtml(msg.message)}
+                    <div style="font-size:10px; opacity:.65; margin-top:3px; text-align:${mine ? 'right' : 'left'}">${formatTime(msg.created_at)}</div>
+                </div>`;
+                box.appendChild(div);
+            });
+            if(atBottom) box.scrollTop = box.scrollHeight;
+        }).catch(() => {});
 }
 
-async function sendMsg() {
-    const input = document.getElementById('msgInput');
-
-    if (!dispatchId) {
-        alert('Please select a conversation first.');
-        return;
-    }
-
-    const message = input.value.trim();
-
-    if (!message) return;
-
-    input.disabled = true;
-    document.getElementById('sendButton').disabled = true;
-
-    try {
-        const res = await fetch('/api/shop/messages/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': getCsrfToken()
-            },
-            body: JSON.stringify({
-                dispatch_id: dispatchId,
-                message: message
-            })
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-            input.value = '';
-            await loadMessages();
-        } else {
-            alert(data.message || 'Failed to send message.');
-        }
-
-    } catch (error) {
-        alert('Error sending message.');
-    } finally {
-        input.disabled = false;
-        document.getElementById('sendButton').disabled = false;
-        input.focus();
-    }
+function sendMsg() {
+    const input = document.getElementById('msg-input');
+    const msg   = input.value.trim();
+    if(!msg || !activeConvId) return;
+    input.value = '';
+    fetch('/api/shop/messages/send', {
+        method: 'POST',
+        headers: {'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '', 'Content-Type': 'application/json'},
+        body: JSON.stringify({ receiver_id: activeConvId, message: msg })
+    }).then(() => loadMessages()).catch(() => {});
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.innerText = text ?? '';
-    return div.innerHTML;
+function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-
-function formatTime(dateString) {
-    if (!dateString) return '';
-
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+function formatTime(ts) {
+    if(!ts) return '';
+    const d = new Date(ts);
+    return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 }
 </script>
 

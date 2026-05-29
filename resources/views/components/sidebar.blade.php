@@ -1,146 +1,161 @@
-@php
-    function active($path)
-    {
-        return request()->is($path)
-            ? 'bg-white/5 border-l-4 border-[#F7941D] text-white'
-            : 'text-gray-500 hover:text-white hover:bg-white/5';
+﻿@php
+    if (!function_exists('shopNavActive')) {
+        function shopNavActive($path)
+        {
+            return request()->is($path) || request()->is($path . '/*') ? 'active' : '';
+        }
+    }
+
+    $sidebarStatus = 'closed';
+    if (Auth::check()) {
+        $user = Auth::user();
+        $shopId = !empty($user->shop_id)
+            ? $user->shop_id
+            : \Illuminate\Support\Facades\DB::table('shops')->where('owner_id', $user->id)->value('id');
+        if ($shopId) {
+            $sidebarStatus = strtolower(
+                \Illuminate\Support\Facades\DB::table('shops')->where('id', $shopId)->value('status') ?? 'closed',
+            );
+        }
     }
 @endphp
 
-<aside class="flex flex-col bg-[#121214] border-white/5 border-r w-64">
+<aside class="t-sidebar">
 
-    <div class="p-8">
-        <h1 class="text-[#F7941D] text-2xl heading-font">⚙ MECHFINDER</h1>
+    {{-- Logo --}}
+    <div style="padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.08);">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div
+                style="width:32px; height:32px; background:#206bc4; border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fas fa-wrench" style="color:#fff; font-size:13px;"></i>
+            </div>
+            <div>
+                <div style="color:#fff; font-weight:700; font-size:15px; line-height:1.2;">MechFinder</div>
+                <div style="color:#667382; font-size:11px;">Shop Dashboard</div>
+            </div>
+        </div>
     </div>
 
-    <nav class="flex-1 space-y-2 px-4">
+    {{-- Navigation --}}
+    <nav style="flex:1; padding:12px 10px; overflow-y:auto;">
+        <div
+            style="font-size:10px; font-weight:700; color:#667382; text-transform:uppercase; letter-spacing:.08em; padding:6px 14px; margin-bottom:4px;">
+            Menu</div>
 
-        <a href="/shop/dashboard" class="block px-4 py-3 rounded {{ active('shop/dashboard') }}">
-            Dashboard
+        <a href="/shop/dashboard" class="t-nav-item {{ shopNavActive('shop/dashboard') }}">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
         </a>
-
-        <a href="/shop/requests" class="block px-4 py-3 rounded {{ active('shop/requests') }}">
-            Dispatch Requests
+        <a href="/shop/requests" class="t-nav-item {{ shopNavActive('shop/requests') }}">
+            <i class="fas fa-clipboard-list"></i> Dispatch Requests
         </a>
-
-        <a href="/shop/messages" class="block px-4 py-3 rounded {{ active('shop/messages') }}">
-            Messages
+        <a href="/shop/messages" class="t-nav-item {{ shopNavActive('shop/messages') }}">
+            <i class="fas fa-comments"></i> Messages
         </a>
-
-
-        <a href="/shop/reviews" class="block px-4 py-3 rounded {{ active('shop/reviews') }}">
-            Reviews
+        <a href="/shop/reviews" class="t-nav-item {{ shopNavActive('shop/reviews') }}">
+            <i class="fas fa-star"></i> Reviews
         </a>
-
-        <a href="/shop/mechanics" class="block px-4 py-3 rounded {{ active('shop/mechanics') }}">
-            Mechanics
+        <a href="/shop/mechanics" class="t-nav-item {{ shopNavActive('shop/mechanics') }}">
+            <i class="fas fa-tools"></i> Mechanics
         </a>
-
-        <a href="/shop/settings" class="block px-4 py-3 rounded {{ active('shop/settings') }}">>
-            Settings
+        <a href="/shop/settings" class="t-nav-item {{ shopNavActive('shop/settings') }}">
+            <i class="fas fa-cog"></i> Settings
         </a>
-
     </nav>
+
+    {{-- Footer: Sign out only --}}
+    <div style="padding:12px 16px; border-top:1px solid rgba(255,255,255,.08);">
+        @auth
+            <a href="{{ route('logout') }}"
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                style="display:inline-flex; align-items:center; gap:6px; font-size:12px; color:#667382; text-decoration:none;"
+                onmouseover="this.style.color='#d63939'" onmouseout="this.style.color='#667382'">
+                <i class="fas fa-sign-out-alt"></i> Sign out
+            </a>
+            <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display:none;">@csrf</form>
+        @endauth
+    </div>
 
 </aside>
 
 <script>
     function getCsrfToken() {
-        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        return token || document.body.getAttribute('data-csrf-token') || '';
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     }
 
     async function toggleShopStatus() {
-        const currentStatus = document.getElementById('status-text').textContent.toLowerCase().trim();
+        const textEl = document.getElementById('topbar-status-text');
+        const currentStatus = textEl ? textEl.textContent.trim().toLowerCase() : 'unknown';
         const isOpen = currentStatus === 'open';
-
-        if (!confirm(`Toggle shop to ${isOpen ? 'CLOSED' : 'OPEN'}?`)) return;
-
-        try {
-            const response = await fetch('/shop/settings/toggle-status', {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': getCsrfToken(),
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                updateStatusUI(data.status);
-
-                // Broadcast to other tabs
-                localStorage.setItem('shopStatus', data.status);
-                localStorage.setItem('shopStatusUpdated', Date.now());
-
-                // Update all components
-                updateDashboardStatus(data.status);
-                updateHeaderStatus(data.status);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error toggling shop status');
-        }
+        const nextLabel = isOpen ? 'CLOSED' : 'OPEN';
+        showConfirmModal(
+            `Toggle Shop Status`,
+            `Are you sure you want to set the shop to ${nextLabel}?`,
+            async function() {
+                    const toggleBtn = document.querySelector('[onclick="toggleShopStatus()"]');
+                    if (toggleBtn) {
+                        toggleBtn.disabled = true;
+                        toggleBtn.style.opacity = '.6';
+                    }
+                    try {
+                        const res = await fetch('/shop/settings/toggle-status', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': getCsrfToken(),
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const data = await res.json();
+                        if (res.ok && data.success) {
+                            updateStatusUI(data.status);
+                            localStorage.setItem('shopStatus', data.status);
+                            localStorage.setItem('shopStatusUpdated', Date.now());
+                            if (typeof showToast === 'function') {
+                                showToast('Shop status set to ' + data.status + '.', 'success');
+                            }
+                        } else {
+                            const msg = data.message || ('Error ' + res.status);
+                            if (typeof showToast === 'function') showToast('Toggle failed: ' + msg, 'error');
+                            else alert('Toggle failed: ' + msg);
+                        }
+                    } catch (e) {
+                        console.error('Toggle failed:', e);
+                        if (typeof showToast === 'function') showToast('Network error — toggle failed.',
+                            'error');
+                        else alert('Network error — toggle failed.');
+                    } finally {
+                        if (toggleBtn) {
+                            toggleBtn.disabled = false;
+                            toggleBtn.style.opacity = '1';
+                        }
+                    }
+                },
+                isOpen ? 'Set Closed' : 'Set Open',
+                isOpen ? '#d63939' : '#2fb344'
+        );
     }
 
     function updateStatusUI(status) {
         const isOpen = status === 'open';
-        const indicator = document.getElementById('status-toggle-btn');
-        const text = document.getElementById('status-text');
-        const statusDiv = document.getElementById('shop-status-indicator');
-
-        indicator.textContent = isOpen ? '🟢' : '🔴';
-        text.textContent = isOpen ? 'Open' : 'Closed';
-        text.className = 'text-sm font-bold ' + (isOpen ? 'text-green-400' : 'text-red-400');
-
-        // Update box colors
-        statusDiv.style.borderColor = isOpen ? '#10b981' : '#ef4444';
-        statusDiv.style.backgroundColor = isOpen ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
-
-        // Update message
-        const message = statusDiv.querySelector('p:last-child');
-        message.textContent = `Motorists can ${isOpen ? 'see' : 'not see'} your shop`;
+        const isBusy = status === 'busy';
+        const color = isOpen ? '#2fb344' : (isBusy ? '#f76707' : '#d63939');
+        const bg = isOpen ? '#d1f7d6' : (isBusy ? '#ffe4cc' : '#fde8e8');
+        const label = isOpen ? 'Open' : (isBusy ? 'Busy' : 'Closed');
+        const tbDot = document.getElementById('topbar-status-dot');
+        const tbText = document.getElementById('topbar-status-text');
+        const tbPill = tbDot ? tbDot.parentElement : null;
+        if (tbDot) tbDot.style.background = color;
+        if (tbText) {
+            tbText.textContent = label;
+            tbText.style.color = color;
+        }
+        if (tbPill) tbPill.style.background = bg;
     }
 
-    function updateDashboardStatus(status) {
-        const isOpen = status === 'open';
-        const statusBox = document.getElementById('shop-status-box');
-        if (!statusBox) return;
-
-        const emoji = document.getElementById('status-emoji');
-        const text = document.getElementById('status-text-dash');
-
-        statusBox.style.borderColor = isOpen ? '#10b981' : '#ef4444';
-        statusBox.style.backgroundColor = isOpen ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
-
-        emoji.textContent = isOpen ? '🟢' : '🔴';
-        text.textContent = isOpen ? 'Open' : 'Closed';
-        text.className = 'text-lg font-bold ' + (isOpen ? 'text-green-400' : 'text-red-400');
-    }
-
-    function updateHeaderStatus(status) {
-        const isOpen = status === 'open';
-        const indicator = document.getElementById('header-status-indicator');
-        if (!indicator) return;
-
-        const dot = document.getElementById('header-status-dot');
-        const text = document.getElementById('header-status-text');
-        const color = isOpen ? '#10b981' : '#ef4444';
-
-        indicator.style.borderColor = color;
-        dot.style.backgroundColor = color;
-        text.style.color = color;
-        text.textContent = isOpen ? 'OPEN' : 'CLOSED';
-    }
-
-    // Listen for status changes from other tabs/windows
     window.addEventListener('storage', (e) => {
         if (e.key === 'shopStatusUpdated') {
-            const newStatus = localStorage.getItem('shopStatus');
-            if (newStatus) {
-                updateStatusUI(newStatus);
-                updateDashboardStatus(newStatus);
-            }
+            const s = localStorage.getItem('shopStatus');
+            if (s) updateStatusUI(s);
         }
     });
 </script>
