@@ -48,10 +48,13 @@ class ShopController extends Controller
 
     $requests = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
+      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
       ->where("dispatch_requests.shop_id", $shopId)
       ->where("dispatch_requests.status", "requested")
       ->select(
         "dispatch_requests.*",
+        "gp.owner_name as owner_name",
+        "gp.contact_number as contact_number",
         DB::raw(
           'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
         )
@@ -61,6 +64,7 @@ class ShopController extends Controller
 
     $jobs = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
+      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
       ->where("dispatch_requests.shop_id", $shopId)
       ->whereIn("dispatch_requests.status", [
         "accepted",
@@ -70,6 +74,8 @@ class ShopController extends Controller
       ])
       ->select(
         "dispatch_requests.*",
+        "gp.owner_name as owner_name",
+        "gp.contact_number as contact_number",
         DB::raw(
           'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
         )
@@ -126,10 +132,13 @@ class ShopController extends Controller
 
     $requests = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
+      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
       ->where("dispatch_requests.shop_id", $shopId)
       ->where("dispatch_requests.status", "requested")
       ->select(
         "dispatch_requests.*",
+        "gp.owner_name as owner_name",
+        "gp.contact_number as contact_number",
         DB::raw(
           'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
         )
@@ -155,9 +164,12 @@ class ShopController extends Controller
 
     $query = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
+      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
       ->where("dispatch_requests.shop_id", $shopId)
       ->select(
         "dispatch_requests.*",
+        "gp.owner_name as owner_name",
+        "gp.contact_number as contact_number",
         DB::raw(
           'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
         )
@@ -179,6 +191,7 @@ class ShopController extends Controller
 
     $jobs = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
+      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
       ->where("dispatch_requests.shop_id", $shopId)
       ->whereIn("dispatch_requests.status", [
         "accepted",
@@ -188,6 +201,8 @@ class ShopController extends Controller
       ])
       ->select(
         "dispatch_requests.*",
+        "gp.owner_name as owner_name",
+        "gp.contact_number as contact_number",
         DB::raw(
           'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
         )
@@ -533,6 +548,7 @@ class ShopController extends Controller
 
     $jobs = DB::table("dispatch_requests")
       ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
+      ->leftJoin("guest_profiles as gp", "dispatch_requests.guest_token", "=", "gp.guest_token")
       ->where("dispatch_requests.shop_id", $shopId)
       ->whereIn("dispatch_requests.status", [
         "accepted",
@@ -543,6 +559,8 @@ class ShopController extends Controller
       ])
       ->select(
         "dispatch_requests.*",
+        "gp.owner_name as owner_name",
+        "gp.contact_number as contact_number",
         DB::raw(
           'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
         )

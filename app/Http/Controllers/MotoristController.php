@@ -13,6 +13,11 @@ class MotoristController extends Controller
     return view("motorist.dashboard");
   }
 
+  public function map()
+  {
+    return view("motorist.map");
+  }
+
   public function index()
   {
     return view("motorist.index");
@@ -113,23 +118,34 @@ class MotoristController extends Controller
       "longitude" => "nullable|numeric",
     ]);
 
+    // Persist guest identity in guest_profiles (normalised away from dispatch_requests)
+    if (!empty($validated["guest_token"])) {
+      DB::table("guest_profiles")->updateOrInsert(
+        ["guest_token" => $validated["guest_token"]],
+        [
+          "owner_name"     => $validated["owner_name"],
+          "contact_number" => $validated["contact_number"],
+          "updated_at"     => now(),
+        ]
+      );
+    }
+
     $id = DB::table("dispatch_requests")->insertGetId([
-      "shop_id" => $validated["shop_id"],
-      "guest_token" => $validated["guest_token"] ?? null,
-      "owner_name" => $validated["owner_name"],
-      "contact_number" => $validated["contact_number"],
-      "vehicle_make_model" => $validated["vehicle_make_model"] ?? null,
+      "shop_id"              => $validated["shop_id"],
+      "guest_token"          => $validated["guest_token"] ?? null,
+      "guest_name"           => $validated["owner_name"],   // kept for COALESCE display queries
+      "vehicle_make_model"   => $validated["vehicle_make_model"] ?? null,
       "vehicle_variant_color" => $validated["vehicle_variant_color"] ?? null,
-      "plate_temp_number" => $validated["plate_temp_number"] ?? null,
-      "issue_type" => $validated["issue_type"],
-      "description" => $validated["description"] ?? null,
-      "location" => $validated["location"] ?? null,
-      "latitude" => $validated["latitude"] ?? null,
-      "longitude" => $validated["longitude"] ?? null,
-      "status" => "requested",
-      "price" => 0,
-      "created_at" => now(),
-      "updated_at" => now(),
+      "plate_temp_number"    => $validated["plate_temp_number"] ?? null,
+      "issue_type"           => $validated["issue_type"],
+      "description"          => $validated["description"] ?? null,
+      "location"             => $validated["location"] ?? null,
+      "latitude"             => $validated["latitude"] ?? null,
+      "longitude"            => $validated["longitude"] ?? null,
+      "status"               => "requested",
+      "price"                => 0,
+      "created_at"           => now(),
+      "updated_at"           => now(),
     ]);
 
     broadcast(
@@ -178,21 +194,19 @@ class MotoristController extends Controller
   public function storeReview(Request $request)
   {
     $validated = $request->validate([
-      "shop_id" => "required|exists:shops,id",
-      "guest_token" => "nullable|string|max:100",
-      "owner_name" => "nullable|string|max:150",
-      "rating" => "required|integer|min:1|max:5",
-      "comment" => "nullable|string",
+      "shop_id"     => "required|exists:shops,id",
+      "dispatch_id" => "nullable|exists:dispatch_requests,id",
+      "rating"      => "required|integer|min:1|max:5",
+      "comment"     => "nullable|string",
     ]);
 
     DB::table("reviews")->insert([
-      "shop_id" => $validated["shop_id"],
-      "guest_token" => $validated["guest_token"] ?? null,
-      "owner_name" => $validated["owner_name"] ?? "Motorist",
-      "rating" => $validated["rating"],
-      "comment" => $validated["comment"] ?? null,
-      "created_at" => now(),
-      "updated_at" => now(),
+      "shop_id"     => $validated["shop_id"],
+      "dispatch_id" => $validated["dispatch_id"] ?? null,
+      "rating"      => $validated["rating"],
+      "comment"     => $validated["comment"] ?? null,
+      "created_at"  => now(),
+      "updated_at"  => now(),
     ]);
 
     return response()->json([
