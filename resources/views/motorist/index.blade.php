@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                           MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                                                                                                           ══════════════════════════════════════════════ */
+                                                                                                                                                                                                               MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                                                                                               ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -149,7 +149,7 @@
         #locateFab {
             position: absolute;
             right: 12px;
-            bottom: calc(var(--nav-h) + var(--bar-h) + 12px);
+            top: 12px;
             z-index: 21;
             width: 46px;
             height: 46px;
@@ -1725,8 +1725,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                           MECHFINDER — APP LOGIC
-                                                                                                                                                                                                           ══════════════════════════════════════════════ */
+                                                                                                                                                                                                               MECHFINDER — APP LOGIC
+                                                                                                                                                                                                               ══════════════════════════════════════════════ */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -1835,8 +1835,13 @@
                     attributionControl: false
                 })
                 .setView([userLat, userLng], 14);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                maxZoom: 19,
+                subdomains: 'abcd',
+                crossOrigin: true,
+                updateWhenIdle: true,
+                updateWhenZooming: false,
+                keepBuffer: 3
             }).addTo(map);
             L.control.attribution({
                 prefix: '© OpenStreetMap',
