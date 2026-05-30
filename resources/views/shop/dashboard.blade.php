@@ -378,13 +378,6 @@
                                 'arrived' => [
                                     'label' => 'Arrived',
                                     'badge' => 'badge-purple',
-                                    'next' => 'in_progress',
-                                    'nLabel' => 'Start Repair',
-                                    'nBtn' => 'btn-warning',
-                                ],
-                                'in_progress' => [
-                                    'label' => 'In Progress',
-                                    'badge' => 'badge-orange',
                                     'next' => 'completed',
                                     'nLabel' => 'Mark Complete',
                                     'nBtn' => 'btn-success',
@@ -531,10 +524,6 @@
             arrived: {
                 label: 'ARRIVED',
                 badge: 'badge-purple'
-            },
-            in_progress: {
-                label: 'IN PROGRESS',
-                badge: 'badge-orange'
             },
             completed: {
                 label: 'COMPLETED',

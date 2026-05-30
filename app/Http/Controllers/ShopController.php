@@ -81,12 +81,7 @@ class ShopController extends Controller
         "gp.guest_token"
       )
       ->where("dispatch_requests.shop_id", $shopId)
-      ->whereIn("dispatch_requests.status", [
-        "accepted",
-        "en_route",
-        "arrived",
-        "in_progress",
-      ])
+      ->whereIn("dispatch_requests.status", ["accepted", "en_route", "arrived"])
       ->select(
         "dispatch_requests.*",
         "gp.owner_name as owner_name",
@@ -113,7 +108,7 @@ class ShopController extends Controller
 
     $activeJobsCount = DB::table("dispatch_requests")
       ->where("shop_id", $shopId)
-      ->whereIn("status", ["accepted", "en_route", "arrived", "in_progress"])
+      ->whereIn("status", ["accepted", "en_route", "arrived"])
       ->count();
 
     $shop = $this->getShop();
@@ -240,12 +235,7 @@ class ShopController extends Controller
         "gp.guest_token"
       )
       ->where("dispatch_requests.shop_id", $shopId)
-      ->whereIn("dispatch_requests.status", [
-        "accepted",
-        "en_route",
-        "arrived",
-        "in_progress",
-      ])
+      ->whereIn("dispatch_requests.status", ["accepted", "en_route", "arrived"])
       ->select(
         "dispatch_requests.*",
         "gp.owner_name as owner_name",
@@ -286,7 +276,6 @@ class ShopController extends Controller
         "accepted",
         "en_route",
         "arrived",
-        "in_progress",
       ])
       ->whereNotNull("dispatch_requests.latitude")
       ->whereNotNull("dispatch_requests.longitude")
@@ -408,7 +397,7 @@ class ShopController extends Controller
   {
     $validated = $request->validate([
       "status" =>
-        "required|in:requested,accepted,en_route,arrived,in_progress,completed,declined",
+        "required|in:requested,accepted,en_route,arrived,completed,declined",
     ]);
 
     $updateData = [

@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                   MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                   ══════════════════════════════════════════════ */
+                                                                                                                           MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                           ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -1625,26 +1625,24 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                   MECHFINDER — APP LOGIC
-                                                                                                                   ══════════════════════════════════════════════ */
+                                                                                                                           MECHFINDER — APP LOGIC
+                                                                                                                           ══════════════════════════════════════════════ */
 
         const STATUS_LABEL = {
             requested: '<i class="fa-solid fa-hourglass-half"></i> Finding nearest shop…',
             accepted: '<i class="fa-solid fa-circle-check"></i> Shop accepted your request',
             en_route: '<i class="fa-solid fa-motorcycle"></i> Mechanic is on the way',
-            arrived: '<i class="fa-solid fa-location-dot"></i> Mechanic has arrived',
-            in_progress: '<i class="fa-solid fa-wrench"></i> Repair in progress',
+            arrived: '<i class="fa-solid fa-location-dot"></i> Mechanic has arrived — job complete!',
             completed: '<i class="fa-solid fa-circle-check"></i> All done!',
             declined: '<i class="fa-solid fa-circle-xmark"></i> No shops available',
             cancelled: '<i class="fa-solid fa-ban"></i> Request cancelled',
         };
-        const STEP_ORDER = ['requested', 'accepted', 'en_route', 'arrived', 'in_progress', 'completed'];
+        const STEP_ORDER = ['requested', 'accepted', 'en_route', 'arrived', 'completed'];
         const STEP_PROGRESS = {
             requested: 10,
-            accepted: 25,
-            en_route: 48,
-            arrived: 65,
-            in_progress: 82,
+            accepted: 30,
+            en_route: 55,
+            arrived: 80,
             completed: 100
         };
 
@@ -1662,6 +1660,8 @@
         let currentRequestId = LS.get('mf_current_request_id');
         let pusherClient = null;
         let shopStatusClient = null;
+        let _statusPollTimer = null;
+        let _lastKnownStatus = null;
         let allShops = [];
 
         /* ── IDENTITY ── */
@@ -2007,6 +2007,7 @@
                     btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Send Rescue Request';
 
                     showStatusStrip('requested');
+                    _lastKnownStatus = 'requested';
                     subscribeToDispatch(data.request_id);
                     document.getElementById('reqBadge').classList.add('show');
 
@@ -2038,27 +2039,80 @@
             });
         }
 
+        /* ── STATUS POLLING FALLBACK ── */
+        function startStatusPolling(requestId) {
+            if (_statusPollTimer) return;
+            _statusPollTimer = setInterval(async () => {
+                if (!requestId) {
+                    stopStatusPolling();
+                    return;
+                }
+                try {
+                    const r = await fetch(`/motorist/request/${requestId}`);
+                    if (!r.ok) {
+                        stopStatusPolling();
+                        return;
+                    }
+                    const d = await r.json();
+                    if (d.status !== _lastKnownStatus) {
+                        _lastKnownStatus = d.status;
+                        showStatusStrip(d.status);
+                        if (['completed', 'declined', 'cancelled'].includes(d.status)) {
+                            stopStatusPolling();
+                            setTimeout(() => {
+                                LS.del('mf_current_request_id');
+                                currentRequestId = null;
+                                if (pusherClient) pusherClient.disconnect();
+                                document.getElementById('reqBadge').classList.remove('show');
+                            }, d.status === 'completed' ? 12000 : 5000);
+                        }
+                    }
+                } catch {}
+            }, 5000);
+        }
+
+        function stopStatusPolling() {
+            if (_statusPollTimer) {
+                clearInterval(_statusPollTimer);
+                _statusPollTimer = null;
+            }
+        }
+
         /* ── REAL-TIME STATUS ── */
         function subscribeToDispatch(requestId) {
-            if (!window.pusherKey || !requestId) return;
-            if (pusherClient) pusherClient.disconnect();
-            pusherClient = new Pusher(window.pusherKey, {
-                cluster: window.pusherCluster,
-                forceTLS: true
-            });
-            pusherClient.subscribe('dispatch-status.' + requestId).bind('dispatch.status', ({
-                status
-            }) => {
-                showStatusStrip(status);
-                if (status === 'completed' || status === 'declined') {
-                    setTimeout(() => {
-                        LS.del('mf_current_request_id');
-                        currentRequestId = null;
-                        if (pusherClient) pusherClient.disconnect();
-                        document.getElementById('reqBadge').classList.remove('show');
-                    }, status === 'completed' ? 12000 : 5000);
-                }
-            });
+            if (!requestId) return;
+            // Pusher real-time (fast path)
+            if (window.pusherKey) {
+                if (pusherClient) pusherClient.disconnect();
+                Pusher.logToConsole = true; // ← remove after debugging
+                pusherClient = new Pusher(window.pusherKey, {
+                    cluster: window.pusherCluster,
+                    forceTLS: true
+                });
+                pusherClient.connection.bind('connected', () => {
+                    console.log('[Pusher] connected — subscribing to dispatch-status.' + requestId);
+                });
+                pusherClient.connection.bind('error', (err) => {
+                    console.error('[Pusher] connection error', err);
+                });
+                pusherClient.subscribe('dispatch-status.' + requestId).bind('dispatch.status', ({
+                    status
+                }) => {
+                    _lastKnownStatus = status;
+                    showStatusStrip(status);
+                    if (['completed', 'declined', 'cancelled'].includes(status)) {
+                        stopStatusPolling();
+                        setTimeout(() => {
+                            LS.del('mf_current_request_id');
+                            currentRequestId = null;
+                            if (pusherClient) pusherClient.disconnect();
+                            document.getElementById('reqBadge').classList.remove('show');
+                        }, status === 'completed' ? 12000 : 5000);
+                    }
+                });
+            }
+            // Polling fallback — always runs regardless of Pusher
+            startStatusPolling(requestId);
         }
 
         async function resumeActiveRequest(requestId) {
@@ -2071,9 +2125,10 @@
                 }
                 const d = await res.json();
                 if (!['completed', 'declined', 'cancelled'].includes(d.status)) {
+                    _lastKnownStatus = d.status;
                     document.getElementById('rescueFab').style.display = 'none';
                     showStatusStrip(d.status); // also calls updateRescueBar
-                    subscribeToDispatch(requestId);
+                    subscribeToDispatch(requestId); // also starts polling fallback
                     document.getElementById('reqBadge').classList.add('show');
                 } else {
                     LS.del('mf_current_request_id');
@@ -2130,6 +2185,7 @@
                 });
                 const data = await res.json();
                 if (data.success) {
+                    stopStatusPolling();
                     LS.del('mf_current_request_id');
                     currentRequestId = null;
                     if (pusherClient) pusherClient.disconnect();

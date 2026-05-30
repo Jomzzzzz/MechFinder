@@ -17,7 +17,6 @@
             'accepted' => 'Accepted',
             'en_route' => 'En Route',
             'arrived' => 'Arrived',
-            'in_progress' => 'In Progress',
             'completed' => 'Completed',
             'declined' => 'Declined',
         ];
@@ -51,7 +50,6 @@
                     'accepted' => ['badge' => 'badge-warning', 'label' => 'Accepted'],
                     'en_route' => ['badge' => 'badge-info', 'label' => 'En Route'],
                     'arrived' => ['badge' => 'badge-purple', 'label' => 'Arrived'],
-                    'in_progress' => ['badge' => 'badge-orange', 'label' => 'In Progress'],
                     'completed' => ['badge' => 'badge-success', 'label' => 'Completed'],
                     'declined' => ['badge' => 'badge-secondary', 'label' => 'Declined'],
                 ];
@@ -177,11 +175,8 @@
                         <button onclick="updateRequestStatus({{ $req->id }}, 'arrived')"
                             class="btn btn-primary btn-sm"><i class="fas fa-map-pin"></i> Mark Arrived</button>
                     @elseif($req->status === 'arrived')
-                        <button onclick="updateRequestStatus({{ $req->id }}, 'in_progress')"
-                            class="btn btn-warning btn-sm"><i class="fas fa-wrench"></i> Start Repair</button>
-                    @elseif($req->status === 'in_progress')
                         <button onclick="updateRequestStatus({{ $req->id }}, 'completed')"
-                            class="btn btn-success btn-sm"><i class="fas fa-check-circle"></i> Mark Completed</button>
+                            class="btn btn-success btn-sm"><i class="fas fa-check-circle"></i> Mark Complete</button>
                     @elseif($req->status === 'completed')
                         <span class="badge badge-success" style="padding:6px 12px;">Completed</span>
                     @elseif($req->status === 'declined')
@@ -238,7 +233,6 @@
                 accepted: 'badge-warning',
                 en_route: 'badge-info',
                 arrived: 'badge-purple',
-                in_progress: 'badge-orange',
                 completed: 'badge-success',
                 declined: 'badge-secondary'
             };
@@ -251,53 +245,53 @@
 
         async function acceptRequest(id) {
             showConfirmModal('Accept Request', 'Accept this dispatch request and notify the motorist?',
-        async function() {
-                showLoading(true);
-                try {
-                    const r = await fetch(`/shop/accept/${id}`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': getCsrfToken(),
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                    });
-                    const d = await r.json();
-                    if (d.success) {
-                        showAlert('Request accepted successfully.', 'success');
-                        updateCardStatus(id, 'accepted');
-                    } else showAlert(d.message || 'Failed to accept.', 'error');
-                } catch (e) {
-                    showAlert('Network error.', 'error');
-                } finally {
-                    showLoading(false);
-                }
-            }, 'Accept', '#2fb344');
+                async function() {
+                    showLoading(true);
+                    try {
+                        const r = await fetch(`/shop/accept/${id}`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': getCsrfToken(),
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const d = await r.json();
+                        if (d.success) {
+                            showAlert('Request accepted successfully.', 'success');
+                            updateCardStatus(id, 'accepted');
+                        } else showAlert(d.message || 'Failed to accept.', 'error');
+                    } catch (e) {
+                        showAlert('Network error.', 'error');
+                    } finally {
+                        showLoading(false);
+                    }
+                }, 'Accept', '#2fb344');
         }
         async function declineRequest(id) {
             showConfirmModal('Decline Request', 'Decline this request? The motorist will be notified.',
-        async function() {
-                showLoading(true);
-                try {
-                    const r = await fetch(`/shop/decline/${id}`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': getCsrfToken(),
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                    });
-                    const d = await r.json();
-                    if (d.success) {
-                        showAlert('Request declined.', 'success');
-                        updateCardStatus(id, 'declined');
-                    } else showAlert(d.message || 'Failed to decline.', 'error');
-                } catch (e) {
-                    showAlert('Network error.', 'error');
-                } finally {
-                    showLoading(false);
-                }
-            }, 'Decline', '#d63939');
+                async function() {
+                    showLoading(true);
+                    try {
+                        const r = await fetch(`/shop/decline/${id}`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': getCsrfToken(),
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const d = await r.json();
+                        if (d.success) {
+                            showAlert('Request declined.', 'success');
+                            updateCardStatus(id, 'declined');
+                        } else showAlert(d.message || 'Failed to decline.', 'error');
+                    } catch (e) {
+                        showAlert('Network error.', 'error');
+                    } finally {
+                        showLoading(false);
+                    }
+                }, 'Decline', '#d63939');
         }
         async function updateRequestStatus(id, status) {
             showLoading(true);
