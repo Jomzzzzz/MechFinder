@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                                                                                                       ══════════════════════════════════════════════ */
+                                                                                                                                                                                                           MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                                                                                           ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -178,7 +178,6 @@
             left: 0;
             right: 0;
             bottom: var(--nav-h);
-            height: var(--bar-h);
             z-index: 20;
             background: var(--surface);
             border-top: 1px solid var(--border);
@@ -1290,28 +1289,36 @@
                     <div class="step-line" id="track-line-1"></div>
                     <div class="step-dot" id="track-step-2"><i class="fa-solid fa-circle-check"></i></div>
                 </div>
-                {{-- Distance badge --}}
+                {{-- Distance (prominent) --}}
                 <div id="barDistance"
-                    style="display:none;align-items:center;gap:4px;margin-top:4px;font-size:11px;color:var(--text-3);">
-                    <i class="fa-solid fa-route" style="font-size:10px;color:#3B82F6;"></i>
-                    <span id="barDistanceVal"></span>
+                    style="display:none;align-items:center;justify-content:center;gap:8px;margin-top:8px;padding:9px 14px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);border-radius:12px;">
+                    <i class="fa-solid fa-route" style="font-size:14px;color:#3B82F6;"></i>
+                    <div style="display:flex;align-items:baseline;gap:3px;">
+                        <span id="barDistanceVal"
+                            style="font-size:22px;font-weight:800;color:#3B82F6;letter-spacing:-.5px;line-height:1;"></span>
+                        <span style="font-size:11px;font-weight:600;color:var(--text-3);">away</span>
+                    </div>
                 </div>
                 {{-- Mechanic chip (visible when en_route / arrived) --}}
                 <div id="barMechInfo"
-                    style="display:none;align-items:center;gap:10px;margin-top:6px;padding:8px 10px;background:var(--surface-2);border-radius:10px;width:100%;">
+                    style="display:none;align-items:center;gap:10px;margin-top:8px;padding:10px 12px;background:var(--surface-2);border-radius:12px;width:100%;">
                     <div
-                        style="width:32px;height:32px;border-radius:50%;background:var(--brand-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <i class="fa-solid fa-user-gear" style="font-size:13px;color:var(--brand);"></i>
+                        style="width:36px;height:36px;border-radius:50%;background:var(--brand-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fa-solid fa-user-gear" style="font-size:14px;color:var(--brand);"></i>
                     </div>
                     <div style="flex:1;min-width:0;">
                         <div id="barMechName"
-                            style="font-size:12px;font-weight:700;color:var(--text-1);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                            style="font-size:13px;font-weight:700;color:var(--text-1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                         </div>
-                        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;">
-                            <span id="barMechPhone" style="font-size:10px;color:var(--text-3);"></span>
-                            <span id="barMechPlate" style="display:none;font-size:10px;color:var(--text-3);"><i
-                                    class="fa-solid fa-motorcycle" style="font-size:8px;margin-right:3px;"></i><span
-                                    id="barMechPlateVal"></span></span>
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap;">
+                            <span style="display:flex;align-items:center;gap:3px;">
+                                <i class="fa-solid fa-phone" style="font-size:8px;color:var(--text-3);"></i>
+                                <span id="barMechPhone" style="font-size:10px;color:var(--text-3);"></span>
+                            </span>
+                            <span id="barMechPlate" style="display:none;align-items:center;gap:3px;">
+                                <i class="fa-solid fa-motorcycle" style="font-size:8px;color:var(--text-3);"></i>
+                                <span id="barMechPlateVal" style="font-size:10px;color:var(--text-3);"></span>
+                            </span>
                         </div>
                     </div>
                     <button onclick="event.stopPropagation()"
@@ -1319,8 +1326,8 @@
                         <i class="fa-solid fa-message" style="font-size:10px;"></i> Message
                     </button>
                 </div>
-                {{-- Row 3: sub message --}}
-                <div id="barSubMsg" style="font-size:11px;color:var(--text-3);margin-top:4px;"></div>
+                {{-- Sub message --}}
+                <div id="barSubMsg" style="font-size:11px;color:var(--text-3);margin-top:5px;"></div>
             </div>
         </div>
 
@@ -1718,8 +1725,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                       MECHFINDER — APP LOGIC
-                                                                                                                                                                                                       ══════════════════════════════════════════════ */
+                                                                                                                                                                                                           MECHFINDER — APP LOGIC
+                                                                                                                                                                                                           ══════════════════════════════════════════════ */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -1804,6 +1811,14 @@
             locateUser();
             subscribeToShopStatus();
             if (currentRequestId) resumeActiveRequest(currentRequestId);
+            // Keep --bar-h in sync with the bar's actual rendered height
+            const _bar = document.getElementById('rescueBar');
+            if (_bar && window.ResizeObserver) {
+                new ResizeObserver(() => {
+                    document.documentElement.style.setProperty('--bar-h', Math.ceil(_bar
+                        .getBoundingClientRect().height) + 'px');
+                }).observe(_bar);
+            }
             @if (session('pw_success'))
                 showToast('{{ session('pw_success') }}', 'success');
             @endif
@@ -2045,7 +2060,7 @@
                 const distEl = document.getElementById('barDistance');
                 const distVal = document.getElementById('barDistanceVal');
                 if (distEl && distVal) {
-                    distVal.textContent = distKm + ' km away';
+                    distVal.textContent = distKm + ' km';
                     distEl.style.display = 'flex';
                 }
                 routeLayer = L.geoJSON(coords, {
@@ -2443,7 +2458,7 @@
                 if (plateWrap && plateVal) {
                     if (plate) {
                         plateVal.textContent = plate;
-                        plateWrap.style.display = 'inline';
+                        plateWrap.style.display = 'flex';
                     } else {
                         plateWrap.style.display = 'none';
                     }
