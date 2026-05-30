@@ -80,6 +80,13 @@ class ShopController extends Controller
         "=",
         "gp.guest_token"
       )
+      ->leftJoin(
+        "dispatch_mechanics as dm",
+        "dm.dispatch_request_id",
+        "=",
+        "dispatch_requests.id"
+      )
+      ->leftJoin("users as mu", "mu.id", "=", "dm.mechanic_id")
       ->where("dispatch_requests.shop_id", $shopId)
       ->whereIn("dispatch_requests.status", ["accepted", "en_route", "arrived"])
       ->select(
@@ -88,7 +95,9 @@ class ShopController extends Controller
         "gp.contact_number as contact_number",
         DB::raw(
           'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
-        )
+        ),
+        "dm.mechanic_id as assigned_mechanic_user_id",
+        "mu.name as assigned_mechanic_name"
       )
       ->latest("dispatch_requests.updated_at")
       ->get();
@@ -202,6 +211,13 @@ class ShopController extends Controller
         "=",
         "gp.guest_token"
       )
+      ->leftJoin(
+        "dispatch_mechanics as dm",
+        "dm.dispatch_request_id",
+        "=",
+        "dispatch_requests.id"
+      )
+      ->leftJoin("users as mu", "mu.id", "=", "dm.mechanic_id")
       ->where("dispatch_requests.shop_id", $shopId)
       ->select(
         "dispatch_requests.*",
@@ -209,7 +225,9 @@ class ShopController extends Controller
         "gp.contact_number as contact_number",
         DB::raw(
           'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
-        )
+        ),
+        "dm.mechanic_id as assigned_mechanic_user_id",
+        "mu.name as assigned_mechanic_name"
       );
 
     // ✅ Apply filter if selected
@@ -410,6 +428,20 @@ class ShopController extends Controller
     }
 
     if ($validated["status"] === "en_route") {
+      $hasMechanic = DB::table("dispatch_mechanics")
+        ->where("dispatch_request_id", $id)
+        ->exists();
+
+      if (!$hasMechanic) {
+        return response()->json(
+          [
+            "success" => false,
+            "message" => "Please assign a mechanic before marking as En Route.",
+          ],
+          422
+        );
+      }
+
       $updateData["en_route_at"] = now();
     }
 
@@ -827,22 +859,64 @@ class ShopController extends Controller
 
     $shopId = $this->getCurrentShopId();
 
+    // Verify dispatch request belongs to this shop
+    $dispatchExists = DB::table("dispatch_requests")
+      ->where("id", $id)
+      ->where("shop_id", $shopId)
+      ->exists();
+
+    if (!$dispatchExists) {
+      return response()->json(
+        ["success" => false, "message" => "Request not found."],
+        404
+      );
+    }
+
     // Verify the mechanic belongs to this shop
     $profile = MechanicProfile::where("user_id", $request->mechanic_id)
       ->where("shop_id", $shopId)
       ->firstOrFail();
 
-    DispatchMechanic::create([
-      "dispatch_request_id" => $id,
-      "mechanic_id" => $request->mechanic_id,
-      "status" => "assigned",
-    ]);
+    // If there's an existing assignment, free the old mechanic first
+    $existing = DispatchMechanic::where("dispatch_request_id", $id)->first();
+    if ($existing && $existing->mechanic_id != $request->mechanic_id) {
+      MechanicProfile::where("user_id", $existing->mechanic_id)
+        ->where("shop_id", $shopId)
+        ->update(["status" => "available"]);
+    }
+
+    DispatchMechanic::updateOrCreate(
+      ["dispatch_request_id" => $id],
+      ["mechanic_id" => $request->mechanic_id, "status" => "assigned"]
+    );
 
     $profile->update(["status" => "dispatched"]);
 
+    $mechanicName =
+      DB::table("users")->where("id", $request->mechanic_id)->value("name") ??
+      "Mechanic";
+
     return response()->json([
       "success" => true,
-      "message" => "Mechanic dispatched.",
+      "message" => "Mechanic assigned.",
+      "mechanic_name" => $mechanicName,
     ]);
+  }
+
+  public function mechanicsList()
+  {
+    $shopId = $this->getCurrentShopId();
+    $mechanics = DB::table("mechanic_profiles")
+      ->join("users", "users.id", "=", "mechanic_profiles.user_id")
+      ->where("mechanic_profiles.shop_id", $shopId)
+      ->select(
+        "users.id as user_id",
+        "users.name",
+        "mechanic_profiles.status",
+        "mechanic_profiles.phone"
+      )
+      ->get();
+
+    return response()->json($mechanics);
   }
 }

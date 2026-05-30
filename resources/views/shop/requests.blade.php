@@ -161,27 +161,48 @@
                     @endif
                 </div>
 
+                {{-- Mechanic Row (active statuses only) --}}
+                @if (in_array($req->status, ['accepted', 'en_route', 'arrived']))
+                    <div id="mrow-{{ $req->id }}"
+                        style="padding:8px 20px 4px;display:flex;align-items:center;gap:8px;">
+                        @if (!empty($req->assigned_mechanic_name))
+                            <i class="fas fa-user-gear" style="color:#667382;font-size:12px;flex-shrink:0;"></i>
+                            <span
+                                style="font-size:12px;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $req->assigned_mechanic_name }}</span>
+                            <button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;flex-shrink:0;"
+                                onclick="openMechanicPicker({{ $req->id }})">Change</button>
+                        @endif
+                    </div>
+                @endif
+
                 {{-- Actions --}}
                 <div style="padding:12px 20px 16px; display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid #f0f2f5;">
-                    @if ($req->status === 'requested')
-                        <button onclick="acceptRequest({{ $req->id }})" class="btn btn-success btn-sm"><i
-                                class="fas fa-check"></i> Accept</button>
-                        <button onclick="declineRequest({{ $req->id }})" class="btn btn-danger btn-sm"><i
-                                class="fas fa-xmark"></i> Decline</button>
-                    @elseif($req->status === 'accepted')
-                        <button onclick="updateRequestStatus({{ $req->id }}, 'en_route')"
-                            class="btn btn-primary btn-sm"><i class="fas fa-route"></i> Mechanic En Route</button>
-                    @elseif($req->status === 'en_route')
-                        <button onclick="updateRequestStatus({{ $req->id }}, 'arrived')"
-                            class="btn btn-primary btn-sm"><i class="fas fa-map-pin"></i> Mark Arrived</button>
-                    @elseif($req->status === 'arrived')
-                        <button onclick="updateRequestStatus({{ $req->id }}, 'completed')"
-                            class="btn btn-success btn-sm"><i class="fas fa-check-circle"></i> Mark Complete</button>
-                    @elseif($req->status === 'completed')
-                        <span class="badge badge-success" style="padding:6px 12px;">Completed</span>
-                    @elseif($req->status === 'declined')
-                        <span class="badge badge-secondary" style="padding:6px 12px;">Declined</span>
-                    @endif
+                    <span id="req-actions-{{ $req->id }}">
+                        @if ($req->status === 'requested')
+                            <button onclick="acceptRequest({{ $req->id }})" class="btn btn-success btn-sm"><i
+                                    class="fas fa-check"></i> Accept</button>
+                            <button onclick="declineRequest({{ $req->id }})" class="btn btn-danger btn-sm"><i
+                                    class="fas fa-xmark"></i> Decline</button>
+                        @elseif($req->status === 'accepted')
+                            @if (!empty($req->assigned_mechanic_name))
+                                <button onclick="updateRequestStatus({{ $req->id }}, 'en_route')"
+                                    class="btn btn-primary btn-sm"><i class="fas fa-route"></i> Mechanic En Route</button>
+                            @else
+                                <button onclick="openMechanicPicker({{ $req->id }})" class="btn btn-warning btn-sm"><i
+                                        class="fas fa-user-plus" style="margin-right:4px;"></i>Assign Mechanic</button>
+                            @endif
+                        @elseif($req->status === 'en_route')
+                            <button onclick="updateRequestStatus({{ $req->id }}, 'arrived')"
+                                class="btn btn-primary btn-sm"><i class="fas fa-map-pin"></i> Mark Arrived</button>
+                        @elseif($req->status === 'arrived')
+                            <button onclick="updateRequestStatus({{ $req->id }}, 'completed')"
+                                class="btn btn-success btn-sm"><i class="fas fa-check-circle"></i> Mark Complete</button>
+                        @elseif($req->status === 'completed')
+                            <span class="badge badge-success" style="padding:6px 12px;">Completed</span>
+                        @elseif($req->status === 'declined')
+                            <span class="badge badge-secondary" style="padding:6px 12px;">Declined</span>
+                        @endif
+                    </span>
                     @if (!empty($req->latitude) && !empty($req->longitude))
                         <a href="https://www.google.com/maps?q={{ $req->latitude }},{{ $req->longitude }}" target="_blank"
                             rel="noopener" class="btn btn-secondary btn-sm">
@@ -225,21 +246,149 @@
             document.getElementById('loading').style.display = show ? 'block' : 'none';
         }
 
+        function escHtml(s) {
+            return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g,
+                '&quot;');
+        }
+
+        // --- Badge + action button config ---
+        var BADGES = {
+            requested: 'badge-danger',
+            accepted: 'badge-warning',
+            en_route: 'badge-info',
+            arrived: 'badge-purple',
+            completed: 'badge-success',
+            declined: 'badge-secondary'
+        };
+        var ACTIONS = {
+            accepted: '<button onclick="openMechanicPicker(ID)" class="btn btn-warning btn-sm"><i class="fas fa-user-plus" style="margin-right:4px;"></i>Assign Mechanic</button>',
+            en_route: '<button onclick="updateRequestStatus(ID, \'arrived\')" class="btn btn-primary btn-sm"><i class="fas fa-map-pin"></i> Mark Arrived</button>',
+            arrived: '<button onclick="updateRequestStatus(ID, \'completed\')" class="btn btn-success btn-sm"><i class="fas fa-check-circle"></i> Mark Complete</button>',
+            completed: '<span class="badge badge-success" style="padding:6px 12px;">Completed</span>',
+            declined: '<span class="badge badge-secondary" style="padding:6px 12px;">Declined</span>',
+        };
+
         function updateCardStatus(id, status) {
-            const card = document.getElementById('request-' + id);
+            var card = document.getElementById('request-' + id);
             if (!card) return;
-            const badges = {
-                requested: 'badge-danger',
-                accepted: 'badge-warning',
-                en_route: 'badge-info',
-                arrived: 'badge-purple',
-                completed: 'badge-success',
-                declined: 'badge-secondary'
-            };
-            const badge = card.querySelector('.status-badge');
+            // Update badge
+            var badge = card.querySelector('.status-badge');
             if (badge) {
-                badge.className = 'badge ' + (badges[status] || 'badge-secondary') + ' status-badge';
+                badge.className = 'badge ' + (BADGES[status] || 'badge-secondary') + ' status-badge';
                 badge.textContent = status.replace(/_/g, ' ').toUpperCase();
+            }
+            // Rebuild action buttons
+            var actionsSpan = document.getElementById('req-actions-' + id);
+            if (actionsSpan && ACTIONS[status]) {
+                actionsSpan.innerHTML = ACTIONS[status].replace(/ID/g, id);
+            }
+            // Show/hide mechanic row
+            var mrow = document.getElementById('mrow-' + id);
+            if (mrow) {
+                mrow.style.display = ['accepted', 'en_route', 'arrived'].includes(status) ? 'flex' : 'none';
+            }
+        }
+
+        // --- Mechanic picker state ---
+        var _pickerRequestId = null;
+        var _pendingEnRoute = null;
+
+        function openMechanicPicker(requestId) {
+            _pickerRequestId = requestId;
+            document.getElementById('mechPickerModal').style.display = 'flex';
+            loadMechanicsForPicker();
+        }
+
+        function closeMechanicPicker() {
+            document.getElementById('mechPickerModal').style.display = 'none';
+            _pickerRequestId = null;
+            _pendingEnRoute = null;
+        }
+
+        async function loadMechanicsForPicker() {
+            var list = document.getElementById('mechPickerList');
+            list.innerHTML =
+                '<div style="text-align:center;padding:20px;color:#667382;font-size:13px;"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Loading…</div>';
+            try {
+                var r = await fetch('/shop/mechanics-list', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken()
+                    }
+                });
+                var d = await r.json();
+                var mechanics = Array.isArray(d) ? d : (d.mechanics || []);
+                if (!mechanics.length) {
+                    list.innerHTML =
+                        '<div style="text-align:center;padding:20px;color:#667382;font-size:13px;">No mechanics found. <a href="/shop/mechanics" style="color:#f76707;">Add one →</a></div>';
+                    return;
+                }
+                var html = '';
+                mechanics.forEach(function(m) {
+                    var statusColor = m.status === 'available' ? '#2fb344' : m.status === 'dispatched' ?
+                        '#f76707' : '#667382';
+                    html += '<div onclick="assignMechanic(' + m.user_id + ', \'' + escHtml(m.name) +
+                        '\')" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background=\'#f0f4fa\'" onmouseout="this.style.background=\'\'">' +
+                        '<div style="width:34px;height:34px;border-radius:50%;background:#e8edf4;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-user-gear" style="font-size:14px;color:#206bc4;"></i></div>' +
+                        '<div style="flex:1;min-width:0;">' +
+                        '<div style="font-size:13px;font-weight:600;color:#1d273b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+                        escHtml(m.name) + '</div>' +
+                        '<div style="font-size:11px;color:#667382;">' + escHtml(m.phone || '') +
+                        ' &nbsp;·&nbsp; <span style="color:' + statusColor + ';font-weight:600;">' + escHtml(m
+                            .status) + '</span></div>' +
+                        '</div></div>';
+                });
+                list.innerHTML = html;
+            } catch (e) {
+                list.innerHTML =
+                    '<div style="text-align:center;padding:20px;color:#d63939;font-size:13px;">Failed to load mechanics.</div>';
+            }
+        }
+
+        async function assignMechanic(userId, name) {
+            var reqId = _pickerRequestId;
+            if (!reqId) return;
+            try {
+                var r = await fetch('/shop/request/' + reqId + '/dispatch', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        mechanic_id: userId
+                    })
+                });
+                var d = await r.json();
+                if (d.success) {
+                    var pending = _pendingEnRoute === reqId ? reqId : null;
+                    closeMechanicPicker();
+                    var mrow = document.getElementById('mrow-' + reqId);
+                    if (mrow) {
+                        mrow.innerHTML =
+                            '<i class="fas fa-user-gear" style="color:#667382;font-size:12px;flex-shrink:0;"></i>' +
+                            '<span style="font-size:12px;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+                            escHtml(d.mechanic_name || name) + '</span>' +
+                            '<button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;flex-shrink:0;" onclick="openMechanicPicker(' +
+                            reqId + ')">Change</button>';
+                    }
+                    showAlert('Mechanic assigned: ' + (d.mechanic_name || name), 'success');
+                    // If card was showing "Assign Mechanic" (accepted, no mechanic), swap to En Route
+                    if (!pending) {
+                        var actSpan = document.getElementById('req-actions-' + reqId);
+                        if (actSpan && actSpan.querySelector('.btn-warning')) {
+                            actSpan.innerHTML = '<button onclick="updateRequestStatus(' + reqId +
+                                ', \'en_route\'" class="btn btn-primary btn-sm"><i class="fas fa-route"></i> Mechanic En Route</button>';
+                        }
+                    }
+                    // Auto-proceed with en_route if triggered by the guard
+                    if (pending) updateRequestStatus(pending, 'en_route');
+                } else {
+                    showAlert(d.message || 'Assignment failed.', 'error');
+                }
+            } catch (e) {
+                showAlert('Network error.', 'error');
             }
         }
 
@@ -268,6 +417,7 @@
                     }
                 }, 'Accept', '#2fb344');
         }
+
         async function declineRequest(id) {
             showConfirmModal('Decline Request', 'Decline this request? The motorist will be notified.',
                 async function() {
@@ -293,7 +443,19 @@
                     }
                 }, 'Decline', '#d63939');
         }
+
         async function updateRequestStatus(id, status) {
+            // Guard: must assign a mechanic before going en_route
+            if (status === 'en_route') {
+                var mrow = document.getElementById('mrow-' + id);
+                var hasMechanic = mrow && !!mrow.querySelector('span');
+                if (!hasMechanic) {
+                    showAlert('Assign a mechanic first before marking En Route.', 'error');
+                    _pendingEnRoute = id;
+                    openMechanicPicker(id);
+                    return;
+                }
+            }
             showLoading(true);
             try {
                 const r = await fetch(`/shop/request/${id}/status`, {
@@ -325,4 +487,19 @@
             });
         }
     </script>
+
+    {{-- Mechanic Picker Modal --}}
+    <div id="mechPickerModal"
+        style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px;">
+        <div
+            style="background:#fff;border-radius:12px;width:100%;max-width:400px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,.18);">
+            <div
+                style="padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f0f2f5;">
+                <h3 style="margin:0;font-size:15px;font-weight:700;color:#1d273b;">Assign Mechanic</h3>
+                <button onclick="closeMechanicPicker()"
+                    style="background:none;border:none;font-size:18px;color:#667382;cursor:pointer;padding:2px 6px;line-height:1;">&times;</button>
+            </div>
+            <div id="mechPickerList" style="padding:10px;overflow-y:auto;flex:1;"></div>
+        </div>
+    </div>
 @endsection

@@ -230,12 +230,22 @@ class MotoristController extends Controller
   {
     $request = DB::table("dispatch_requests")
       ->leftJoin("shops", "dispatch_requests.shop_id", "=", "shops.id")
+      ->leftJoin(
+        "dispatch_mechanics as dm",
+        "dm.dispatch_request_id",
+        "=",
+        "dispatch_requests.id"
+      )
+      ->leftJoin("users as mu", "mu.id", "=", "dm.mechanic_id")
+      ->leftJoin("mechanic_profiles as mp", "mp.user_id", "=", "dm.mechanic_id")
       ->where("dispatch_requests.id", $id)
       ->select(
         "dispatch_requests.*",
         "shops.shop_name as shop_name",
         "shops.phone as shop_phone",
-        "shops.address as shop_address"
+        "shops.address as shop_address",
+        "mu.name as mechanic_name",
+        "mp.phone as mechanic_phone"
       )
       ->first();
 

@@ -403,8 +403,27 @@
                             @if ($jc['next'])
                                 <div class="req-body">
                                     <div class="req-div"></div>
-                                    <button class="btn {{ $jc['nBtn'] }} btn-sm"
-                                        style="width:100%; justify-content:center;"
+                                    {{-- Mechanic assignment row --}}
+                                    <div class="mechanic-row" id="mrow-{{ $job->id }}"
+                                        style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                                        @if ($job->assigned_mechanic_name)
+                                            <i class="fas fa-user-gear"
+                                                style="color:#667382;font-size:12px;flex-shrink:0;"></i>
+                                            <span id="mname-{{ $job->id }}"
+                                                style="font-size:12px;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $job->assigned_mechanic_name }}</span>
+                                            <button class="btn btn-secondary btn-sm"
+                                                style="padding:2px 8px;font-size:11px;flex-shrink:0;"
+                                                onclick="event.stopPropagation();openMechanicPicker({{ $job->id }})">Change</button>
+                                        @else
+                                            <button class="btn btn-secondary btn-sm"
+                                                style="width:100%;justify-content:center;"
+                                                onclick="event.stopPropagation();openMechanicPicker({{ $job->id }})">
+                                                <i class="fas fa-user-plus" style="margin-right:5px;"></i>Assign Mechanic
+                                            </button>
+                                        @endif
+                                    </div>
+                                    <button id="en-route-btn-{{ $job->id }}" class="btn {{ $jc['nBtn'] }} btn-sm"
+                                        style="width:100%; justify-content:center;{{ $jc['next'] === 'en_route' && empty($job->assigned_mechanic_name) ? ' display:none;' : '' }}"
                                         onclick="updateRequestStatus({{ $job->id }}, '{{ $jc['next'] }}')">{{ $jc['nLabel'] }}</button>
                                 </div>
                             @endif
@@ -418,6 +437,32 @@
                     @endforelse
                 </div>
             </div>
+        </div>
+    </div>
+
+    {{-- Mechanic Picker Modal --}}
+    <div id="mechanicPickerModal"
+        style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;"
+        onclick="closeMechanicPicker()">
+        <div onclick="event.stopPropagation()"
+            style="width:100%;max-width:480px;background:#fff;border-radius:14px 14px 0 0;padding:20px 16px 24px;max-height:70vh;display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                <h3 id="mechPickerTitle" style="font-size:15px;font-weight:700;margin:0;color:#1d273b;">Assign Mechanic
+                </h3>
+                <button onclick="closeMechanicPicker()"
+                    style="background:none;border:none;cursor:pointer;padding:4px;color:#667382;">
+                    <i class="fas fa-xmark" style="font-size:16px;"></i>
+                </button>
+            </div>
+            <div id="mechanicPickerList" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;">
+                <div style="text-align:center;padding:20px;color:#667382;font-size:13px;">
+                    <i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Loading mechanics…
+                </div>
+            </div>
+            <button id="mechPickerSkip" onclick="skipMechanicAndAccept()"
+                style="display:none;margin-top:12px;width:100%;padding:10px;border:1px dashed #cdd1d9;background:none;border-radius:8px;color:#667382;font-size:13px;cursor:pointer;">
+                <i class="fas fa-forward" style="margin-right:6px;"></i>Skip — Accept without assigning a mechanic
+            </button>
         </div>
     </div>
 
@@ -535,15 +580,56 @@
             },
         };
 
+        var JCONF = {
+            accepted: {
+                next: 'en_route',
+                nLabel: 'Mechanic En Route',
+                nBtn: 'btn-primary'
+            },
+            en_route: {
+                next: 'arrived',
+                nLabel: 'Mark Arrived',
+                nBtn: 'btn-primary'
+            },
+            arrived: {
+                next: 'completed',
+                nLabel: 'Mark Complete',
+                nBtn: 'btn-success'
+            },
+        };
+
         function updateCardBadge(id, status) {
             var c = document.getElementById('req-' + id);
             if (!c) return;
-            var s = SB[status] || {};
+            var sb = SB[status] || {};
             var b = c.querySelector('.sbadge');
             if (b) {
-                b.className = 'sbadge ' + (s.badge || 'badge-secondary');
-                b.textContent = s.label || status.toUpperCase().replace(/_/g, ' ');
+                b.className = 'sbadge ' + (sb.badge || 'badge-secondary');
+                b.textContent = sb.label || status.toUpperCase().replace(/_/g, ' ');
             }
+            // Rebuild req-body with the correct next-step button
+            var jc = JCONF[status];
+            var body = c.querySelector('.req-body');
+            if (!body) return;
+            if (!jc) {
+                body.innerHTML = '';
+                return;
+            }
+            // Preserve existing mechanic row content
+            var mrow = document.getElementById('mrow-' + id);
+            var mechInner = mrow ? mrow.innerHTML :
+                '<button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;" onclick="event.stopPropagation();openMechanicPicker(' +
+                id + ')"><i class="fas fa-user-plus" style="margin-right:5px;"></i>Assign Mechanic</button>';
+            var hasMech = mechInner.indexOf('<span') !== -1;
+            var enRouteBtnStyle = (jc.next === 'en_route' && !hasMech) ?
+                'width:100%;justify-content:center;display:none;' :
+                'width:100%;justify-content:center;';
+            body.innerHTML = '<div class="req-div"></div>' +
+                '<div class="mechanic-row" id="mrow-' + id +
+                '" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' + mechInner + '</div>' +
+                '<button id="en-route-btn-' + id + '" class="btn ' + jc.nBtn + ' btn-sm" style="' + enRouteBtnStyle +
+                '" onclick="updateRequestStatus(' + id + ', \'' + jc.next + '\')">' +
+                jc.nLabel + '</button>';
         }
 
         function adjustCount(id, delta, suffix) {
@@ -555,6 +641,7 @@
 
         // ---------- Dispatch Popup ----------
         var _currentPopupReqId = null;
+        var _currentPopupReq = null;
         var _popupTimer = null;
         var _popupQueue = [];
 
@@ -570,6 +657,7 @@
 
         function showDispatchPopup(req) {
             _currentPopupReqId = req.id;
+            _currentPopupReq = req;
             document.getElementById('popup-issue').textContent = req.issue_type || 'Motorcycle Issue';
             var parts = [];
             if (req.owner_name) parts.push('<strong>' + escHtml(req.owner_name) + '</strong>');
@@ -610,44 +698,8 @@
 
         async function acceptPopupRequest() {
             if (!_currentPopupReqId) return;
-            var btn = document.getElementById('popup-accept-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Accepting…';
-            try {
-                var r = await fetch('/shop/accept/' + _currentPopupReqId, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': getCsrfToken(),
-                        'Accept': 'application/json'
-                    }
-                });
-                var d = await r.json();
-                if (d.success) {
-                    clearInterval(_popupTimer);
-                    document.getElementById('dispatch-popup').style.display = 'none';
-                    _currentPopupReqId = null;
-                    showToast('Job accepted! Check Active Jobs below.', 'success', 6000);
-                    adjustCount('stat-active', 1);
-                    adjustCount('stat-pending', -1);
-                    var pb = document.getElementById('pending-badge');
-                    if (pb) {
-                        var n = Math.max(0, (parseInt(pb.textContent) || 0) - 1);
-                        pb.textContent = n + ' unclaimed';
-                        if (n === 0) pb.style.display = 'none';
-                    }
-                    setTimeout(processPopupQueue, 500);
-                } else if (d.taken) {
-                    closeDispatchPopup();
-                    showToast('Too slow! Another shop already accepted this one.', 'warning', 5000);
-                } else {
-                    closeDispatchPopup();
-                    showToast(d.message || 'Could not accept.', 'error');
-                }
-            } catch (e) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-check"></i> Accept Job';
-                showToast('Network error. Try again.', 'error');
-            }
+            clearInterval(_popupTimer); // pause the countdown
+            openMechanicPickerForAccept(_currentPopupReqId, _currentPopupReq);
         }
 
         function declinePopupRequest() {
@@ -665,6 +717,7 @@
             clearInterval(_popupTimer);
             document.getElementById('dispatch-popup').style.display = 'none';
             _currentPopupReqId = null;
+            _currentPopupReq = null;
             setTimeout(processPopupQueue, 400);
         }
 
@@ -689,6 +742,17 @@
             }
         }
         async function updateRequestStatus(id, status) {
+            // Guard: must assign a mechanic before going en_route
+            if (status === 'en_route') {
+                var mrow = document.getElementById('mrow-' + id);
+                var hasMechanic = mrow && !!mrow.querySelector('span');
+                if (!hasMechanic) {
+                    showToast('Assign a mechanic first before marking En Route.', 'warning', 5000);
+                    _pendingEnRoute = id;
+                    openMechanicPicker(id);
+                    return;
+                }
+            }
             try {
                 var r = await fetch('/shop/request/' + id + '/status', {
                     method: 'POST',
@@ -724,6 +788,257 @@
 
 
         // Popup is now the entry point for new requests — prependRequestCard is no longer used
+
+        // ── Mechanic Picker ──────────────────────────────────────
+        var _pickerRequestId = null;
+        var _pickerMode = null; // null | 'accept'
+        var _pendingEnRoute = null; // request id waiting for mechanic before en_route
+
+        function openMechanicPicker(requestId) {
+            _pickerRequestId = requestId;
+            _pickerMode = null;
+            var title = document.getElementById('mechPickerTitle');
+            if (title) title.textContent = 'Assign Mechanic';
+            var skip = document.getElementById('mechPickerSkip');
+            if (skip) {
+                skip.style.display = 'none';
+                skip.disabled = false;
+            }
+            document.getElementById('mechanicPickerModal').style.display = 'flex';
+            loadMechanicsForPicker();
+        }
+
+        function openMechanicPickerForAccept(requestId, req) {
+            _pickerRequestId = requestId;
+            _pickerMode = 'accept';
+            var title = document.getElementById('mechPickerTitle');
+            if (title) title.textContent = 'Select Mechanic';
+            var skip = document.getElementById('mechPickerSkip');
+            if (skip) {
+                skip.style.display = 'block';
+                skip.disabled = false;
+            }
+            document.getElementById('mechanicPickerModal').style.display = 'flex';
+            loadMechanicsForPicker();
+        }
+
+        function closeMechanicPicker() {
+            document.getElementById('mechanicPickerModal').style.display = 'none';
+            _pickerRequestId = null;
+            _pickerMode = null;
+            _pendingEnRoute = null;
+        }
+
+        async function loadMechanicsForPicker() {
+            var list = document.getElementById('mechanicPickerList');
+            list.innerHTML =
+                '<div style="text-align:center;padding:20px;color:#667382;font-size:13px;"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Loading mechanics…</div>';
+            try {
+                var r = await fetch('/shop/mechanics-list', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                var mechanics = await r.json();
+                if (!mechanics.length) {
+                    list.innerHTML =
+                        '<div style="text-align:center;padding:20px;color:#667382;font-size:13px;">No mechanics found. <a href="/shop/mechanics" style="color:#f76707;">Add one →</a></div>';
+                    return;
+                }
+                list.innerHTML = '';
+                mechanics.forEach(function(m) {
+                    var statusColor = m.status === 'available' ? '#2fb344' : (m.status === 'dispatched' ?
+                        '#f76707' : '#667382');
+                    var statusLabel = m.status === 'available' ? 'Available' : (m.status === 'dispatched' ?
+                        'Dispatched' : 'Off Duty');
+                    var isDisabled = m.status === 'off_duty';
+                    var row = document.createElement('div');
+                    row.style.cssText =
+                        'display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e6e7eb;border-radius:8px;cursor:pointer;transition:background .15s;' +
+                        (isDisabled ? 'opacity:.5;pointer-events:none;' : '');
+                    row.innerHTML =
+                        '<div style="width:36px;height:36px;border-radius:50%;background:#f0f1f3;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-user-gear" style="color:#667382;font-size:14px;"></i></div>' +
+                        '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#1d273b;">' +
+                        escHtml(m.name || 'Mechanic') + '</div>' +
+                        (m.phone ? '<div style="font-size:11px;color:#667382;">' + escHtml(m.phone) + '</div>' :
+                            '') + '</div>' +
+                        '<span style="font-size:11px;font-weight:600;color:' + statusColor + ';background:' +
+                        statusColor + '1a;padding:2px 8px;border-radius:10px;">' + statusLabel + '</span>';
+                    if (!isDisabled) {
+                        row.addEventListener('click', function() {
+                            assignMechanic(m.user_id, m.name);
+                        });
+                    }
+                    list.appendChild(row);
+                });
+            } catch (e) {
+                list.innerHTML =
+                    '<div style="text-align:center;padding:20px;color:#d63939;font-size:13px;">Failed to load mechanics.</div>';
+            }
+        }
+
+        async function skipMechanicAndAccept() {
+            if (_pickerMode === 'accept' && _pickerRequestId) {
+                await doAcceptRequest(_pickerRequestId, null, null);
+            }
+        }
+
+        async function assignMechanic(userId, name) {
+            if (!_pickerRequestId) return;
+            if (_pickerMode === 'accept') {
+                await doAcceptRequest(_pickerRequestId, userId, name);
+                return;
+            }
+            // Normal assign to an already-accepted job
+            try {
+                var r = await fetch('/shop/request/' + _pickerRequestId + '/dispatch', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        mechanic_id: userId
+                    })
+                });
+                var d = await r.json();
+                if (d.success) {
+                    var reqId = _pickerRequestId;
+                    var pending = _pendingEnRoute === reqId ? reqId : null;
+                    closeMechanicPicker();
+                    var mrow = document.getElementById('mrow-' + reqId);
+                    if (mrow) {
+                        mrow.innerHTML =
+                            '<i class="fas fa-user-gear" style="color:#667382;font-size:12px;flex-shrink:0;"></i>' +
+                            '<span style="font-size:12px;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+                            escHtml(d.mechanic_name || name) + '</span>' +
+                            '<button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;flex-shrink:0;" onclick="event.stopPropagation();openMechanicPicker(' +
+                            reqId + ')">Change</button>';
+                    }
+                    showToast('Mechanic assigned: ' + escHtml(d.mechanic_name || name), 'success');
+                    // Auto-proceed with en_route if triggered by the guard
+                    if (pending) {
+                        updateRequestStatus(pending, 'en_route');
+                    } else {
+                        // Reveal En Route button if it was hidden (accepted card with no mechanic)
+                        var enBtn = document.getElementById('en-route-btn-' + reqId);
+                        if (enBtn && enBtn.style.display === 'none') enBtn.style.display = '';
+                    }
+                } else {
+                    showToast(d.message || 'Assignment failed.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error.', 'error');
+            }
+        }
+
+        async function doAcceptRequest(reqId, mechanicUserId, mechanicName) {
+            var list = document.getElementById('mechanicPickerList');
+            var skip = document.getElementById('mechPickerSkip');
+            if (skip) skip.disabled = true;
+            list.innerHTML =
+                '<div style="text-align:center;padding:20px;color:#667382;font-size:13px;"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Accepting…</div>';
+            try {
+                var r = await fetch('/shop/accept/' + reqId, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'Accept': 'application/json'
+                    }
+                });
+                var d = await r.json();
+                if (!d.success) {
+                    closeMechanicPicker();
+                    clearInterval(_popupTimer);
+                    document.getElementById('dispatch-popup').style.display = 'none';
+                    _currentPopupReqId = null;
+                    _currentPopupReq = null;
+                    showToast(d.taken ? 'Too slow! Another shop already accepted this one.' : (d.message ||
+                        'Could not accept.'), d.taken ? 'warning' : 'error', 5000);
+                    setTimeout(processPopupQueue, 500);
+                    return;
+                }
+                // Assign mechanic if one was selected
+                if (mechanicUserId) {
+                    await fetch('/shop/request/' + reqId + '/dispatch', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': getCsrfToken(),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            mechanic_id: mechanicUserId
+                        })
+                    });
+                }
+                var savedReq = _currentPopupReq;
+                closeMechanicPicker();
+                clearInterval(_popupTimer);
+                document.getElementById('dispatch-popup').style.display = 'none';
+                _currentPopupReqId = null;
+                _currentPopupReq = null;
+                showToast('Job accepted!' + (mechanicName ? ' Mechanic: ' + escHtml(mechanicName) : ''), 'success',
+                    6000);
+                adjustCount('stat-active', 1);
+                adjustCount('stat-pending', -1);
+                var pb = document.getElementById('pending-badge');
+                if (pb) {
+                    var n = Math.max(0, (parseInt(pb.textContent) || 0) - 1);
+                    pb.textContent = n + ' unclaimed';
+                    if (n === 0) pb.style.display = 'none';
+                }
+                addActiveJobCard(reqId, savedReq, mechanicName);
+                setTimeout(processPopupQueue, 500);
+            } catch (e) {
+                closeMechanicPicker();
+                closeDispatchPopup();
+                showToast('Network error. Try again.', 'error');
+            }
+        }
+
+        function addActiveJobCard(reqId, req, mechanicName) {
+            var container = document.getElementById('active-jobs-container');
+            if (!container) return;
+            // Remove empty-state placeholder
+            var empty = container.querySelector('.t-card');
+            if (empty) empty.remove();
+            var motoristName = escHtml((req && (req.owner_name || req.motorist_name || req.guest_name)) ||
+                'Unknown Motorist');
+            var issueType = escHtml((req && req.issue_type) || 'Job');
+            var mechInner = mechanicName ?
+                '<i class="fas fa-user-gear" style="color:#667382;font-size:12px;flex-shrink:0;"></i>' +
+                '<span style="font-size:12px;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' +
+                escHtml(mechanicName) + '</span>' +
+                '<button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;flex-shrink:0;" onclick="event.stopPropagation();openMechanicPicker(' +
+                reqId + ')">Change</button>' :
+                '<button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;" onclick="event.stopPropagation();openMechanicPicker(' +
+                reqId + ')"><i class="fas fa-user-plus" style="margin-right:5px;"></i>Assign Mechanic</button>';
+            var card = document.createElement('div');
+            card.className = 'req-card open';
+            card.id = 'req-' + reqId;
+            card.innerHTML = '<div class="req-head" onclick="toggleCard(this)">' +
+                '<div class="req-info">' +
+                '<div class="req-title" style="font-size:13px;">' + issueType + '</div>' +
+                '<div class="req-meta">' + motoristName + '</div>' +
+                '</div>' +
+                '<span class="sbadge badge-warning">ACCEPTED</span>' +
+                '<i class="fas fa-chevron-down req-chev"></i>' +
+                '</div>' +
+                '<div class="req-body">' +
+                '<div class="req-div"></div>' +
+                '<div class="mechanic-row" id="mrow-' + reqId +
+                '" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' + mechInner + '</div>' +
+                '<button id="en-route-btn-' + reqId +
+                '" class="btn btn-primary btn-sm" style="width:100%;justify-content:center;' + (mechanicName ? '' :
+                    'display:none;') + '" onclick="updateRequestStatus(' +
+                reqId + ', \'en_route\')">Mechanic En Route</button>' +
+                '</div>';
+            container.insertBefore(card, container.firstChild);
+            adjustCount('active-badge', 1);
+        }
+        // ─────────────────────────────────────────────────────────
 
         var smallMap = null,
             modalMap = null,

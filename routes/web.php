@@ -126,6 +126,10 @@ Route::prefix("shop")
       ShopController::class,
       "deleteMechanic",
     ])->name("shop.mechanics.delete");
+    Route::get("/mechanics-list", [
+      ShopController::class,
+      "mechanicsList",
+    ])->name("shop.mechanics-list");
     Route::post("/request/{id}/dispatch", [
       ShopController::class,
       "dispatchMechanic",

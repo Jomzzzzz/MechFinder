@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                           MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                           ══════════════════════════════════════════════ */
+                                                                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                       ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -79,23 +79,70 @@
             flex-shrink: 0;
         }
 
-        /* ── STATUS STRIP ── */
-        /* ── BAR SPINNER ── */
-        .bar-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2.5px solid var(--brand-bg);
-            border-top-color: var(--brand);
-            border-radius: 50%;
-            animation: barSpin .75s linear infinite;
-            flex-shrink: 0;
-            display: none;
+        /* ── STEP TRACKER (Grab-style) ── */
+        #rescueBar.bar-active {
+            height: auto;
+            min-height: 96px;
+            align-items: flex-start;
+            padding: 10px 14px 8px;
         }
 
-        @keyframes barSpin {
-            to {
-                transform: rotate(360deg);
+        .step-track {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin: 6px 0 0;
+        }
+
+        .step-dot {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            background: var(--surface-2);
+            border: 2px solid var(--border);
+            color: var(--text-3);
+            flex-shrink: 0;
+            transition: background .25s, border-color .25s, color .25s;
+        }
+
+        .step-dot.done {
+            background: var(--brand);
+            border-color: var(--brand);
+            color: #fff;
+        }
+
+        .step-dot.active {
+            background: var(--brand);
+            border-color: var(--brand);
+            color: #fff;
+            animation: stepPulse 1.6s ease-in-out infinite;
+        }
+
+        @keyframes stepPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(247, 148, 29, .35);
             }
+
+            50% {
+                box-shadow: 0 0 0 6px rgba(247, 148, 29, 0);
+            }
+        }
+
+        .step-line {
+            flex: 1;
+            height: 2px;
+            background: var(--border);
+            transition: background .3s;
+        }
+
+        .step-line.done {
+            background: var(--brand);
         }
 
         /* ── LOCATE FAB ── */
@@ -1209,25 +1256,49 @@
                     <i class="fa-chevron-right fa-solid" style="font-size:11px;color:var(--text-3);"></i>
                 </button>
             </div>
-            {{-- Active state: shown while a request is in progress --}}
-            <div id="barActive" style="display:none;align-items:center;gap:10px;width:100%;" onclick="showTab('requests')">
-                <div id="barSpinner" class="bar-spinner"></div>
-                <div style="flex:1;min-width:0;">
-                    <div
-                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);">
-                        Active Rescue</div>
-                    <div id="barActiveText" style="font-size:13px;font-weight:600;color:var(--text-1);margin-top:2px;">
+            {{-- Active state: Grab-style step tracker --}}
+            <div id="barActive" style="display:none;flex-direction:column;width:100%;" onclick="showTab('requests')">
+                {{-- Row 1: title + cancel --}}
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;width:100%;">
+                    <div style="flex:1;min-width:0;">
+                        <div
+                            style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);">
+                            Active Rescue</div>
+                        <div id="barActiveText"
+                            style="font-size:15px;font-weight:700;color:var(--text-1);margin-top:1px;line-height:1.25;">
+                        </div>
                     </div>
-                    <div id="barActiveLoc"
-                        style="font-size:11px;color:var(--text-3);margin-top:2px;display:flex;align-items:center;gap:3px;">
-                        <i class="fa-solid fa-location-dot" style="font-size:10px;color:var(--brand);"></i>
-                        <span>Detecting…</span>
+                    <button id="cancelBtn" onclick="event.stopPropagation();cancelDispatch()"
+                        style="display:none;flex-shrink:0;width:30px;height:30px;background:transparent;border:2px solid var(--red);color:var(--red);border-radius:50%;cursor:pointer;align-items:center;justify-content:center;font-size:13px;padding:0;margin-top:2px;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                {{-- Row 2: step dots --}}
+                <div class="step-track">
+                    <div class="step-dot" id="track-step-0"><i class="fa-solid fa-store"></i></div>
+                    <div class="step-line" id="track-line-0"></div>
+                    <div class="step-dot" id="track-step-1"><i class="fa-solid fa-motorcycle"></i></div>
+                    <div class="step-line" id="track-line-1"></div>
+                    <div class="step-dot" id="track-step-2"><i class="fa-solid fa-location-dot"></i></div>
+                    <div class="step-line" id="track-line-2"></div>
+                    <div class="step-dot" id="track-step-3"><i class="fa-solid fa-circle-check"></i></div>
+                </div>
+                {{-- Mechanic chip (visible when en_route / arrived) --}}
+                <div id="barMechInfo"
+                    style="display:none;align-items:center;gap:8px;margin-top:6px;padding:5px 8px;background:var(--surface-2);border-radius:8px;width:100%;">
+                    <div
+                        style="width:26px;height:26px;border-radius:50%;background:var(--brand-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fa-solid fa-user-gear" style="font-size:11px;color:var(--brand);"></i>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div id="barMechName"
+                            style="font-size:12px;font-weight:600;color:var(--text-1);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        </div>
+                        <div id="barMechPhone" style="font-size:10px;color:var(--text-3);line-height:1.3;"></div>
                     </div>
                 </div>
-                <button id="cancelBtn" onclick="event.stopPropagation();cancelDispatch()"
-                    style="display:none;flex-shrink:0;width:36px;height:36px;background:transparent;border:2px solid var(--red);color:var(--red);border-radius:50%;cursor:pointer;align-items:center;justify-content:center;font-size:15px;padding:0;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+                {{-- Row 3: sub message --}}
+                <div id="barSubMsg" style="font-size:11px;color:var(--text-3);margin-top:4px;"></div>
             </div>
         </div>
 
@@ -1625,8 +1696,24 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                           MECHFINDER — APP LOGIC
-                                                                                                                           ══════════════════════════════════════════════ */
+                                                                                                                                       MECHFINDER — APP LOGIC
+                                                                                                                                       ══════════════════════════════════════════════ */
+
+        /* Plain headline text for the active bar */
+        const STATUS_TITLE = {
+            requested: 'Finding nearest mechanic…',
+            accepted: 'Shop accepted your request',
+            en_route: 'Mechanic is on the way',
+            arrived: 'Mechanic has arrived!',
+            completed: 'All done — job complete!',
+        };
+        /* Sub-message below the step dots */
+        const SUB_MSG = {
+            requested: 'Looking for an available mechanic…',
+            accepted: 'Your mechanic is getting ready to head out',
+            en_route: 'Sit tight — your mechanic is on the way to you',
+            arrived: 'Your mechanic is on-site and working on your vehicle',
+        };
 
         const STATUS_LABEL = {
             requested: '<i class="fa-solid fa-hourglass-half"></i> Finding nearest shop…',
@@ -1715,11 +1802,9 @@
 
         function locateUser() {
             const lineBtm = document.getElementById('locationLineBtm');
-            const locSpan = document.querySelector('#barActiveLoc span');
 
             function setLocation(text) {
                 lineBtm.textContent = text;
-                if (locSpan) locSpan.textContent = text;
             }
             if (!navigator.geolocation) {
                 setLocation('GPS not supported');
@@ -2054,9 +2139,11 @@
                         return;
                     }
                     const d = await r.json();
+                    // always refresh mechanic chip (assignment may happen after status update)
+                    updateMechanicInfo(d.status, d.mechanic_name, d.mechanic_phone);
                     if (d.status !== _lastKnownStatus) {
                         _lastKnownStatus = d.status;
-                        showStatusStrip(d.status);
+                        showStatusStrip(d.status, d.mechanic_name, d.mechanic_phone);
                         if (['completed', 'declined', 'cancelled'].includes(d.status)) {
                             stopStatusPolling();
                             setTimeout(() => {
@@ -2084,7 +2171,6 @@
             // Pusher real-time (fast path)
             if (window.pusherKey) {
                 if (pusherClient) pusherClient.disconnect();
-                Pusher.logToConsole = true; // ← remove after debugging
                 pusherClient = new Pusher(window.pusherKey, {
                     cluster: window.pusherCluster,
                     forceTLS: true
@@ -2127,7 +2213,7 @@
                 if (!['completed', 'declined', 'cancelled'].includes(d.status)) {
                     _lastKnownStatus = d.status;
                     document.getElementById('rescueFab').style.display = 'none';
-                    showStatusStrip(d.status); // also calls updateRescueBar
+                    showStatusStrip(d.status, d.mechanic_name, d.mechanic_phone); // also calls updateRescueBar
                     subscribeToDispatch(requestId); // also starts polling fallback
                     document.getElementById('reqBadge').classList.add('show');
                 } else {
@@ -2137,27 +2223,89 @@
             } catch {}
         }
 
-        function showStatusStrip(status) {
-            updateRescueBar(status);
+        function showStatusStrip(status, mechName, mechPhone) {
+            updateRescueBar(status, mechName, mechPhone);
         }
 
-        function updateRescueBar(status) {
+        function updateMechanicInfo(status, name, phone) {
+            const info = document.getElementById('barMechInfo');
+            const nameEl = document.getElementById('barMechName');
+            const phoneEl = document.getElementById('barMechPhone');
+            const show = ['en_route', 'arrived'].includes(status) && name;
+            if (!info) return;
+            info.style.display = show ? 'flex' : 'none';
+            if (show) {
+                if (nameEl) nameEl.textContent = name;
+                if (phoneEl) phoneEl.textContent = phone || 'Assigned mechanic';
+                document.documentElement.style.setProperty('--bar-h', '120px');
+            }
+        }
+
+        /* Step tracker state machine */
+        function updateStepTrack(status) {
+            const configs = {
+                requested: {
+                    dots: ['active', '', '', ''],
+                    lines: [false, false, false]
+                },
+                accepted: {
+                    dots: ['done', '', '', ''],
+                    lines: [false, false, false]
+                },
+                en_route: {
+                    dots: ['done', 'active', '', ''],
+                    lines: [true, false, false]
+                },
+                arrived: {
+                    dots: ['done', 'done', 'active', ''],
+                    lines: [true, true, false]
+                },
+                completed: {
+                    dots: ['done', 'done', 'done', 'done'],
+                    lines: [true, true, true]
+                },
+            };
+            const cfg = configs[status];
+            if (!cfg) return;
+            cfg.dots.forEach((cls, i) => {
+                const el = document.getElementById('track-step-' + i);
+                if (!el) return;
+                el.className = 'step-dot';
+                if (cls) el.classList.add(cls);
+            });
+            cfg.lines.forEach((done, i) => {
+                const el = document.getElementById('track-line-' + i);
+                if (el) el.className = 'step-line' + (done ? ' done' : '');
+            });
+            const subMsg = document.getElementById('barSubMsg');
+            if (subMsg) subMsg.textContent = SUB_MSG[status] ?? '';
+        }
+
+        function updateRescueBar(status, mechName, mechPhone) {
             const idle = document.getElementById('barIdle');
             const active = document.getElementById('barActive');
             const activeText = document.getElementById('barActiveText');
             const cancelBtn = document.getElementById('cancelBtn');
-            const spinner = document.getElementById('barSpinner');
+            const bar = document.getElementById('rescueBar');
             if (!status || ['completed', 'declined', 'cancelled'].includes(status)) {
                 idle.style.display = 'flex';
                 active.style.display = 'none';
+                bar.classList.remove('bar-active');
+                document.documentElement.style.setProperty('--bar-h', '78px');
                 document.getElementById('rescueFab').style.display = 'flex';
+                // hide mechanic chip on reset
+                const info = document.getElementById('barMechInfo');
+                if (info) info.style.display = 'none';
                 return;
             }
             idle.style.display = 'none';
             active.style.display = 'flex';
-            activeText.innerHTML = STATUS_LABEL[status] ?? status;
+            bar.classList.add('bar-active');
+            document.documentElement.style.setProperty('--bar-h', '96px');
+            activeText.textContent = STATUS_TITLE[status] ?? status;
             cancelBtn.style.display = status === 'requested' ? 'flex' : 'none';
-            if (spinner) spinner.style.display = status === 'requested' ? 'block' : 'none';
+            updateStepTrack(status);
+            updateMechanicInfo(status, mechName, mechPhone);
         }
 
         function cancelDispatch() {
