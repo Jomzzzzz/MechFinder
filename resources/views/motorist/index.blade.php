@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                                                                                                                       ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                           MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                                                                                                           ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -1228,6 +1228,51 @@
             border: 1px solid var(--border);
             cursor: pointer;
         }
+
+        /* ── COMPLETION MODAL ── */
+        #completionModal {
+            position: absolute;
+            inset: 0;
+            z-index: 65;
+            background: rgba(0, 0, 0, .45);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s ease;
+        }
+
+        #completionModal.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #completionModal .cm-sheet {
+            background: var(--surface);
+            border-radius: var(--r3) var(--r3) 0 0;
+            width: 100%;
+            padding: 28px 20px 36px;
+            transform: translateY(100%);
+            transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        #completionModal.show .cm-sheet {
+            transform: translateY(0);
+        }
+
+        .completion-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, .12);
+            color: var(--green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 16px;
+        }
     </style>
 
     <div id="mfApp">
@@ -1368,6 +1413,21 @@
                     <button class="cm-btn-cancel" onclick="_cmConfirm()"><i class="fa-solid fa-xmark"></i> Yes, Cancel
                         Request</button>
                     <button class="cm-btn-back" onclick="_cmClose()">Keep Waiting</button>
+                </div>
+            </div>
+        </div>
+
+        {{-- TRANSACTION COMPLETE MODAL --}}
+        <div id="completionModal">
+            <div class="cm-sheet">
+                <div class="completion-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="cm-title">Transaction Complete</div>
+                <div class="cm-body">Your rescue request has been completed. We hope your ride is back on the road safely.
+                    Thank you for using MechFinder!</div>
+                <div class="cm-actions">
+                    <button class="btn-primary" style="background:var(--green);" onclick="hideCompletionModal()">
+                        <i class="fa-solid fa-circle-check"></i> Done
+                    </button>
                 </div>
             </div>
         </div>
@@ -1725,8 +1785,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                       MECHFINDER — APP LOGIC
-                                                                                                                                                                                                                       ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                           MECHFINDER — APP LOGIC
+                                                                                                                                                                                                                           ══════════════════════════════════════════════ */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -2535,6 +2595,7 @@
                 _dispatchShopLat = null;
                 _dispatchShopLng = null;
                 if (allShops.length) renderShopPins(allShops);
+                if (status === 'completed') showCompletionModal();
                 return;
             }
             idle.style.display = 'none';
@@ -2752,6 +2813,15 @@
             const h = Math.round(m / 60);
             if (h < 24) return h + 'h ago';
             return Math.round(h / 24) + 'd ago';
+        }
+
+        /* ── COMPLETION MODAL ── */
+        function showCompletionModal() {
+            document.getElementById('completionModal').classList.add('show');
+        }
+
+        function hideCompletionModal() {
+            document.getElementById('completionModal').classList.remove('show');
         }
     </script>
 @endsection
