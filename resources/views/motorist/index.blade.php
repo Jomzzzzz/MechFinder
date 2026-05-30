@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                                       ══════════════════════════════════════════════ */
+                                                                                                                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                                                                       ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -1105,11 +1105,20 @@
             border: 2.5px solid #fff;
         }
 
-        .mf-pin-you {
-            background: #fff;
-            color: var(--blue);
-            border: 3px solid var(--blue);
-            box-shadow: 0 0 0 5px rgba(59, 130, 246, .18);
+        .you-pin-animate {
+            animation: youPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes youPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 4px #3B82F6, 0 4px 14px rgba(59, 130, 246, .45);
+            }
+
+            50% {
+                box-shadow: 0 0 0 9px rgba(59, 130, 246, .25), 0 4px 14px rgba(59, 130, 246, .45);
+            }
         }
 
         /* Leaflet overrides */
@@ -1279,23 +1288,30 @@
                     <div class="step-line" id="track-line-0"></div>
                     <div class="step-dot" id="track-step-1"><i class="fa-solid fa-motorcycle"></i></div>
                     <div class="step-line" id="track-line-1"></div>
-                    <div class="step-dot" id="track-step-2"><i class="fa-solid fa-location-dot"></i></div>
-                    <div class="step-line" id="track-line-2"></div>
-                    <div class="step-dot" id="track-step-3"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="step-dot" id="track-step-2"><i class="fa-solid fa-circle-check"></i></div>
                 </div>
                 {{-- Mechanic chip (visible when en_route / arrived) --}}
                 <div id="barMechInfo"
-                    style="display:none;align-items:center;gap:8px;margin-top:6px;padding:5px 8px;background:var(--surface-2);border-radius:8px;width:100%;">
+                    style="display:none;align-items:center;gap:10px;margin-top:6px;padding:8px 10px;background:var(--surface-2);border-radius:10px;width:100%;">
                     <div
-                        style="width:26px;height:26px;border-radius:50%;background:var(--brand-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <i class="fa-solid fa-user-gear" style="font-size:11px;color:var(--brand);"></i>
+                        style="width:32px;height:32px;border-radius:50%;background:var(--brand-bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fa-solid fa-user-gear" style="font-size:13px;color:var(--brand);"></i>
                     </div>
                     <div style="flex:1;min-width:0;">
                         <div id="barMechName"
-                            style="font-size:12px;font-weight:600;color:var(--text-1);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                            style="font-size:12px;font-weight:700;color:var(--text-1);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                         </div>
-                        <div id="barMechPhone" style="font-size:10px;color:var(--text-3);line-height:1.3;"></div>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;">
+                            <span id="barMechPhone" style="font-size:10px;color:var(--text-3);"></span>
+                            <span id="barMechPlate" style="display:none;font-size:10px;color:var(--text-3);"><i
+                                    class="fa-solid fa-motorcycle" style="font-size:8px;margin-right:3px;"></i><span
+                                    id="barMechPlateVal"></span></span>
+                        </div>
                     </div>
+                    <button onclick="event.stopPropagation()"
+                        style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:#3B82F6;color:#fff;border:none;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+                        <i class="fa-solid fa-message" style="font-size:10px;"></i> Message
+                    </button>
                 </div>
                 {{-- Row 3: sub message --}}
                 <div id="barSubMsg" style="font-size:11px;color:var(--text-3);margin-top:4px;"></div>
@@ -1696,8 +1712,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                                       MECHFINDER — APP LOGIC
-                                                                                                                                       ══════════════════════════════════════════════ */
+                                                                                                                                                                                       MECHFINDER — APP LOGIC
+                                                                                                                                                                                       ══════════════════════════════════════════════ */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -1740,7 +1756,14 @@
         };
 
         /* ── STATE ── */
-        let map, userMarker, shopMarkers = [];
+        let map, userMarker, shopMarkers = [],
+            routeLayer = null,
+            mechanicMarker = null,
+            hiddenShopMarker = null;
+        let _activeShopLat = null,
+            _activeShopLng = null;
+        let _dispatchShopLat = null,
+            _dispatchShopLng = null;
         let userLat = 14.8386,
             userLng = 120.2842;
         let selectedIssue = null;
@@ -1830,9 +1853,9 @@
                 userMarker = L.marker([userLat, userLng], {
                     icon: L.divIcon({
                         className: '',
-                        html: '<div class="mf-pin mf-pin-you"><i class="fa-solid fa-location-dot"></i></div>',
-                        iconSize: [34, 34],
-                        iconAnchor: [17, 17]
+                        html: '<div style="text-align:center;line-height:0;"><div class="you-pin-animate" style="width:44px;height:44px;border-radius:50%;background:#3B82F6;color:#fff;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:18px;"><i class="fa-solid fa-motorcycle"></i></div><span style="display:inline-block;background:#3B82F6;color:#fff;font-size:9px;font-weight:700;border-radius:3px;padding:1px 5px;margin-top:4px;letter-spacing:.4px;line-height:1.4;">YOU</span></div>',
+                        iconSize: [44, 64],
+                        iconAnchor: [22, 22]
                     }),
                     zIndexOffset: 1000,
                 }).addTo(map).bindPopup('<div style="font-weight:700">You are here</div>');
@@ -1882,12 +1905,21 @@
                 renderShopList(shops, document.getElementById('shopSearchInput').value);
             }
 
+            const OVERLAP_TOL = 0.0002;
             shops.forEach(shop => {
                 if (!shop.latitude || !shop.longitude) return;
                 const open = shop.status === 'open';
                 const name = shop.shop_name || shop.name || 'Shop';
                 const addr = shop.address || '';
                 const stars = Number(shop.rating || 0).toFixed(1);
+
+                const isAssignedShop = _dispatchShopLat !== null &&
+                    Math.abs(shop.latitude - _dispatchShopLat) < OVERLAP_TOL &&
+                    Math.abs(shop.longitude - _dispatchShopLng) < OVERLAP_TOL;
+                // Hide all other shops while a dispatch is active
+                const isOtherShop = _dispatchShopLat !== null && !isAssignedShop;
+                // Hide assigned shop pin when mechanic marker is overlapping it
+                const isActiveShop = _activeShopLat !== null && isAssignedShop;
 
                 const m = L.marker([shop.latitude, shop.longitude], {
                     icon: L.divIcon({
@@ -1896,7 +1928,10 @@
                         iconSize: [34, 34],
                         iconAnchor: [17, 17],
                     })
-                }).addTo(map).bindPopup(`
+                });
+                if (!isOtherShop && !isActiveShop) m.addTo(map);
+                else if (isActiveShop) hiddenShopMarker = m;
+                m.bindPopup(`
       <div style="font-family:Inter,sans-serif;min-width:130px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:2px;">${name}</div>
         <div style="font-size:11px;color:#6B7280;margin-bottom:5px;">${addr}</div>
@@ -1972,6 +2007,78 @@
             const url =
                 `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${lat},${lng}&travelmode=driving`;
             window.open(url, '_blank');
+        }
+
+        /* ── ROUTE PLOTTING (OSRM) ── */
+        async function plotRouteToShop(shopLat, shopLng, mechInfo = {}) {
+            if (!shopLat || !shopLng) return;
+            clearRoute();
+            _activeShopLat = parseFloat(shopLat);
+            _activeShopLng = parseFloat(shopLng);
+            try {
+                const url =
+                    `https://router.project-osrm.org/route/v1/driving/${userLng},${userLat};${shopLng},${shopLat}?overview=full&geometries=geojson`;
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.code !== 'Ok' || !data.routes.length) return;
+                const coords = data.routes[0].geometry;
+                routeLayer = L.geoJSON(coords, {
+                    style: {
+                        color: '#3B82F6',
+                        weight: 5,
+                        opacity: 0.9,
+                        lineJoin: 'round',
+                        lineCap: 'round'
+                    }
+                }).addTo(map);
+                // Hide any existing shop pin at the same location to prevent overlap
+                const TOLERANCE = 0.0002;
+                hiddenShopMarker = shopMarkers.find(m => {
+                    const ll = m.getLatLng();
+                    return Math.abs(ll.lat - shopLat) < TOLERANCE && Math.abs(ll.lng - shopLng) < TOLERANCE;
+                }) || null;
+                if (hiddenShopMarker) map.removeLayer(hiddenShopMarker);
+                // Build mechanic popup
+                const popupHtml = `<div style="font-family:Inter,sans-serif;min-width:160px;padding:2px 0;">
+                    <div style="font-size:12px;font-weight:700;color:#111827;margin-bottom:5px;"><i class="fa-solid fa-motorcycle" style="margin-right:5px;color:#3B82F6;"></i>Mechanic on the way</div>
+                    ${mechInfo.name ? `<div style="font-size:12px;color:#374151;margin-bottom:3px;"><b>${mechInfo.name}</b></div>` : ''}
+                    ${mechInfo.phone ? `<div style="font-size:11px;color:#6B7280;margin-bottom:2px;"><i class="fa-solid fa-phone" style="font-size:9px;margin-right:4px;"></i>${mechInfo.phone}</div>` : ''}
+                    ${mechInfo.plate ? `<div style="font-size:11px;color:#6B7280;"><i class="fa-solid fa-motorcycle" style="font-size:9px;margin-right:4px;"></i>Plate: ${mechInfo.plate}</div>` : ''}
+                </div>`;
+                // Add motorcycle marker at shop (mechanic) location
+                if (mechanicMarker) map.removeLayer(mechanicMarker);
+                mechanicMarker = L.marker([shopLat, shopLng], {
+                    icon: L.divIcon({
+                        className: '',
+                        html: '<div class="mf-pin" style="background:#3B82F6;color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.25);"><i class="fa-solid fa-motorcycle"></i></div>',
+                        iconSize: [36, 36],
+                        iconAnchor: [18, 18]
+                    }),
+                    zIndexOffset: 900
+                }).addTo(map).bindPopup(popupHtml);
+                // Fit map to show full route
+                const bounds = routeLayer.getBounds().pad(0.15);
+                map.fitBounds(bounds);
+            } catch {
+                /* non-critical */
+            }
+        }
+
+        function clearRoute() {
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+                routeLayer = null;
+            }
+            if (mechanicMarker) {
+                map.removeLayer(mechanicMarker);
+                mechanicMarker = null;
+            }
+            if (hiddenShopMarker) {
+                hiddenShopMarker.addTo(map);
+                hiddenShopMarker = null;
+            }
+            _activeShopLat = null;
+            _activeShopLng = null;
         }
 
         /* ── RESCUE FORM ── */
@@ -2140,10 +2247,30 @@
                     }
                     const d = await r.json();
                     // always refresh mechanic chip (assignment may happen after status update)
-                    updateMechanicInfo(d.status, d.mechanic_name, d.mechanic_phone);
+                    updateMechanicInfo(d.status, d.mechanic_name, d.mechanic_phone, d.mechanic_plate);
+                    // Track assigned shop and hide others
+                    if (['accepted', 'en_route', 'arrived'].includes(d.status) && d.shop_lat && d.shop_lng) {
+                        const newLat = parseFloat(d.shop_lat),
+                            newLng = parseFloat(d.shop_lng);
+                        if (newLat !== _dispatchShopLat || newLng !== _dispatchShopLng) {
+                            _dispatchShopLat = newLat;
+                            _dispatchShopLng = newLng;
+                            renderShopPins(allShops);
+                        }
+                    }
+                    // Plot/clear route based on status
+                    if (['en_route', 'arrived'].includes(d.status) && d.shop_lat && d.shop_lng && !routeLayer) {
+                        plotRouteToShop(d.shop_lat, d.shop_lng, {
+                            name: d.mechanic_name,
+                            phone: d.mechanic_phone,
+                            plate: d.mechanic_plate
+                        });
+                    } else if (!['en_route', 'arrived'].includes(d.status)) {
+                        clearRoute();
+                    }
                     if (d.status !== _lastKnownStatus) {
                         _lastKnownStatus = d.status;
-                        showStatusStrip(d.status, d.mechanic_name, d.mechanic_phone);
+                        showStatusStrip(d.status, d.mechanic_name, d.mechanic_phone, d.mechanic_plate);
                         if (['completed', 'declined', 'cancelled'].includes(d.status)) {
                             stopStatusPolling();
                             setTimeout(() => {
@@ -2186,6 +2313,39 @@
                 }) => {
                     _lastKnownStatus = status;
                     showStatusStrip(status);
+                    if (['accepted', 'en_route', 'arrived'].includes(status) && !_dispatchShopLat) {
+                        fetch(`/motorist/request/${requestId}`)
+                            .then(r => r.json())
+                            .then(d => {
+                                if (d.shop_lat && d.shop_lng) {
+                                    _dispatchShopLat = parseFloat(d.shop_lat);
+                                    _dispatchShopLng = parseFloat(d.shop_lng);
+                                    renderShopPins(allShops);
+                                }
+                                if (['en_route', 'arrived'].includes(status) && !routeLayer && d.shop_lat && d
+                                    .shop_lng) {
+                                    plotRouteToShop(d.shop_lat, d.shop_lng, {
+                                        name: d.mechanic_name,
+                                        phone: d.mechanic_phone,
+                                        plate: d.mechanic_plate
+                                    });
+                                }
+                            })
+                            .catch(() => {});
+                    } else if (['en_route', 'arrived'].includes(status) && !routeLayer) {
+                        fetch(`/motorist/request/${requestId}`)
+                            .then(r => r.json())
+                            .then(d => {
+                                if (d.shop_lat && d.shop_lng) plotRouteToShop(d.shop_lat, d.shop_lng, {
+                                    name: d.mechanic_name,
+                                    phone: d.mechanic_phone,
+                                    plate: d.mechanic_plate
+                                });
+                            })
+                            .catch(() => {});
+                    } else if (!['accepted', 'en_route', 'arrived'].includes(status)) {
+                        clearRoute();
+                    }
                     if (['completed', 'declined', 'cancelled'].includes(status)) {
                         stopStatusPolling();
                         setTimeout(() => {
@@ -2213,7 +2373,20 @@
                 if (!['completed', 'declined', 'cancelled'].includes(d.status)) {
                     _lastKnownStatus = d.status;
                     document.getElementById('rescueFab').style.display = 'none';
-                    showStatusStrip(d.status, d.mechanic_name, d.mechanic_phone); // also calls updateRescueBar
+                    showStatusStrip(d.status, d.mechanic_name, d.mechanic_phone, d
+                    .mechanic_plate); // also calls updateRescueBar
+                    if (['accepted', 'en_route', 'arrived'].includes(d.status) && d.shop_lat && d.shop_lng) {
+                        _dispatchShopLat = parseFloat(d.shop_lat);
+                        _dispatchShopLng = parseFloat(d.shop_lng);
+                        renderShopPins(allShops);
+                    }
+                    if (['en_route', 'arrived'].includes(d.status) && d.shop_lat && d.shop_lng) {
+                        plotRouteToShop(d.shop_lat, d.shop_lng, {
+                            name: d.mechanic_name,
+                            phone: d.mechanic_phone,
+                            plate: d.mechanic_plate
+                        });
+                    }
                     subscribeToDispatch(requestId); // also starts polling fallback
                     document.getElementById('reqBadge').classList.add('show');
                 } else {
@@ -2223,21 +2396,31 @@
             } catch {}
         }
 
-        function showStatusStrip(status, mechName, mechPhone) {
-            updateRescueBar(status, mechName, mechPhone);
+        function showStatusStrip(status, mechName, mechPhone, mechPlate = null) {
+            updateRescueBar(status, mechName, mechPhone, mechPlate);
         }
 
-        function updateMechanicInfo(status, name, phone) {
+        function updateMechanicInfo(status, name, phone, plate = null) {
             const info = document.getElementById('barMechInfo');
             const nameEl = document.getElementById('barMechName');
             const phoneEl = document.getElementById('barMechPhone');
+            const plateWrap = document.getElementById('barMechPlate');
+            const plateVal = document.getElementById('barMechPlateVal');
             const show = ['en_route', 'arrived'].includes(status) && name;
             if (!info) return;
             info.style.display = show ? 'flex' : 'none';
             if (show) {
                 if (nameEl) nameEl.textContent = name;
                 if (phoneEl) phoneEl.textContent = phone || 'Assigned mechanic';
-                document.documentElement.style.setProperty('--bar-h', '120px');
+                if (plateWrap && plateVal) {
+                    if (plate) {
+                        plateVal.textContent = plate;
+                        plateWrap.style.display = 'inline';
+                    } else {
+                        plateWrap.style.display = 'none';
+                    }
+                }
+                document.documentElement.style.setProperty('--bar-h', '130px');
             }
         }
 
@@ -2245,24 +2428,24 @@
         function updateStepTrack(status) {
             const configs = {
                 requested: {
-                    dots: ['active', '', '', ''],
-                    lines: [false, false, false]
+                    dots: ['active', '', ''],
+                    lines: [false, false]
                 },
                 accepted: {
-                    dots: ['done', '', '', ''],
-                    lines: [false, false, false]
+                    dots: ['done', '', ''],
+                    lines: [false, false]
                 },
                 en_route: {
-                    dots: ['done', 'active', '', ''],
-                    lines: [true, false, false]
+                    dots: ['done', 'active', ''],
+                    lines: [true, false]
                 },
                 arrived: {
-                    dots: ['done', 'done', 'active', ''],
-                    lines: [true, true, false]
+                    dots: ['done', 'active', ''],
+                    lines: [true, false]
                 },
                 completed: {
-                    dots: ['done', 'done', 'done', 'done'],
-                    lines: [true, true, true]
+                    dots: ['done', 'done', 'done'],
+                    lines: [true, true]
                 },
             };
             const cfg = configs[status];
@@ -2281,7 +2464,7 @@
             if (subMsg) subMsg.textContent = SUB_MSG[status] ?? '';
         }
 
-        function updateRescueBar(status, mechName, mechPhone) {
+        function updateRescueBar(status, mechName, mechPhone, mechPlate = null) {
             const idle = document.getElementById('barIdle');
             const active = document.getElementById('barActive');
             const activeText = document.getElementById('barActiveText');
@@ -2296,6 +2479,10 @@
                 // hide mechanic chip on reset
                 const info = document.getElementById('barMechInfo');
                 if (info) info.style.display = 'none';
+                clearRoute();
+                _dispatchShopLat = null;
+                _dispatchShopLng = null;
+                if (allShops.length) renderShopPins(allShops);
                 return;
             }
             idle.style.display = 'none';
@@ -2305,7 +2492,7 @@
             activeText.textContent = STATUS_TITLE[status] ?? status;
             cancelBtn.style.display = status === 'requested' ? 'flex' : 'none';
             updateStepTrack(status);
-            updateMechanicInfo(status, mechName, mechPhone);
+            updateMechanicInfo(status, mechName, mechPhone, mechPlate);
         }
 
         function cancelDispatch() {

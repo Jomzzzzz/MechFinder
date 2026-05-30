@@ -244,8 +244,11 @@ class MotoristController extends Controller
         "shops.shop_name as shop_name",
         "shops.phone as shop_phone",
         "shops.address as shop_address",
+        "shops.latitude as shop_lat",
+        "shops.longitude as shop_lng",
         "mu.name as mechanic_name",
-        "mp.phone as mechanic_phone"
+        "mp.phone as mechanic_phone",
+        "mp.plate_number as mechanic_plate"
       )
       ->first();
 
