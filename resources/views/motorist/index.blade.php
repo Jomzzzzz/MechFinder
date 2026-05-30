@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                                                                                       ══════════════════════════════════════════════ */
+                                                                                                                                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                                                                                       ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -1290,6 +1290,12 @@
                     <div class="step-line" id="track-line-1"></div>
                     <div class="step-dot" id="track-step-2"><i class="fa-solid fa-circle-check"></i></div>
                 </div>
+                {{-- Distance badge --}}
+                <div id="barDistance"
+                    style="display:none;align-items:center;gap:4px;margin-top:4px;font-size:11px;color:var(--text-3);">
+                    <i class="fa-solid fa-route" style="font-size:10px;color:#3B82F6;"></i>
+                    <span id="barDistanceVal"></span>
+                </div>
                 {{-- Mechanic chip (visible when en_route / arrived) --}}
                 <div id="barMechInfo"
                     style="display:none;align-items:center;gap:10px;margin-top:6px;padding:8px 10px;background:var(--surface-2);border-radius:10px;width:100%;">
@@ -1712,8 +1718,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                       MECHFINDER — APP LOGIC
-                                                                                                                                                                                       ══════════════════════════════════════════════ */
+                                                                                                                                                                                                       MECHFINDER — APP LOGIC
+                                                                                                                                                                                                       ══════════════════════════════════════════════ */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -1853,8 +1859,8 @@
                 userMarker = L.marker([userLat, userLng], {
                     icon: L.divIcon({
                         className: '',
-                        html: '<div style="text-align:center;line-height:0;"><div class="you-pin-animate" style="width:44px;height:44px;border-radius:50%;background:#3B82F6;color:#fff;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:18px;"><i class="fa-solid fa-motorcycle"></i></div><span style="display:inline-block;background:#3B82F6;color:#fff;font-size:9px;font-weight:700;border-radius:3px;padding:1px 5px;margin-top:4px;letter-spacing:.4px;line-height:1.4;">YOU</span></div>',
-                        iconSize: [44, 64],
+                        html: '<div style="position:relative;width:44px;height:44px;"><div style="width:44px;height:44px;border-radius:50%;background:#3B82F6;color:#fff;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 10px rgba(59,130,246,.45);"><i class="fa-solid fa-user"></i></div><div style="position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);background:#3B82F6;color:#fff;font-size:9px;font-weight:700;border-radius:3px;padding:2px 6px;letter-spacing:.5px;white-space:nowrap;">YOU</div></div>',
+                        iconSize: [44, 44],
                         iconAnchor: [22, 22]
                     }),
                     zIndexOffset: 1000,
@@ -1865,6 +1871,17 @@
                 startShopPolling();
             }, () => {
                 setLocation('Using Olongapo default');
+                if (userMarker) map.removeLayer(userMarker);
+                userMarker = L.marker([userLat, userLng], {
+                    icon: L.divIcon({
+                        className: '',
+                        html: '<div style="position:relative;width:44px;height:44px;"><div style="width:44px;height:44px;border-radius:50%;background:#3B82F6;color:#fff;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 10px rgba(59,130,246,.45);"><i class="fa-solid fa-user"></i></div><div style="position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);background:#3B82F6;color:#fff;font-size:9px;font-weight:700;border-radius:3px;padding:2px 6px;letter-spacing:.5px;white-space:nowrap;">YOU</div></div>',
+                        iconSize: [44, 44],
+                        iconAnchor: [22, 22]
+                    }),
+                    zIndexOffset: 1000,
+                }).addTo(map).bindPopup('<div style="font-weight:700">You are here (default)</div>');
+                map.setView([userLat, userLng], 15);
                 loadShops();
                 startShopPolling();
             }, {
@@ -2022,6 +2039,15 @@
                 const data = await res.json();
                 if (data.code !== 'Ok' || !data.routes.length) return;
                 const coords = data.routes[0].geometry;
+                // Show distance in rescue bar
+                const distM = data.routes[0].distance;
+                const distKm = (distM / 1000).toFixed(1);
+                const distEl = document.getElementById('barDistance');
+                const distVal = document.getElementById('barDistanceVal');
+                if (distEl && distVal) {
+                    distVal.textContent = distKm + ' km away';
+                    distEl.style.display = 'flex';
+                }
                 routeLayer = L.geoJSON(coords, {
                     style: {
                         color: '#3B82F6',
@@ -2079,6 +2105,8 @@
             }
             _activeShopLat = null;
             _activeShopLng = null;
+            const distEl = document.getElementById('barDistance');
+            if (distEl) distEl.style.display = 'none';
         }
 
         /* ── RESCUE FORM ── */
@@ -2374,7 +2402,7 @@
                     _lastKnownStatus = d.status;
                     document.getElementById('rescueFab').style.display = 'none';
                     showStatusStrip(d.status, d.mechanic_name, d.mechanic_phone, d
-                    .mechanic_plate); // also calls updateRescueBar
+                        .mechanic_plate); // also calls updateRescueBar
                     if (['accepted', 'en_route', 'arrived'].includes(d.status) && d.shop_lat && d.shop_lng) {
                         _dispatchShopLat = parseFloat(d.shop_lat);
                         _dispatchShopLng = parseFloat(d.shop_lng);

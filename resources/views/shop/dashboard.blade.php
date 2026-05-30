@@ -644,6 +644,8 @@
         var _currentPopupReq = null;
         var _popupTimer = null;
         var _popupQueue = [];
+        var _popupSelectedMechId = null;
+        var _popupSelectedMechName = null;
 
         function queueDispatchPopup(req) {
             _popupQueue.push(req);
@@ -675,8 +677,11 @@
             var acceptBtn = document.getElementById('popup-accept-btn');
             acceptBtn.disabled = false;
             acceptBtn.innerHTML = '<i class="fas fa-check"></i> Accept Job';
+            _popupSelectedMechId = null;
+            _popupSelectedMechName = null;
             document.getElementById('dispatch-popup').style.display = 'flex';
             startPopupTimer(60);
+            loadMechanicsForPopup();
         }
 
         function startPopupTimer(seconds) {
@@ -698,8 +703,8 @@
 
         async function acceptPopupRequest() {
             if (!_currentPopupReqId) return;
-            clearInterval(_popupTimer); // pause the countdown
-            openMechanicPickerForAccept(_currentPopupReqId, _currentPopupReq);
+            clearInterval(_popupTimer);
+            await doAcceptRequest(_currentPopupReqId, _popupSelectedMechId, _popupSelectedMechName);
         }
 
         function declinePopupRequest() {
@@ -934,11 +939,16 @@
         }
 
         async function doAcceptRequest(reqId, mechanicUserId, mechanicName) {
-            var list = document.getElementById('mechanicPickerList');
-            var skip = document.getElementById('mechPickerSkip');
+            var acceptBtn = document.getElementById('popup-accept-btn');
+            if (acceptBtn) {
+                acceptBtn.disabled = true;
+                acceptBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Accepting…';
+            }
+            var mechList = document.getElementById('popup-mech-list');
+            if (mechList) mechList.innerHTML =
+                '<div style="text-align:center;padding:16px;color:#667382;font-size:13px;"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Accepting…</div>';
+            var skip = document.getElementById('popup-mech-skip');
             if (skip) skip.disabled = true;
-            list.innerHTML =
-                '<div style="text-align:center;padding:20px;color:#667382;font-size:13px;"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Accepting…</div>';
             try {
                 var r = await fetch('/shop/accept/' + reqId, {
                     method: 'POST',
@@ -949,11 +959,7 @@
                 });
                 var d = await r.json();
                 if (!d.success) {
-                    closeMechanicPicker();
-                    clearInterval(_popupTimer);
-                    document.getElementById('dispatch-popup').style.display = 'none';
-                    _currentPopupReqId = null;
-                    _currentPopupReq = null;
+                    closeDispatchPopup();
                     showToast(d.taken ? 'Too slow! Another shop already accepted this one.' : (d.message ||
                         'Could not accept.'), d.taken ? 'warning' : 'error', 5000);
                     setTimeout(processPopupQueue, 500);
@@ -974,11 +980,7 @@
                     });
                 }
                 var savedReq = _currentPopupReq;
-                closeMechanicPicker();
-                clearInterval(_popupTimer);
-                document.getElementById('dispatch-popup').style.display = 'none';
-                _currentPopupReqId = null;
-                _currentPopupReq = null;
+                closeDispatchPopup();
                 showToast('Job accepted!' + (mechanicName ? ' Mechanic: ' + escHtml(mechanicName) : ''), 'success',
                     6000);
                 adjustCount('stat-active', 1);
@@ -992,10 +994,77 @@
                 addActiveJobCard(reqId, savedReq, mechanicName);
                 setTimeout(processPopupQueue, 500);
             } catch (e) {
-                closeMechanicPicker();
                 closeDispatchPopup();
                 showToast('Network error. Try again.', 'error');
             }
+        }
+
+        async function loadMechanicsForPopup() {
+            var list = document.getElementById('popup-mech-list');
+            if (!list) return;
+            list.innerHTML =
+                '<div style="text-align:center;padding:16px;color:#667382;font-size:13px;"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Loading mechanics…</div>';
+            try {
+                var r = await fetch('/shop/mechanics-list', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                var mechanics = await r.json();
+                if (!mechanics.length) {
+                    list.innerHTML =
+                        '<div style="text-align:center;padding:16px;color:#667382;font-size:13px;">No mechanics found. <a href="/shop/mechanics" style="color:#f76707;">Add one →</a></div>';
+                    return;
+                }
+                list.innerHTML = '';
+                mechanics.forEach(function(m) {
+                    var statusColor = m.status === 'available' ? '#2fb344' : (m.status === 'dispatched' ?
+                        '#f76707' : '#667382');
+                    var statusLabel = m.status === 'available' ? 'Available' : (m.status === 'dispatched' ?
+                        'Dispatched' : 'Off Duty');
+                    var isDisabled = m.status === 'off_duty';
+                    var row = document.createElement('div');
+                    row.id = 'popup-mech-row-' + m.user_id;
+                    row.style.cssText =
+                        'display:flex;align-items:center;gap:10px;padding:9px 11px;border:1.5px solid #e6e7eb;border-radius:8px;cursor:pointer;transition:all .15s;' +
+                        (isDisabled ? 'opacity:.5;pointer-events:none;' : '');
+                    row.innerHTML =
+                        '<div style="width:34px;height:34px;border-radius:50%;background:#f0f1f3;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-user-gear" style="color:#667382;font-size:13px;"></i></div>' +
+                        '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#1d273b;">' +
+                        escHtml(m.name || 'Mechanic') + '</div>' +
+                        (m.phone ? '<div style="font-size:11px;color:#667382;">' + escHtml(m.phone) + '</div>' :
+                            '') + '</div>' +
+                        '<span style="font-size:11px;font-weight:600;color:' + statusColor + ';background:' +
+                        statusColor + '1a;padding:2px 8px;border-radius:10px;">' + statusLabel + '</span>';
+                    if (!isDisabled) {
+                        row.addEventListener('click', function() {
+                            selectPopupMechanic(m.user_id, m.name);
+                        });
+                    }
+                    list.appendChild(row);
+                });
+            } catch (e) {
+                list.innerHTML =
+                    '<div style="text-align:center;padding:16px;color:#d63939;font-size:13px;">Failed to load mechanics.</div>';
+            }
+        }
+
+        function selectPopupMechanic(id, name) {
+            _popupSelectedMechId = id;
+            _popupSelectedMechName = name;
+            document.querySelectorAll('[id^="popup-mech-row-"]').forEach(function(r) {
+                r.style.borderColor = '#e6e7eb';
+                r.style.background = '';
+            });
+            if (id) {
+                var sel = document.getElementById('popup-mech-row-' + id);
+                if (sel) {
+                    sel.style.borderColor = '#2fb344';
+                    sel.style.background = '#f0fdf4';
+                }
+            }
+            var skip = document.getElementById('popup-mech-skip');
+            if (skip) skip.style.color = id ? '#667382' : '#2fb344';
         }
 
         function addActiveJobCard(reqId, req, mechanicName) {
@@ -1228,13 +1297,13 @@
 @endsection
 
 @section('body_after')
-    {{-- Dispatch Popup Overlay --}}
+    {{-- Combined Dispatch + Mechanic Picker Popup --}}
     <div id="dispatch-popup"
         style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:16px;">
         <div
-            style="width:100%; max-width:420px; background:#fff; border-radius:16px; box-shadow:0 24px 64px rgba(0,0,0,.25); overflow:hidden;">
+            style="width:100%; max-width:420px; background:#fff; border-radius:16px; box-shadow:0 24px 64px rgba(0,0,0,.25); overflow:hidden; max-height:90vh; display:flex; flex-direction:column;">
             {{-- Header --}}
-            <div style="background:#d63939; padding:16px 20px; display:flex; align-items:center; gap:12px;">
+            <div style="background:#d63939; padding:16px 20px; display:flex; align-items:center; gap:12px; flex-shrink:0;">
                 <div
                     style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <i class="fas fa-motorcycle" style="color:#fff; font-size:18px;"></i>
@@ -1251,21 +1320,37 @@
                     style="background:rgba(0,0,0,.25);color:#fff;font-size:13px;font-weight:800;border-radius:20px;padding:5px 12px;flex-shrink:0;min-width:44px;text-align:center;">
                     60s</div>
             </div>
-            {{-- Body --}}
-            <div style="padding:16px 20px 20px;">
+            {{-- Scrollable body --}}
+            <div style="overflow-y:auto; flex:1; padding:16px 20px 0;">
                 <div id="popup-details"
-                    style="background:#f4f6fb;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;line-height:1.9;">
+                    style="background:#f4f6fb;border-radius:10px;padding:14px;font-size:13px;line-height:1.9;">
                 </div>
-                <div style="display:flex;gap:10px;">
-                    <button id="popup-accept-btn" onclick="acceptPopupRequest()"
-                        style="flex:2;background:#2fb344;color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;">
-                        <i class="fas fa-check"></i> Accept Job
-                    </button>
-                    <button onclick="declinePopupRequest()"
-                        style="flex:1;background:transparent;color:#d63939;border:1.5px solid #d63939;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;">
-                        Pass
+                {{-- Mechanic selection --}}
+                <div style="margin-top:12px;">
+                    <div
+                        style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#667382;margin-bottom:8px;">
+                        Select Mechanic</div>
+                    <div id="popup-mech-list" style="display:flex;flex-direction:column;gap:6px;">
+                        <div style="text-align:center;padding:16px;color:#667382;font-size:13px;">
+                            <i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Loading mechanics…
+                        </div>
+                    </div>
+                    <button id="popup-mech-skip" onclick="selectPopupMechanic(null,null)"
+                        style="margin-top:8px;width:100%;padding:9px;border:1px dashed #cdd1d9;background:none;border-radius:8px;color:#667382;font-size:12px;cursor:pointer;">
+                        <i class="fas fa-forward" style="margin-right:5px;"></i>Skip — Accept without assigning a mechanic
                     </button>
                 </div>
+            </div>
+            {{-- Footer buttons --}}
+            <div style="padding:16px 20px 20px; flex-shrink:0; display:flex; gap:10px;">
+                <button id="popup-accept-btn" onclick="acceptPopupRequest()"
+                    style="flex:2;background:#2fb344;color:#fff;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;">
+                    <i class="fas fa-check"></i> Accept Job
+                </button>
+                <button onclick="declinePopupRequest()"
+                    style="flex:1;background:transparent;color:#d63939;border:1.5px solid #d63939;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;">
+                    Pass
+                </button>
             </div>
         </div>
     </div>
