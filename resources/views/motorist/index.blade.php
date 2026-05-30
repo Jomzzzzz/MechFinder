@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                               MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                                                                                                               ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                   MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                                                                                                   ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -1725,8 +1725,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                               MECHFINDER — APP LOGIC
-                                                                                                                                                                                                               ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                   MECHFINDER — APP LOGIC
+                                                                                                                                                                                                                   ══════════════════════════════════════════════ */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -1817,6 +1817,7 @@
                 new ResizeObserver(() => {
                     document.documentElement.style.setProperty('--bar-h', Math.ceil(_bar
                         .getBoundingClientRect().height) + 'px');
+                    if (map) map.invalidateSize();
                 }).observe(_bar);
             }
             @if (session('pw_success'))
@@ -2102,9 +2103,12 @@
                     }),
                     zIndexOffset: 900
                 }).addTo(map).bindPopup(popupHtml);
-                // Fit map to show full route
-                const bounds = routeLayer.getBounds().pad(0.15);
-                map.fitBounds(bounds);
+                // Fit map to show full route — defer so bar has finished expanding first
+                const bounds = routeLayer.getBounds().pad(0.2);
+                setTimeout(() => {
+                    map.invalidateSize();
+                    map.fitBounds(bounds);
+                }, 200);
             } catch {
                 /* non-critical */
             }
