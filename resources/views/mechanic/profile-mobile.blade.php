@@ -34,16 +34,18 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            background: var(--surface-2);
         }
 
         .profile-content {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 20px 14px 48px;
+            padding: 20px 14px calc(var(--nav-h) + 20px);
             display: flex;
             flex-direction: column;
             gap: 22px;
+            background: var(--surface-2);
         }
 
         .prof-hero {
@@ -224,7 +226,33 @@
             transform: scale(.98);
         }
 
-        
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            padding: 12px 16px;
+            border-radius: var(--r2);
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .15s;
+            width: 100%;
+            letter-spacing: .02em;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .action-btn-primary {
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .action-btn-primary:active {
+            background: var(--brand-dk);
+        }
+
+
 
         /* ── BOTTOM NAVIGATION ── */
         #bottomNav {
@@ -364,8 +392,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-6px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 
@@ -380,157 +415,175 @@
         </div>
 
         <div class="profile-content">
-        @if (session('success'))
-            <div class="alert">{{ session('success') }}</div>
-        @endif
-        @if (session('pw_success'))
-            <div class="alert">{{ session('pw_success') }}</div>
-        @endif
+            @if (session('success'))
+                <div class="alert">{{ session('success') }}</div>
+            @endif
+            @if (session('pw_success'))
+                <div class="alert">{{ session('pw_success') }}</div>
+            @endif
 
-        @php
-            $showPhonePanel = old('phone') !== null || $errors->has('phone');
-            $showPlatePanel = old('plate_number') !== null || $errors->has('plate_number');
-            $showPasswordPanel = $errors->has('current_password') || $errors->has('password');
-        @endphp
+            @php
+                $showPhonePanel = old('phone') !== null || $errors->has('phone');
+                $showPlatePanel = old('plate_number') !== null || $errors->has('plate_number');
+                $showPasswordPanel = $errors->has('current_password') || $errors->has('password');
+            @endphp
 
-        @if ($profile)
-            <div>
-                <p class="prof-section-label">Service Information</p>
-                <div class="prof-group">
-                    <div class="prof-row">
-                        <div class="prof-row-icon"><i class="fas fa-wrench"></i></div>
-                        <div class="prof-row-body">
-                            <div class="prof-row-title">Status</div>
-                            <div class="prof-row-sub">{{ ucfirst($profile->status ?? 'Active') }}</div>
+            @if ($profile)
+                <div>
+                    <p class="prof-section-label">Service Information</p>
+                    <div class="prof-group">
+                        <div class="prof-row">
+                            <div class="prof-row-icon"><i class="fas fa-wrench"></i></div>
+                            <div class="prof-row-body">
+                                <div class="prof-row-title">Status</div>
+                                <div class="prof-row-sub">{{ ucfirst($profile->status ?? 'Active') }}</div>
+                            </div>
+                            <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
                         </div>
-                        <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
+                        <div class="prof-row clickable" data-panel="phonePanel">
+                            <div class="prof-row-icon"><i class="fas fa-phone"></i></div>
+                            <div class="prof-row-body">
+                                <div class="prof-row-title">Contact Number</div>
+                                <div class="prof-row-sub {{ !$profile->phone ? 'empty' : '' }}">
+                                    {{ $profile->phone ?? 'Tap to update' }}</div>
+                            </div>
+                            <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
+                        </div>
+                        <div class="prof-row clickable" data-panel="platePanel">
+                            <div class="prof-row-icon"><i class="fas fa-id-card"></i></div>
+                            <div class="prof-row-body">
+                                <div class="prof-row-title">Vehicle Plate</div>
+                                <div class="prof-row-sub {{ !$profile->plate_number ? 'empty' : '' }}">
+                                    {{ $profile->plate_number ?? 'Tap to update' }}</div>
+                            </div>
+                            <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
+                        </div>
                     </div>
-                    <div class="prof-row clickable" data-panel="phonePanel">
-                        <div class="prof-row-icon"><i class="fas fa-phone"></i></div>
-                        <div class="prof-row-body">
-                            <div class="prof-row-title">Contact Number</div>
-                            <div class="prof-row-sub {{ !$profile->phone ? 'empty' : '' }}">{{ $profile->phone ?? 'Tap to update' }}</div>
-                        </div>
-                        <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
-                    </div>
-                    <div class="prof-row clickable" data-panel="platePanel">
-                        <div class="prof-row-icon"><i class="fas fa-id-card"></i></div>
-                        <div class="prof-row-body">
-                            <div class="prof-row-title">Vehicle Plate</div>
-                            <div class="prof-row-sub {{ !$profile->plate_number ? 'empty' : '' }}">{{ $profile->plate_number ?? 'Tap to update' }}</div>
-                        </div>
-                        <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
-                    </div>
+                    <p style="font-size:10px;color:var(--text-3);margin-top:6px;padding:0 4px;line-height:1.5;">
+                        <i class="fas fa-circle-info" style="margin-right:3px;"></i>
+                        This info is shared with the motorist when you accept their service request.
+                    </p>
                 </div>
-                <p style="font-size:10px;color:var(--text-3);margin-top:6px;padding:0 4px;line-height:1.5;">
-                    <i class="fas fa-circle-info" style="margin-right:3px;"></i>
-                    This info is shared with the motorist when you accept their service request.
-                </p>
-            </div>
 
-            <div id="phonePanel" class="edit-panel{{ $showPhonePanel ? ' active' : '' }}">
-                <p class="prof-section-label">Edit Contact Number</p>
-                <div class="prof-group">
-                    <form method="POST" action="{{ route('mechanic.profile.update') }}">
-                        @csrf
-                        <div class="form-group">
-                            <label class="form-label" for="phone">Contact Number</label>
-                            <input id="phone" name="phone" type="text" class="form-input" value="{{ old('phone', $profile->phone) }}">
-                            @error('phone') <div class="form-error">{{ $message }}</div> @enderror
-                        </div>
-                        <button type="submit" class="action-btn action-btn-primary form-submit">Save Contact Number</button>
-                    </form>
-                </div>
-            </div>
-
-            <div id="platePanel" class="edit-panel{{ $showPlatePanel ? ' active' : '' }}">
-                <p class="prof-section-label">Edit Vehicle Plate</p>
-                <div class="prof-group">
-                    <form method="POST" action="{{ route('mechanic.profile.update') }}">
-                        @csrf
-                        <div class="form-group">
-                            <label class="form-label" for="plate_number">Plate Number</label>
-                            <input id="plate_number" name="plate_number" type="text" class="form-input" value="{{ old('plate_number', $profile->plate_number) }}">
-                            @error('plate_number') <div class="form-error">{{ $message }}</div> @enderror
-                        </div>
-                        <button type="submit" class="action-btn action-btn-primary form-submit">Save Plate Number</button>
-                    </form>
-                </div>
-            </div>
-
-            <div>
-                <p class="prof-section-label">Account & Security</p>
-                <div class="prof-group">
-                    <div class="prof-row clickable" data-panel="passwordPanel">
-                        <div class="prof-row-icon red"><i class="fas fa-lock"></i></div>
-                        <div class="prof-row-body">
-                            <div class="prof-row-title">Change Password</div>
-                            <div class="prof-row-sub">Update your login password</div>
-                        </div>
-                        <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
+                <div id="phonePanel" class="edit-panel{{ $showPhonePanel ? ' active' : '' }}">
+                    <p class="prof-section-label">Edit Contact Number</p>
+                    <div class="prof-group">
+                        <form method="POST" action="{{ route('mechanic.profile.update') }}">
+                            @csrf
+                            <div class="form-group">
+                                <label class="form-label" for="phone">Contact Number</label>
+                                <input id="phone" name="phone" type="text" class="form-input"
+                                    value="{{ old('phone', $profile->phone) }}">
+                                @error('phone')
+                                    <div class="form-error">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <button type="submit" class="action-btn action-btn-primary form-submit">Save Contact
+                                Number</button>
+                        </form>
                     </div>
                 </div>
-            </div>
 
-            <div id="passwordPanel" class="edit-panel{{ $showPasswordPanel ? ' active' : '' }}">
-                <p class="prof-section-label">Change Password</p>
-                <div class="prof-group">
-                    <form method="POST" action="{{ route('mechanic.profile.password') }}">
-                        @csrf
-                        <div class="form-group">
-                            <label class="form-label" for="current_password">Current Password</label>
-                            <input id="current_password" name="current_password" type="password" class="form-input">
-                            @error('current_password') <div class="form-error">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="password">New Password</label>
-                            <input id="password" name="password" type="password" class="form-input">
-                            @error('password') <div class="form-error">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="password_confirmation">Confirm Password</label>
-                            <input id="password_confirmation" name="password_confirmation" type="password" class="form-input">
-                        </div>
-                        <button type="submit" class="action-btn action-btn-primary form-submit">Update Password</button>
-                    </form>
+                <div id="platePanel" class="edit-panel{{ $showPlatePanel ? ' active' : '' }}">
+                    <p class="prof-section-label">Edit Vehicle Plate</p>
+                    <div class="prof-group">
+                        <form method="POST" action="{{ route('mechanic.profile.update') }}">
+                            @csrf
+                            <div class="form-group">
+                                <label class="form-label" for="plate_number">Plate Number</label>
+                                <input id="plate_number" name="plate_number" type="text" class="form-input"
+                                    value="{{ old('plate_number', $profile->plate_number) }}">
+                                @error('plate_number')
+                                    <div class="form-error">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <button type="submit" class="action-btn action-btn-primary form-submit">Save Plate
+                                Number</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-        @endif
 
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Log Out
-            </button>
-        </form>
+                <div>
+                    <p class="prof-section-label">Account & Security</p>
+                    <div class="prof-group">
+                        <div class="prof-row clickable" data-panel="passwordPanel">
+                            <div class="prof-row-icon red"><i class="fas fa-lock"></i></div>
+                            <div class="prof-row-body">
+                                <div class="prof-row-title">Change Password</div>
+                                <div class="prof-row-sub">Update your login password</div>
+                            </div>
+                            <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="passwordPanel" class="edit-panel{{ $showPasswordPanel ? ' active' : '' }}">
+                    <p class="prof-section-label">Change Password</p>
+                    <div class="prof-group">
+                        <form method="POST" action="{{ route('mechanic.profile.password') }}">
+                            @csrf
+                            <div class="form-group">
+                                <label class="form-label" for="current_password">Current Password</label>
+                                <input id="current_password" name="current_password" type="password" class="form-input">
+                                @error('current_password')
+                                    <div class="form-error">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="password">New Password</label>
+                                <input id="password" name="password" type="password" class="form-input">
+                                @error('password')
+                                    <div class="form-error">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="password_confirmation">Confirm Password</label>
+                                <input id="password_confirmation" name="password_confirmation" type="password"
+                                    class="form-input">
+                            </div>
+                            <button type="submit" class="action-btn action-btn-primary form-submit">Update
+                                Password</button>
+                        </form>
+                    </div>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Log Out
+                </button>
+            </form>
+
+        </div>{{-- /.profile-content --}}
 
         <nav id="bottomNav">
-            <a href="{{ route('mechanic.dashboard') }}" class="nav-btn {{ request()->routeIs('mechanic.dashboard') ? 'active' : '' }}" title="Jobs">
+            <a href="{{ route('mechanic.dashboard') }}"
+                class="nav-btn {{ request()->routeIs('mechanic.dashboard') ? 'active' : '' }}" title="Jobs">
                 <span class="n-icon"><i class="fas fa-briefcase"></i></span>
                 <span class="n-label">Jobs</span>
             </a>
-            <a href="{{ route('mechanic.profile') }}" class="nav-btn {{ request()->routeIs('mechanic.profile') ? 'active' : '' }}" title="Profile">
+            <a href="{{ route('mechanic.profile') }}"
+                class="nav-btn {{ request()->routeIs('mechanic.profile') ? 'active' : '' }}" title="Profile">
                 <span class="n-icon"><i class="fas fa-user"></i></span>
                 <span class="n-label">Profile</span>
             </a>
         </nav>
-    </div>
 
-    <script>
-        document.querySelectorAll('.prof-row.clickable').forEach((row) => {
-            row.addEventListener('click', () => {
-                const panelId = row.getAttribute('data-panel');
-                if (!panelId) return;
+        <script>
+            document.querySelectorAll('.prof-row.clickable').forEach((row) => {
+                row.addEventListener('click', () => {
+                    const panelId = row.getAttribute('data-panel');
+                    if (!panelId) return;
 
-                document.querySelectorAll('.edit-panel').forEach((panel) => {
-                    if (panel.id === panelId) {
-                        panel.classList.toggle('active');
-                    } else {
-                        panel.classList.remove('active');
-                    }
+                    document.querySelectorAll('.edit-panel').forEach((panel) => {
+                        if (panel.id === panelId) {
+                            panel.classList.toggle('active');
+                        } else {
+                            panel.classList.remove('active');
+                        }
+                    });
                 });
             });
-        });
-    </script>
-@endsection
-
+        </script>
+    @endsection

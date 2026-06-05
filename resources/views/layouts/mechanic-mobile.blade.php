@@ -21,6 +21,8 @@
     @vite(['resources/css/app.css'])
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         :root {
@@ -267,14 +269,16 @@
                     const idx = stages.indexOf(status);
                     if (timelineItems && timelineItems.length) {
                         timelineItems.forEach((el, i) => {
-                            if (i <= idx) el.classList.add('active'); else el.classList.remove('active');
+                            if (i <= idx) el.classList.add('active');
+                            else el.classList.remove('active');
                         });
                     }
 
                     const actions = card.querySelector('.job-actions');
                     if (actions) {
                         if (status === 'completed') {
-                            actions.innerHTML = '<div style="padding:8px 10px;border-radius:8px;background:rgba(16,185,129,.08);color:#047857;font-weight:700;">Completed</div>';
+                            actions.innerHTML =
+                                '<div style="padding:8px 10px;border-radius:8px;background:rgba(16,185,129,.08);color:#047857;font-weight:700;">Completed</div>';
                         }
                     }
                 }
@@ -288,7 +292,8 @@
                         const ch = pusherClient.subscribe('dispatch-status.' + id);
                         ch.bind('dispatch.status', function(payload) {
                             try {
-                                const status = payload?.status || payload?.status || payload?.state || null;
+                                const status = payload?.status || payload?.status || payload?.state ||
+                                    null;
                                 updateCard(id, status);
                             } catch (e) {}
                         });
