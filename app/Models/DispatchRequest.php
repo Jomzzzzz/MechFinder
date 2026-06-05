@@ -18,6 +18,9 @@ class DispatchRequest extends Model
     "description",
     "latitude",
     "longitude",
+    "mechanic_lat",
+    "mechanic_lng",
+    "mechanic_location_at",
     "guest_token",
     "guest_name",
   ];

@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                                   MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                                                                                                                                   ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                                                                                                                       ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -1785,8 +1785,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                                   MECHFINDER — APP LOGIC
-                                                                                                                                                                                                                                   ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                                       MECHFINDER — APP LOGIC
+                                                                                                                                                                                                                                       ══════════════════════════════════════════════ */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -2185,6 +2185,54 @@
             if (distEl) distEl.style.display = 'none';
         }
 
+        /* ── LIVE MECHANIC MARKER ── */
+        function moveMechanicMarker(lat, lng) {
+            if (!map) return;
+            const icon = L.divIcon({
+                className: '',
+                html: '<div class="mf-pin" style="background:#3B82F6;color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.25);border:2.5px solid #fff;"><i class="fa-solid fa-motorcycle"></i></div>',
+                iconSize: [36, 36],
+                iconAnchor: [18, 18]
+            });
+            if (mechanicMarker) {
+                mechanicMarker.setLatLng([lat, lng]);
+            } else {
+                mechanicMarker = L.marker([lat, lng], {
+                    icon,
+                    zIndexOffset: 900
+                }).addTo(map);
+            }
+            // Re-draw route from mechanic's real position to motorist
+            if (_activeShopLat) {
+                // reuse existing route layer — just shift the start; re-fetch route
+                const osrmUrl =
+                    `https://router.project-osrm.org/route/v1/driving/${lng},${lat};${_activeShopLng},${_activeShopLat}?overview=full&geometries=geojson`;
+                fetch(osrmUrl)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.code !== 'Ok' || !data.routes.length) return;
+                        if (routeLayer) {
+                            map.removeLayer(routeLayer);
+                            routeLayer = null;
+                        }
+                        routeLayer = L.geoJSON(data.routes[0].geometry, {
+                            style: {
+                                color: '#3B82F6',
+                                weight: 5,
+                                opacity: .9,
+                                lineJoin: 'round',
+                                lineCap: 'round'
+                            }
+                        }).addTo(map);
+                        // Update distance
+                        const distM = data.routes[0].distance;
+                        const distVal = document.getElementById('barDistanceVal');
+                        if (distVal) distVal.textContent = (distM / 1000).toFixed(1) + ' km';
+                    })
+                    .catch(() => {});
+            }
+        }
+
         /* ── RESCUE FORM ── */
         function openPanel(id) {
             if (id === 'rescuePanel') refreshIdentityCard();
@@ -2460,6 +2508,14 @@
                         }, status === 'completed' ? 12000 : 5000);
                     }
                 });
+
+                // Live mechanic GPS updates
+                pusherClient.subscribe('dispatch-status.' + requestId).bind('mechanic.location', ({
+                    lat,
+                    lng
+                }) => {
+                    moveMechanicMarker(parseFloat(lat), parseFloat(lng));
+                });
             }
             // Polling fallback — always runs regardless of Pusher
             startStatusPolling(requestId);
@@ -2490,6 +2546,10 @@
                             phone: d.mechanic_phone,
                             plate: d.mechanic_plate
                         });
+                    }
+                    // Seed mechanic marker from last known GPS (if available)
+                    if (['en_route', 'arrived'].includes(d.status) && d.mechanic_lat && d.mechanic_lng) {
+                        moveMechanicMarker(parseFloat(d.mechanic_lat), parseFloat(d.mechanic_lng));
                     }
                     subscribeToDispatch(requestId); // also starts polling fallback
                     document.getElementById('reqBadge').classList.add('show');

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\DispatchStatusUpdated;
+use App\Events\MechanicLocationUpdated;
 use App\Events\ShopStatusUpdated;
 use App\Models\DispatchMechanic;
 use App\Models\DispatchRequest;
@@ -221,5 +222,33 @@ class MechanicController extends Controller
       "success" => true,
       "status" => $validated["status"],
     ]);
+  }
+
+  public function updateLocation(Request $request, int $id)
+  {
+    $validated = $request->validate([
+      "lat" => ["required", "numeric", "between:-90,90"],
+      "lng" => ["required", "numeric", "between:-180,180"],
+    ]);
+
+    $mechanic = Auth::user();
+    $job = DispatchMechanic::where("dispatch_request_id", $id)
+      ->where("mechanic_id", $mechanic->id)
+      ->firstOrFail();
+
+    $dispatch = $job->dispatchRequest;
+    if (!$dispatch || !in_array($dispatch->status, ["en_route", "arrived"])) {
+      return response()->json(["success" => false, "message" => "Job not active."], 422);
+    }
+
+    DispatchRequest::where("id", $dispatch->id)->update([
+      "mechanic_lat" => $validated["lat"],
+      "mechanic_lng" => $validated["lng"],
+      "mechanic_location_at" => now(),
+    ]);
+
+    broadcast(new MechanicLocationUpdated($dispatch->id, (float) $validated["lat"], (float) $validated["lng"]));
+
+    return response()->json(["success" => true]);
   }
 }

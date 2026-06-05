@@ -617,8 +617,11 @@
 
                         @if ($req->latitude && $req->longitude)
                             <div class="job-map-wrap">
-                                <div class="job-map" id="map-{{ $req->id }}" data-lat="{{ $req->latitude }}"
-                                    data-lng="{{ $req->longitude }}"></div>
+                                <div class="job-map" id="map-{{ $req->id }}"
+                                    data-lat="{{ $req->latitude }}"
+                                    data-lng="{{ $req->longitude }}"
+                                    data-mech-lat="{{ $req->mechanic_lat ?? '' }}"
+                                    data-mech-lng="{{ $req->mechanic_lng ?? '' }}"></div>
                                 <button class="job-map-dir"
                                     onclick="getDirections({{ $req->latitude }}, {{ $req->longitude }})"
                                     title="Get Directions">
@@ -758,105 +761,144 @@
             window.open(url, '_blank');
         }
 
-        function initJobMaps(mechLat, mechLng) {
+        // Store map instances to allow updating without re-creating
+        const _jobMaps = {}; // id → { map, mechMarker, routeLayer }
+
+        function _drawRoute(entry, mechLat, mechLng, destLat, destLng) {
+            const { map } = entry;
+            if (entry.routeLayer) { map.removeLayer(entry.routeLayer); entry.routeLayer = null; }
+            if (entry.mechMarker) { map.removeLayer(entry.mechMarker); entry.mechMarker = null; }
+
+            entry.mechMarker = L.marker([mechLat, mechLng], {
+                icon: L.divIcon({
+                    className: '',
+                    html: '<div class="mf-pin mf-pin-mech"><i class="fa-solid fa-user-gear"></i></div>',
+                    iconSize: [34, 34], iconAnchor: [17, 17]
+                })
+            }).addTo(map);
+
+            fetch(`https://router.project-osrm.org/route/v1/driving/${mechLng},${mechLat};${destLng},${destLat}?overview=full&geometries=geojson`)
+                .then(r => r.json())
+                .then(data => {
+                    map.invalidateSize();
+                    if (data.code === 'Ok' && data.routes.length) {
+                        entry.routeLayer = L.geoJSON(data.routes[0].geometry, {
+                            style: { color: '#3B82F6', weight: 5, opacity: .9, lineJoin: 'round', lineCap: 'round' }
+                        }).addTo(map);
+                        map.fitBounds(entry.routeLayer.getBounds().pad(0.18));
+                    } else {
+                        map.fitBounds([[mechLat, mechLng], [destLat, destLng]], { padding: [22, 22] });
+                    }
+                })
+                .catch(() => {
+                    map.invalidateSize();
+                    map.fitBounds([[mechLat, mechLng], [destLat, destLng]], { padding: [22, 22] });
+                });
+        }
+
+        function initJobMaps(gpsMechLat, gpsMechLng) {
             document.querySelectorAll('.job-map').forEach(el => {
                 const destLat = parseFloat(el.dataset.lat);
                 const destLng = parseFloat(el.dataset.lng);
                 if (isNaN(destLat) || isNaN(destLng)) return;
 
+                // Prefer live GPS; fall back to last DB-stored position
+                const storedLat = el.dataset.mechLat !== '' ? parseFloat(el.dataset.mechLat) : null;
+                const storedLng = el.dataset.mechLng !== '' ? parseFloat(el.dataset.mechLng) : null;
+                const mechLat = (gpsMechLat !== null) ? gpsMechLat : storedLat;
+                const mechLng = (gpsMechLng !== null) ? gpsMechLng : storedLng;
+
+                // Map already exists — just update route with better position
+                if (_jobMaps[el.id]) {
+                    if (mechLat !== null && !isNaN(mechLat)) {
+                        _drawRoute(_jobMaps[el.id], mechLat, mechLng, destLat, destLng);
+                    }
+                    return;
+                }
+
+                // Create Leaflet map
                 const map = L.map(el, {
-                    zoomControl: false,
-                    attributionControl: false,
-                    dragging: false,
-                    scrollWheelZoom: false,
-                    doubleClickZoom: false,
-                    touchZoom: false
+                    zoomControl: false, attributionControl: false,
+                    dragging: false, scrollWheelZoom: false,
+                    doubleClickZoom: false, touchZoom: false
                 });
-
-                // Carto Voyager — same as motorist
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                    maxZoom: 19,
-                    subdomains: 'abcd',
-                    crossOrigin: true
+                    maxZoom: 19, subdomains: 'abcd', crossOrigin: true
                 }).addTo(map);
+                L.control.attribution({ prefix: '© OpenStreetMap', position: 'bottomleft' }).addTo(map);
 
-                L.control.attribution({
-                    prefix: '© OpenStreetMap',
-                    position: 'bottomleft'
-                }).addTo(map);
-
-                // Destination pin — orange mf-pin-dest (motorist's mf-pin-open style)
-                const destIcon = L.divIcon({
-                    className: '',
-                    html: '<div class="mf-pin mf-pin-dest"><i class="fa-solid fa-motorcycle"></i></div>',
-                    iconSize: [34, 34],
-                    iconAnchor: [17, 17]
-                });
+                // Destination pin — orange motorcycle
                 L.marker([destLat, destLng], {
-                    icon: destIcon
+                    icon: L.divIcon({
+                        className: '',
+                        html: '<div class="mf-pin mf-pin-dest"><i class="fa-solid fa-motorcycle"></i></div>',
+                        iconSize: [34, 34], iconAnchor: [17, 17]
+                    })
                 }).addTo(map);
 
-                if (mechLat !== null && mechLng !== null) {
-                    // Mechanic pin — blue mf-pin-mech (motorist's mechanic marker style)
-                    const mechIcon = L.divIcon({
-                        className: '',
-                        html: '<div class="mf-pin mf-pin-mech"><i class="fa-solid fa-user-gear"></i></div>',
-                        iconSize: [34, 34],
-                        iconAnchor: [17, 17]
-                    });
-                    L.marker([mechLat, mechLng], {
-                        icon: mechIcon
-                    }).addTo(map);
+                const entry = { map, mechMarker: null, routeLayer: null };
+                _jobMaps[el.id] = entry;
 
-                    // OSRM route — blue #3B82F6 weight 5, same as motorist plotRouteToShop
-                    const osrmUrl =
-                        `https://router.project-osrm.org/route/v1/driving/${mechLng},${mechLat};${destLng},${destLat}?overview=full&geometries=geojson`;
-                    fetch(osrmUrl)
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.code === 'Ok' && data.routes.length) {
-                                const layer = L.geoJSON(data.routes[0].geometry, {
-                                    style: {
-                                        color: '#3B82F6',
-                                        weight: 5,
-                                        opacity: .9,
-                                        lineJoin: 'round',
-                                        lineCap: 'round'
-                                    }
-                                }).addTo(map);
-                                map.fitBounds(layer.getBounds().pad(0.18));
-                            } else {
-                                map.fitBounds([
-                                    [mechLat, mechLng],
-                                    [destLat, destLng]
-                                ], {
-                                    padding: [22, 22]
-                                });
-                            }
-                        })
-                        .catch(() => map.fitBounds([
-                            [mechLat, mechLng],
-                            [destLat, destLng]
-                        ], {
-                            padding: [22, 22]
-                        }));
+                if (mechLat !== null && !isNaN(mechLat)) {
+                    _drawRoute(entry, mechLat, mechLng, destLat, destLng);
                 } else {
+                    map.invalidateSize();
                     map.setView([destLat, destLng], 15);
                 }
             });
         }
 
-        // Get mechanic's current position then init maps
+        // Init immediately with stored DB positions — shows route without waiting for GPS
+        initJobMaps(null, null);
+
+        // Upgrade with live GPS (updates markers + re-draws route more accurately)
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 pos => initJobMaps(pos.coords.latitude, pos.coords.longitude),
-                () => initJobMaps(null, null), {
-                    timeout: 8000,
-                    maximumAge: 60000
-                }
+                () => { /* already rendered from stored positions */ },
+                { timeout: 8000, maximumAge: 60000 }
             );
-        } else {
-            initJobMaps(null, null);
+        }
+
+        /* ── MECHANIC LOCATION TRACKING ── */
+        // IDs of jobs that need live location (en_route / arrived)
+        const _trackingIds = @json($jobs->filter(fn($j) => in_array($j->dispatchRequest?->status, ['en_route', 'arrived']))->pluck('dispatch_request_id')->values());
+
+        let _watchId = null;
+        const _lastSent = {}; // requestId → timestamp ms
+        const SEND_INTERVAL = 10000; // 10 s
+
+        function _sendLocation(requestId, lat, lng) {
+            const now = Date.now();
+            if (_lastSent[requestId] && now - _lastSent[requestId] < SEND_INTERVAL) return;
+            _lastSent[requestId] = now;
+            fetch('/mechanic/request/' + requestId + '/location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    lat,
+                    lng
+                })
+            }).catch(() => {
+                /* non-critical */ });
+        }
+
+        if (_trackingIds.length > 0 && navigator.geolocation) {
+            _watchId = navigator.geolocation.watchPosition(pos => {
+                const {
+                    latitude: lat,
+                    longitude: lng
+                } = pos.coords;
+                _trackingIds.forEach(id => _sendLocation(id, lat, lng));
+            }, () => {}, {
+                enableHighAccuracy: true,
+                maximumAge: 5000,
+                timeout: 15000
+            });
         }
     </script>
 

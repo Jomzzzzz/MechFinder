@@ -198,6 +198,9 @@ Route::prefix("mechanic")
     Route::post("/request/{id}/status", [MechanicController::class, "updateRequestStatus"])->name(
       "mechanic.request.status"
     );
+    Route::post("/request/{id}/location", [MechanicController::class, "updateLocation"])->name(
+      "mechanic.request.location"
+    );
   });
 
 /*
