@@ -619,7 +619,9 @@
                             <div class="job-map-wrap">
                                 <div class="job-map" id="map-{{ $req->id }}" data-lat="{{ $req->latitude }}"
                                     data-lng="{{ $req->longitude }}" data-mech-lat="{{ $req->mechanic_lat ?? '' }}"
-                                    data-mech-lng="{{ $req->mechanic_lng ?? '' }}"></div>
+                                    data-mech-lng="{{ $req->mechanic_lng ?? '' }}"
+                                    data-shop-lat="{{ $req->shop->latitude ?? '' }}"
+                                    data-shop-lng="{{ $req->shop->longitude ?? '' }}"></div>
                                 <button class="job-map-dir"
                                     onclick="getDirections({{ $req->latitude }}, {{ $req->longitude }})"
                                     title="Get Directions">
@@ -785,7 +787,8 @@
             }).addTo(map);
 
             fetch(
-                    `https://router.project-osrm.org/route/v1/driving/${mechLng},${mechLat};${destLng},${destLat}?overview=full&geometries=geojson`)
+                    `https://router.project-osrm.org/route/v1/driving/${mechLng},${mechLat};${destLng},${destLat}?overview=full&geometries=geojson`
+                    )
                 .then(r => r.json())
                 .then(data => {
                     map.invalidateSize();
@@ -826,11 +829,17 @@
                 const destLng = parseFloat(el.dataset.lng);
                 if (isNaN(destLat) || isNaN(destLng)) return;
 
-                // Prefer live GPS; fall back to last DB-stored position
+                // Tier 1: live GPS  Tier 2: last stored mechanic pos  Tier 3: shop location
                 const storedLat = el.dataset.mechLat !== '' ? parseFloat(el.dataset.mechLat) : null;
                 const storedLng = el.dataset.mechLng !== '' ? parseFloat(el.dataset.mechLng) : null;
-                const mechLat = (gpsMechLat !== null) ? gpsMechLat : storedLat;
-                const mechLng = (gpsMechLng !== null) ? gpsMechLng : storedLng;
+                const shopLat = el.dataset.shopLat !== '' ? parseFloat(el.dataset.shopLat) : null;
+                const shopLng = el.dataset.shopLng !== '' ? parseFloat(el.dataset.shopLng) : null;
+                const mechLat = (gpsMechLat !== null) ? gpsMechLat :
+                    (storedLat !== null) ? storedLat :
+                    shopLat;
+                const mechLng = (gpsMechLng !== null) ? gpsMechLng :
+                    (storedLng !== null) ? storedLng :
+                    shopLng;
 
                 // Map already exists — just update route with better position
                 if (_jobMaps[el.id]) {
@@ -893,7 +902,8 @@
             navigator.geolocation.getCurrentPosition(
                 pos => initJobMaps(pos.coords.latitude, pos.coords.longitude),
                 () => {
-                    /* already rendered from stored positions */ }, {
+                    /* already rendered from stored positions */
+                }, {
                     timeout: 8000,
                     maximumAge: 60000
                 }
