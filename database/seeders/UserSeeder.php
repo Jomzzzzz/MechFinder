@@ -38,7 +38,7 @@ class UserSeeder extends Seeder
           "latitude" => "14.8386",
           "longitude" => "120.2842",
           "location" => "Olongapo City",
-          "status" => "open",
+          "status_slug" => "open",
         ],
         "owner" => [
           "name" => "Carlos Reyes",
@@ -68,7 +68,7 @@ class UserSeeder extends Seeder
           "latitude" => "14.8300",
           "longitude" => "120.2900",
           "location" => "Olongapo City",
-          "status" => "open",
+          "status_slug" => "open",
         ],
         "owner" => [
           "name" => "Ana Villanueva",
@@ -92,7 +92,7 @@ class UserSeeder extends Seeder
           "latitude" => "14.8450",
           "longitude" => "120.2800",
           "location" => "Olongapo City",
-          "status" => "closed",
+          "status_slug" => "closed",
         ],
         "owner" => [
           "name" => "Ramon Torres",
@@ -121,20 +121,31 @@ class UserSeeder extends Seeder
       ],
     ];
 
+    // Resolve status slugs to IDs
+    $statusMap = DB::table("shop_statuses")
+      ->pluck("id", "slug")
+      ->all();
+
     foreach ($shops as $entry) {
+      // Swap status_slug for status_id
+      $shopData = $entry["shop"];
+      $slug = $shopData["status_slug"] ?? "closed";
+      unset($shopData["status_slug"]);
+      $shopData["status_id"] = $statusMap[$slug] ?? $statusMap["closed"];
+
       // Upsert shop
       $existingShop = DB::table("shops")
-        ->where("email", $entry["shop"]["email"])
+        ->where("email", $shopData["email"])
         ->first();
 
       if ($existingShop) {
         $shopId = $existingShop->id;
         DB::table("shops")
           ->where("id", $shopId)
-          ->update(array_merge($entry["shop"], ["updated_at" => now()]));
+          ->update(array_merge($shopData, ["updated_at" => now()]));
       } else {
         $shopId = DB::table("shops")->insertGetId(
-          array_merge($entry["shop"], [
+          array_merge($shopData, [
             "created_at" => now(),
             "updated_at" => now(),
           ])
@@ -144,6 +155,7 @@ class UserSeeder extends Seeder
       // Upsert shop owner
       DB::table("users")->updateOrInsert(
         ["email" => $entry["owner"]["email"]],
+
         [
           "name" => $entry["owner"]["name"],
           "password" => Hash::make("password"),

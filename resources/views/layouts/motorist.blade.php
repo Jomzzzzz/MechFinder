@@ -94,23 +94,85 @@
         window.pusherCluster = '{{ config('broadcasting.connections.pusher.options.cluster') }}';
         window.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-        function mfIdentity() {
-            let token = localStorage.getItem('mf_guest_token');
+        // In-memory profile cache populated from DB on page load.
+        // Only the guest_token is persisted to localStorage as identifier.
+        window._mfProfile = null;
 
+        function _mfGetToken() {
+            let token = localStorage.getItem('mf_guest_token');
             if (!token) {
                 token = 'mf_' + Math.random().toString(36).slice(2, 12);
                 localStorage.setItem('mf_guest_token', token);
             }
+            return token;
+        }
 
+        async function mfLoadProfile() {
+            const token = _mfGetToken();
+            try {
+                const res = await fetch('/api/motorist/guest-profile?guest_token=' + encodeURIComponent(token));
+                const data = await res.json();
+                window._mfProfile = data.profile || {};
+                window._mfProfile.guest_token = token;
+            } catch {
+                window._mfProfile = {
+                    guest_token: token
+                };
+            }
+            window.dispatchEvent(new Event('mfProfileLoaded'));
+        }
+
+        async function mfSaveProfile(patch) {
+            const token = _mfGetToken();
+            // Merge into cache immediately for responsive UI
+            window._mfProfile = Object.assign(window._mfProfile || {}, patch, {
+                guest_token: token
+            });
+            try {
+                await fetch('/api/motorist/guest-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': window.csrfToken
+                    },
+                    body: JSON.stringify(Object.assign({
+                        guest_token: token
+                    }, patch)),
+                });
+            } catch {
+                /* non-critical — cached in memory */ }
+        }
+
+        function mfIdentity() {
+            const p = window._mfProfile || {};
+            const token = p.guest_token || _mfGetToken();
             return {
                 guest_token: token,
-                owner_name: localStorage.getItem('mf_owner_name') || '',
-                contact_number: localStorage.getItem('mf_contact_number') || '',
-                vehicle_make_model: localStorage.getItem('mf_vehicle_make_model') || '',
-                vehicle_variant_color: localStorage.getItem('mf_vehicle_variant_color') || '',
-                plate_temp_number: localStorage.getItem('mf_plate_temp_number') || '',
+                owner_name: p.owner_name || '',
+                contact_number: p.contact_number || '',
+                vehicle_make_model: p.vehicle_make_model || '',
+                vehicle_variant_color: p.vehicle_variant_color || '',
+                plate_temp_number: p.plate_temp_number || '',
             };
         }
+
+        // Alias used by shops.blade.php (camelCase keys)
+        function getGuestIdentity() {
+            const p = window._mfProfile || {};
+            const token = p.guest_token || _mfGetToken();
+            return {
+                guestToken: token,
+                guestName: p.owner_name || 'Guest Motorist',
+                ownerName: p.owner_name || '',
+                contactNumber: p.contact_number || '',
+                vehicleMakeModel: p.vehicle_make_model || '',
+                vehicleVariantColor: p.vehicle_variant_color || '',
+                plateTempNumber: p.plate_temp_number || '',
+            };
+        }
+
+        // Kick off profile load immediately
+        mfLoadProfile();
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

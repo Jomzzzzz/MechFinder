@@ -65,46 +65,96 @@
 </aside>
 
 <script>
+    // ── Status config map (slug → display config) ────────────────────────────
+    const SHOP_STATUS_STYLES = {
+        open: {
+            label: 'Open',
+            color: '#2fb344',
+            bg: '#d1f7d6',
+            nextLabel: 'Close Shop'
+        },
+        busy: {
+            label: 'Busy',
+            color: '#f76707',
+            bg: '#ffe4cc',
+            nextLabel: 'Set Open'
+        },
+        maintenance: {
+            label: 'Maintenance',
+            color: '#206bc4',
+            bg: '#daeeff',
+            nextLabel: 'Set Open'
+        },
+        closed: {
+            label: 'Closed',
+            color: '#d63939',
+            bg: '#fde8e8',
+            nextLabel: 'Open Shop'
+        },
+    };
+    const SHOP_STATUS_FALLBACK = SHOP_STATUS_STYLES.closed;
+
     function getCsrfToken() {
         return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     }
 
-    /* STATUS_MAP is injected by layouts/shop.blade.php from the
-       shop_statuses DB table (cached 24 h), keyed by integer ID.
-       Each entry: { id, slug, label, color, bg, next_label, next_color }
-       Edit that table to change labels or colours — no deploy needed. */
-    const STATUS_MAP = window.STATUS_MAP || {};
-    const STATUS_FALLBACK = Object.values(STATUS_MAP).find(c => c.slug === 'closed') ||
-        {
-            id: 4,
-            slug: 'closed',
-            label: 'Closed',
-            color: '#d63939',
-            bg: '#fde8e8',
-            next_label: 'Open Shop',
-            next_color: '#2fb344'
-        };
-
-    function getStatusConfig(statusKey) {
-        // statusKey can be an integer ID (as string or number) or a slug string
-        return STATUS_MAP[String(statusKey)] ||
-            Object.values(STATUS_MAP).find(c => c.slug === statusKey) ||
-            STATUS_FALLBACK;
+    // Set the topbar pill and dot to reflect the given slug ('open', 'closed', etc.)
+    function setStatusUI(slug) {
+        const cfg = SHOP_STATUS_STYLES[slug] || SHOP_STATUS_FALLBACK;
+        const pill = document.getElementById('topbar-status-pill');
+        const dot = document.getElementById('topbar-status-dot');
+        const text = document.getElementById('topbar-status-text');
+        if (pill) {
+            pill.style.background = cfg.bg;
+            pill.dataset.statusSlug = slug;
+        }
+        if (dot) {
+            dot.style.background = cfg.color;
+        }
+        if (text) {
+            text.textContent = cfg.label;
+            text.style.color = cfg.color;
+        }
+        // Notify header component
+        window.dispatchEvent(new CustomEvent('statusChanged', {
+            detail: {
+                status: slug
+            }
+        }));
     }
 
+    // On page load: fetch real status from server and render it
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/shop/status', {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(function(r) {
+                return r.json();
+            })
+            .then(function(data) {
+                if (data && data.status) setStatusUI(data.status);
+            })
+            .catch(function() {
+                /* silently ignore if not authenticated */ });
+    });
+
+    // Toggle button: POST, update UI, controller handles the broadcast
     async function toggleShopStatus() {
-        const pill = document.getElementById('topbar-status-pill');
-        const currentStatus = pill ? (pill.dataset.status || '4') : '4';
-        const cfg = getStatusConfig(currentStatus);
+        const currentSlug = document.getElementById('topbar-status-pill')?.dataset.statusSlug || 'closed';
+        const cfg = SHOP_STATUS_STYLES[currentSlug] || SHOP_STATUS_FALLBACK;
+
         showConfirmModal(
             'Toggle Shop Status',
-            `Set shop to: ${cfg.next_label}?`,
+            'Set shop to: ' + cfg.nextLabel + '?',
             async function() {
-                    const toggleBtn = document.querySelector('[onclick="toggleShopStatus()"]');
-                    if (toggleBtn) {
-                        toggleBtn.disabled = true;
-                        toggleBtn.style.opacity = '.6';
+                    const btn = document.querySelector('[onclick="toggleShopStatus()"]');
+                    if (btn) {
+                        btn.disabled = true;
+                        btn.style.opacity = '.6';
                     }
+
                     try {
                         const res = await fetch('/shop/settings/toggle-status', {
                             method: 'POST',
@@ -115,60 +165,26 @@
                             }
                         });
                         const data = await res.json();
-                        if (res.ok && data.success) {
-                            updateStatusUI(data.status_id);
-                            localStorage.setItem('shopStatus', data.status);
-                            localStorage.setItem('shopStatusId', data.status_id);
-                            localStorage.setItem('shopStatusUpdated', Date.now());
-                            if (typeof showToast === 'function') showToast('Shop status set to ' + data.status +
-                                '.', 'success');
+
+                        if (res.ok && data.success && data.status) {
+                            setStatusUI(data.status);
+                            if (typeof showToast === 'function') showToast('Status set to ' + data.status + '.',
+                                'success');
                         } else {
                             const msg = data.message || ('Error ' + res.status);
                             if (typeof showToast === 'function') showToast('Toggle failed: ' + msg, 'error');
-                            else alert('Toggle failed: ' + msg);
                         }
                     } catch (e) {
-                        console.error('Toggle failed:', e);
                         if (typeof showToast === 'function') showToast('Network error — toggle failed.',
                             'error');
-                        else alert('Network error — toggle failed.');
                     } finally {
-                        if (toggleBtn) {
-                            toggleBtn.disabled = false;
-                            toggleBtn.style.opacity = '1';
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.style.opacity = '1';
                         }
                     }
                 },
-                cfg.next_label,
-                cfg.next_color
+                cfg.nextLabel
         );
     }
-
-    function updateStatusUI(statusKey) {
-        const cfg = getStatusConfig(statusKey);
-        const tbPill = document.getElementById('topbar-status-pill');
-        const tbDot = document.getElementById('topbar-status-dot');
-        const tbText = document.getElementById('topbar-status-text');
-        if (tbPill) {
-            tbPill.style.background = cfg.bg;
-            tbPill.dataset.status = String(cfg.id);
-        }
-        if (tbDot) tbDot.style.background = cfg.color;
-        if (tbText) {
-            tbText.textContent = cfg.label;
-            tbText.style.color = cfg.color;
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const pill = document.getElementById('topbar-status-pill');
-        if (pill) updateStatusUI(pill.dataset.status || '4');
-    });
-
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'shopStatusUpdated') {
-            const id = localStorage.getItem('shopStatusId');
-            if (id) updateStatusUI(id);
-        }
-    });
 </script>

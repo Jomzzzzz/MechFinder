@@ -287,6 +287,16 @@ Route::prefix("api")->group(function () {
     "sendShopMessage",
   ])->name("api.motorist.send-shop-message");
 
+  // Guest profile API
+  Route::get("/motorist/guest-profile", [
+    MotoristController::class,
+    "getGuestProfile",
+  ])->name("api.motorist.guest-profile.get");
+  Route::post("/motorist/guest-profile", [
+    MotoristController::class,
+    "saveGuestProfile",
+  ])->name("api.motorist.guest-profile.save");
+
   // Shop API - role:shop or admin
   Route::middleware(["auth", "role:shop,admin"])->group(function () {
     Route::get("/shop/status", [ShopController::class, "getStatus"])->name(

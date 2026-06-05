@@ -132,6 +132,9 @@ class MotoristController extends Controller
         [
           "owner_name" => $validated["owner_name"],
           "contact_number" => $validated["contact_number"],
+          "vehicle_make_model" => $validated["vehicle_make_model"] ?? null,
+          "vehicle_variant_color" => $validated["vehicle_variant_color"] ?? null,
+          "plate_temp_number" => $validated["plate_temp_number"] ?? null,
           "updated_at" => now(),
         ]
       );
@@ -508,6 +511,44 @@ class MotoristController extends Controller
       "success" => true,
       "message" => "Message sent successfully.",
     ]);
+  }
+
+  public function getGuestProfile(Request $request)
+  {
+    $token = $request->query("guest_token");
+    if (!$token) {
+      return response()->json(["profile" => null]);
+    }
+    $profile = DB::table("guest_profiles")
+      ->where("guest_token", $token)
+      ->first();
+    return response()->json(["profile" => $profile]);
+  }
+
+  public function saveGuestProfile(Request $request)
+  {
+    $validated = $request->validate([
+      "guest_token" => "required|string|max:100",
+      "owner_name" => "nullable|string|max:150",
+      "contact_number" => "nullable|string|max:50",
+      "vehicle_make_model" => "nullable|string|max:150",
+      "vehicle_variant_color" => "nullable|string|max:150",
+      "plate_temp_number" => "nullable|string|max:80",
+    ]);
+
+    DB::table("guest_profiles")->updateOrInsert(
+      ["guest_token" => $validated["guest_token"]],
+      [
+        "owner_name" => $validated["owner_name"] ?? null,
+        "contact_number" => $validated["contact_number"] ?? null,
+        "vehicle_make_model" => $validated["vehicle_make_model"] ?? null,
+        "vehicle_variant_color" => $validated["vehicle_variant_color"] ?? null,
+        "plate_temp_number" => $validated["plate_temp_number"] ?? null,
+        "updated_at" => now(),
+      ]
+    );
+
+    return response()->json(["success" => true]);
   }
 
   private function distanceKm(float $lat1, float $lon1, float $lat2, float $lon2): float

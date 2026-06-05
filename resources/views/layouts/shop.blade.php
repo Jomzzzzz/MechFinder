@@ -15,7 +15,6 @@
 
     <script>
         window.shopId = {{ Auth::check() && Auth::user()->shop_id ? (int) Auth::user()->shop_id : 'null' }};
-        window.STATUS_MAP = @json($shopStatusConfigs ?? []);
     </script>
 
     <style>
@@ -378,8 +377,8 @@
             <header
                 style="background:#fff; border-bottom:1px solid #e6e7eb; padding:0 24px; height:56px; display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-shrink:0; position:sticky; top:0; z-index:200;">
 
-                {{-- Shop Status Pill — styled entirely by updateStatusUI() on load --}}
-                <div id="topbar-status-pill" data-status="{{ $shopStatusId ?? 4 }}"
+                {{-- Shop Status Pill — updated on page load via AJAX --}}
+                <div id="topbar-status-pill" data-status-slug="{{ $shopStatus ?? 'closed' }}"
                     style="display:flex; align-items:center; gap:6px; padding:4px 10px 4px 8px; border-radius:20px;">
                     <span id="topbar-status-dot"
                         style="width:8px; height:8px; border-radius:50%; flex-shrink:0;"></span>
@@ -551,6 +550,19 @@
                         .listen('.dispatch.status', function() {
                             window.location.reload();
                         });
+
+                    // Listen for global shop status updates and update UI when it concerns this shop
+                    try {
+                        window.Echo.channel('shops-status')
+                            .listen('.shop.status', function(payload) {
+                                if (!payload || !payload.shop_id) return;
+                                if (String(payload.shop_id) === String(window.shopId)) {
+                                    if (typeof updateStatusUI === 'function') updateStatusUI(payload.status);
+                                }
+                            });
+                    } catch (e) {
+                        console.debug('Echo shops-status subscription failed', e);
+                    }
                 } else if (attempts < 30) {
                     setTimeout(function() {
                         subscribeShopEvents(attempts + 1);

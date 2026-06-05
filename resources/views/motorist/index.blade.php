@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                           MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                                                                                                                           ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                                   MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                                                                                                                   ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -1785,8 +1785,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                           MECHFINDER — APP LOGIC
-                                                                                                                                                                                                                           ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                                   MECHFINDER — APP LOGIC
+                                                                                                                                                                                                                                   ══════════════════════════════════════════════ */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -1847,30 +1847,22 @@
         let _lastKnownStatus = null;
         let allShops = [];
 
-        /* ── IDENTITY ── */
-        function genToken() {
-            const t = 'mf_' + Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
-            LS.set('mf_guest_token', t);
-            return t;
-        }
-
-        function mfIdentity() {
-            return {
-                guest_token: LS.get('mf_guest_token') || genToken(),
-                owner_name: LS.get('mf_owner_name') || '',
-                contact_number: LS.get('mf_contact_number') || '',
-                vehicle_make_model: LS.get('mf_vehicle_make_model') || '',
-                vehicle_variant_color: LS.get('mf_vehicle_variant_color') || '',
-                plate_temp_number: LS.get('mf_plate_temp_number') || '',
-            };
-        }
-
         /* ── BOOT ── */
         document.addEventListener('DOMContentLoaded', () => {
             initMap();
             locateUser();
             subscribeToShopStatus();
             if (currentRequestId) resumeActiveRequest(currentRequestId);
+            // Refresh profile UI once DB profile has loaded
+            window.addEventListener('mfProfileLoaded', () => {
+                refreshIdentityCard();
+                renderProfileSummary();
+            });
+            // If already loaded before DOMContentLoaded, refresh immediately
+            if (window._mfProfile) {
+                refreshIdentityCard();
+                renderProfileSummary();
+            }
             // Keep --bar-h in sync with the bar's actual rendered height
             const _bar = document.getElementById('rescueBar');
             if (_bar && window.ResizeObserver) {
@@ -2724,15 +2716,21 @@
         }
 
         function saveMoto() {
-            LS.set('mf_vehicle_make_model', document.getElementById('pMakeModel').value.trim());
-            LS.set('mf_vehicle_variant_color', document.getElementById('pColor').value.trim());
-            LS.set('mf_plate_temp_number', document.getElementById('pPlate').value.trim());
+            const patch = {
+                vehicle_make_model: document.getElementById('pMakeModel').value.trim(),
+                vehicle_variant_color: document.getElementById('pColor').value.trim(),
+                plate_temp_number: document.getElementById('pPlate').value.trim(),
+            };
+            mfSaveProfile(patch);
             closeSubPanel('editMotoPanel');
         }
 
         function saveContact() {
-            LS.set('mf_owner_name', document.getElementById('pName').value.trim());
-            LS.set('mf_contact_number', document.getElementById('pContact').value.trim());
+            const patch = {
+                owner_name: document.getElementById('pName').value.trim(),
+                contact_number: document.getElementById('pContact').value.trim(),
+            };
+            mfSaveProfile(patch);
             closeSubPanel('editContactPanel');
         }
 
