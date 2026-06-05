@@ -617,10 +617,8 @@
 
                         @if ($req->latitude && $req->longitude)
                             <div class="job-map-wrap">
-                                <div class="job-map" id="map-{{ $req->id }}"
-                                    data-lat="{{ $req->latitude }}"
-                                    data-lng="{{ $req->longitude }}"
-                                    data-mech-lat="{{ $req->mechanic_lat ?? '' }}"
+                                <div class="job-map" id="map-{{ $req->id }}" data-lat="{{ $req->latitude }}"
+                                    data-lng="{{ $req->longitude }}" data-mech-lat="{{ $req->mechanic_lat ?? '' }}"
                                     data-mech-lng="{{ $req->mechanic_lng ?? '' }}"></div>
                                 <button class="job-map-dir"
                                     onclick="getDirections({{ $req->latitude }}, {{ $req->longitude }})"
@@ -765,34 +763,60 @@
         const _jobMaps = {}; // id → { map, mechMarker, routeLayer }
 
         function _drawRoute(entry, mechLat, mechLng, destLat, destLng) {
-            const { map } = entry;
-            if (entry.routeLayer) { map.removeLayer(entry.routeLayer); entry.routeLayer = null; }
-            if (entry.mechMarker) { map.removeLayer(entry.mechMarker); entry.mechMarker = null; }
+            const {
+                map
+            } = entry;
+            if (entry.routeLayer) {
+                map.removeLayer(entry.routeLayer);
+                entry.routeLayer = null;
+            }
+            if (entry.mechMarker) {
+                map.removeLayer(entry.mechMarker);
+                entry.mechMarker = null;
+            }
 
             entry.mechMarker = L.marker([mechLat, mechLng], {
                 icon: L.divIcon({
                     className: '',
                     html: '<div class="mf-pin mf-pin-mech"><i class="fa-solid fa-user-gear"></i></div>',
-                    iconSize: [34, 34], iconAnchor: [17, 17]
+                    iconSize: [34, 34],
+                    iconAnchor: [17, 17]
                 })
             }).addTo(map);
 
-            fetch(`https://router.project-osrm.org/route/v1/driving/${mechLng},${mechLat};${destLng},${destLat}?overview=full&geometries=geojson`)
+            fetch(
+                    `https://router.project-osrm.org/route/v1/driving/${mechLng},${mechLat};${destLng},${destLat}?overview=full&geometries=geojson`)
                 .then(r => r.json())
                 .then(data => {
                     map.invalidateSize();
                     if (data.code === 'Ok' && data.routes.length) {
                         entry.routeLayer = L.geoJSON(data.routes[0].geometry, {
-                            style: { color: '#3B82F6', weight: 5, opacity: .9, lineJoin: 'round', lineCap: 'round' }
+                            style: {
+                                color: '#3B82F6',
+                                weight: 5,
+                                opacity: .9,
+                                lineJoin: 'round',
+                                lineCap: 'round'
+                            }
                         }).addTo(map);
                         map.fitBounds(entry.routeLayer.getBounds().pad(0.18));
                     } else {
-                        map.fitBounds([[mechLat, mechLng], [destLat, destLng]], { padding: [22, 22] });
+                        map.fitBounds([
+                            [mechLat, mechLng],
+                            [destLat, destLng]
+                        ], {
+                            padding: [22, 22]
+                        });
                     }
                 })
                 .catch(() => {
                     map.invalidateSize();
-                    map.fitBounds([[mechLat, mechLng], [destLat, destLng]], { padding: [22, 22] });
+                    map.fitBounds([
+                        [mechLat, mechLng],
+                        [destLat, destLng]
+                    ], {
+                        padding: [22, 22]
+                    });
                 });
         }
 
@@ -818,25 +842,38 @@
 
                 // Create Leaflet map
                 const map = L.map(el, {
-                    zoomControl: false, attributionControl: false,
-                    dragging: false, scrollWheelZoom: false,
-                    doubleClickZoom: false, touchZoom: false
+                    zoomControl: false,
+                    attributionControl: false,
+                    dragging: false,
+                    scrollWheelZoom: false,
+                    doubleClickZoom: false,
+                    touchZoom: false
                 });
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                    maxZoom: 19, subdomains: 'abcd', crossOrigin: true
+                    maxZoom: 19,
+                    subdomains: 'abcd',
+                    crossOrigin: true
                 }).addTo(map);
-                L.control.attribution({ prefix: '© OpenStreetMap', position: 'bottomleft' }).addTo(map);
+                L.control.attribution({
+                    prefix: '© OpenStreetMap',
+                    position: 'bottomleft'
+                }).addTo(map);
 
                 // Destination pin — orange motorcycle
                 L.marker([destLat, destLng], {
                     icon: L.divIcon({
                         className: '',
                         html: '<div class="mf-pin mf-pin-dest"><i class="fa-solid fa-motorcycle"></i></div>',
-                        iconSize: [34, 34], iconAnchor: [17, 17]
+                        iconSize: [34, 34],
+                        iconAnchor: [17, 17]
                     })
                 }).addTo(map);
 
-                const entry = { map, mechMarker: null, routeLayer: null };
+                const entry = {
+                    map,
+                    mechMarker: null,
+                    routeLayer: null
+                };
                 _jobMaps[el.id] = entry;
 
                 if (mechLat !== null && !isNaN(mechLat)) {
@@ -855,8 +892,11 @@
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 pos => initJobMaps(pos.coords.latitude, pos.coords.longitude),
-                () => { /* already rendered from stored positions */ },
-                { timeout: 8000, maximumAge: 60000 }
+                () => {
+                    /* already rendered from stored positions */ }, {
+                    timeout: 8000,
+                    maximumAge: 60000
+                }
             );
         }
 
@@ -884,7 +924,8 @@
                     lng
                 })
             }).catch(() => {
-                /* non-critical */ });
+                /* non-critical */
+            });
         }
 
         if (_trackingIds.length > 0 && navigator.geolocation) {
