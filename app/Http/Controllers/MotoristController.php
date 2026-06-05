@@ -85,7 +85,7 @@ class MotoristController extends Controller
       ->header("Cache-Control", "no-store, no-cache, must-revalidate");
   }
 
-  public function showShop($id)
+  public function showShop(int $id)
   {
     $shop = DB::table("shops")
       ->join("shop_statuses", "shops.status_id", "=", "shop_statuses.id")
@@ -226,7 +226,7 @@ class MotoristController extends Controller
       ->first()?->id;
   }
 
-  public function requestStatus($id)
+  public function requestStatus(int $id)
   {
     $request = DB::table("dispatch_requests")
       ->leftJoin("shops", "dispatch_requests.shop_id", "=", "shops.id")
@@ -259,7 +259,7 @@ class MotoristController extends Controller
     return response()->json($request);
   }
 
-  public function cancelDispatch($id)
+  public function cancelDispatch(int $id)
   {
     $updated = DB::table("dispatch_requests")
       ->where("id", $id)
@@ -273,7 +273,8 @@ class MotoristController extends Controller
       );
     }
 
-    event(new \App\Events\DispatchStatusUpdated($id, "cancelled"));
+    $shopId = DB::table('dispatch_requests')->where('id', $id)->value('shop_id');
+    event(new \App\Events\DispatchStatusUpdated($id, "cancelled", $shopId));
 
     return response()->json(["success" => true]);
   }
@@ -388,7 +389,7 @@ class MotoristController extends Controller
     return $this->storeDispatch($request);
   }
 
-  public function getMessages($dispatchId)
+  public function getMessages(int $dispatchId)
   {
     $messages = DB::table("messages")
       ->where("dispatch_id", $dispatchId)
@@ -451,7 +452,7 @@ class MotoristController extends Controller
     return response()->json($shops);
   }
 
-  public function getShopMessages($shopId)
+  public function getShopMessages(int $shopId)
   {
     $guest_token = request()->query("guest_token");
     $motorist_id = request()->query("motorist_id");
@@ -509,7 +510,7 @@ class MotoristController extends Controller
     ]);
   }
 
-  private function distanceKm($lat1, $lon1, $lat2, $lon2)
+  private function distanceKm(float $lat1, float $lon1, float $lat2, float $lon2): float
   {
     $earthRadius = 6371;
 

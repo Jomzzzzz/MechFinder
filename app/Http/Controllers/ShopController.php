@@ -345,7 +345,7 @@ class ShopController extends Controller
       ]);
     }
 
-    broadcast(new DispatchStatusUpdated($id, "accepted"));
+    broadcast(new DispatchStatusUpdated($id, "accepted", $shopId));
 
     return response()->json(["success" => true, "status" => "accepted"]);
   }
@@ -458,7 +458,48 @@ class ShopController extends Controller
       ->where("shop_id", $this->getCurrentShopId())
       ->update($updateData);
 
-    broadcast(new DispatchStatusUpdated($id, $validated["status"]));
+    if (in_array($validated["status"], ["accepted", "en_route", "arrived"], true)) {
+      DispatchMechanic::where("dispatch_request_id", $id)
+        ->update(["status" => $validated["status"]]);
+
+      $busyStatusId = DB::table("shop_statuses")
+        ->where("slug", "busy")
+        ->value("id");
+
+      if ($busyStatusId) {
+        DB::table("shops")
+          ->where("id", $this->getCurrentShopId())
+          ->update(["status_id" => $busyStatusId]);
+
+        broadcast(new ShopStatusUpdated($this->getCurrentShopId(), "busy"));
+      }
+    }
+
+    if ($validated["status"] === "completed") {
+      $assignments = DispatchMechanic::where("dispatch_request_id", $id)->get();
+      foreach ($assignments as $assignment) {
+        MechanicProfile::where("user_id", $assignment->mechanic_id)
+          ->where("shop_id", $this->getCurrentShopId())
+          ->update(["status" => "available"]);
+      }
+
+      DispatchMechanic::where("dispatch_request_id", $id)
+        ->update(["status" => "completed"]);
+
+      $openStatusId = DB::table("shop_statuses")
+        ->where("slug", "open")
+        ->value("id");
+
+      if ($openStatusId) {
+        DB::table("shops")
+          ->where("id", $this->getCurrentShopId())
+          ->update(["status_id" => $openStatusId]);
+
+        broadcast(new ShopStatusUpdated($this->getCurrentShopId(), "open"));
+      }
+    }
+
+    broadcast(new DispatchStatusUpdated($id, $validated["status"], $this->getCurrentShopId()));
 
     return response()->json([
       "success" => true,
@@ -877,7 +918,21 @@ class ShopController extends Controller
       ->where("shop_id", $shopId)
       ->firstOrFail();
 
-    // If there's an existing assignment, free the old mechanic first
+    // Check if mechanic is already dispatched to another request
+    $existingDispatch = DispatchMechanic::where("mechanic_id", $request->mechanic_id)
+      ->whereHas('dispatchRequest', function ($q) {
+        $q->whereNotIn('status', ['completed', 'declined']);
+      })
+      ->first();
+
+    if ($existingDispatch && $existingDispatch->dispatch_request_id != $id) {
+      return response()->json(
+        ["success" => false, "message" => "Mechanic is already assigned to another active request."],
+        422
+      );
+    }
+
+    // If there's an existing assignment for THIS request, free the old mechanic first
     $existing = DispatchMechanic::where("dispatch_request_id", $id)->first();
     if ($existing && $existing->mechanic_id != $request->mechanic_id) {
       MechanicProfile::where("user_id", $existing->mechanic_id)
@@ -895,6 +950,14 @@ class ShopController extends Controller
     $mechanicName =
       DB::table("users")->where("id", $request->mechanic_id)->value("name") ??
       "Mechanic";
+
+    broadcast(
+      new DispatchStatusUpdated(
+        $id,
+        DB::table("dispatch_requests")->where("id", $id)->value("status") ?? "accepted",
+        $profile->shop_id
+      )
+    );
 
     return response()->json([
       "success" => true,

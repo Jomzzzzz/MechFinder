@@ -856,7 +856,7 @@
                         '#f76707' : '#667382');
                     var statusLabel = m.status === 'available' ? 'Available' : (m.status === 'dispatched' ?
                         'Dispatched' : 'Off Duty');
-                    var isDisabled = m.status === 'off_duty';
+                    var isDisabled = m.status === 'off_duty' || m.status === 'dispatched';
                     var row = document.createElement('div');
                     row.style.cssText =
                         'display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e6e7eb;border-radius:8px;cursor:pointer;transition:background .15s;' +
@@ -1022,7 +1022,7 @@
                         '#f76707' : '#667382');
                     var statusLabel = m.status === 'available' ? 'Available' : (m.status === 'dispatched' ?
                         'Dispatched' : 'Off Duty');
-                    var isDisabled = m.status === 'off_duty';
+                    var isDisabled = m.status === 'off_duty' || m.status === 'dispatched';
                     var row = document.createElement('div');
                     row.id = 'popup-mech-row-' + m.user_id;
                     row.style.cssText =

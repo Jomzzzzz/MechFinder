@@ -183,11 +183,20 @@ Route::prefix("mechanic")
       "mechanic.dashboard"
     );
     Route::get("/dashboard", [MechanicController::class, "dashboard"]);
+    Route::get("/maps", [MechanicController::class, "maps"])->name(
+      "mechanic.maps"
+    );
     Route::get("/profile", [MechanicController::class, "profile"])->name(
       "mechanic.profile"
     );
     Route::post("/profile", [MechanicController::class, "updateProfile"])->name(
       "mechanic.profile.update"
+    );
+    Route::post("/profile/password", [MechanicController::class, "changePassword"])->name(
+      "mechanic.profile.password"
+    );
+    Route::post("/request/{id}/status", [MechanicController::class, "updateRequestStatus"])->name(
+      "mechanic.request.status"
     );
   });
 

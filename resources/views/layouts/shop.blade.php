@@ -540,6 +540,25 @@
                 setInterval(pollCount, 30000);
             }
         })();
+
+        (function() {
+            function subscribeShopEvents(attempts) {
+                if (window.Echo && window.shopId) {
+                    window.Echo.private('shop.' + window.shopId)
+                        .listen('.dispatch.new', function() {
+                            window.location.reload();
+                        })
+                        .listen('.dispatch.status', function() {
+                            window.location.reload();
+                        });
+                } else if (attempts < 30) {
+                    setTimeout(function() {
+                        subscribeShopEvents(attempts + 1);
+                    }, 200);
+                }
+            }
+            subscribeShopEvents(0);
+        })();
     </script>
 
     {{-- ── Shared Confirm Modal ── --}}
