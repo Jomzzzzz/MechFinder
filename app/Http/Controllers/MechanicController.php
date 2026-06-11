@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DispatchMessageSent;
 use App\Events\DispatchStatusUpdated;
 use App\Events\MechanicLocationUpdated;
 use App\Events\ShopStatusUpdated;
@@ -63,7 +64,7 @@ class MechanicController extends Controller
           "issue_type" => $dispatch->issue_type ?? "New request",
           "status" => $dispatch->status,
           "unread_count" => Message::where('dispatch_id', $dispatch->id)
-              ->where('conversation_type', 'motorist')
+              ->where('conversation_type', 'mechanic')
               ->where('sender_type', 'motorist')
               ->where('is_read', false)
               ->count('id'),
@@ -123,7 +124,7 @@ class MechanicController extends Controller
           "issue_type" => $dispatch->issue_type ?? "New request",
           "status" => $dispatch->status,
           "unread_count" => Message::where('dispatch_id', $dispatch->id)
-              ->where('conversation_type', 'motorist')
+              ->where('conversation_type', 'mechanic')
               ->where('sender_type', 'motorist')
               ->where('is_read', false)
               ->count('id'),
@@ -290,7 +291,7 @@ class MechanicController extends Controller
           "issue_type" => $dispatch->issue_type ?? "New request",
           "status" => $dispatch->status,
           "unread_count" => Message::where('dispatch_id', $dispatch->id)
-              ->where('conversation_type', 'motorist')
+              ->where('conversation_type', 'mechanic')
               ->where('sender_type', 'motorist')
               ->where('is_read', false)
               ->count('id'),
@@ -446,13 +447,13 @@ class MechanicController extends Controller
       // Normalize 'motorist' to 'mechanic' for motorist→mechanic messages
       $queryType = $conversationType === 'motorist' ? 'mechanic' : $conversationType;
       $markSender = $conversationType === 'shop' ? 'shop' : 'motorist';
-      
+
       $unreadCount = Message::where('dispatch_id', $dispatchId)
         ->where('conversation_type', $queryType)
         ->where('sender_type', $markSender)
         ->where('is_read', false)
         ->count('id');
-      
+
       if ($shouldMarkRead) {
         Message::where('dispatch_id', $dispatchId)
           ->where('conversation_type', $queryType)
@@ -471,7 +472,7 @@ class MechanicController extends Controller
       // Convert 'motorist' to 'mechanic' for querying motorist→mechanic messages
       $queryType = $conversationType === 'motorist' ? 'mechanic' : $conversationType;
       $query->where('conversation_type', $queryType);
-      
+
       if ($queryType === 'mechanic') {
         // For motorist↔mechanic: show messages from both motorist and mechanic
         $query->whereIn('sender_type', ['motorist', 'mechanic']);
@@ -550,9 +551,16 @@ class MechanicController extends Controller
     ]);
 
     // Broadcast the message event for real-time updates
-    if (class_exists('App\Events\MessageSent')) {
-      broadcast(new \App\Events\MessageSent($message))->toOthers();
-    }
+    broadcast(new DispatchMessageSent($message->dispatch_id, [
+      'id'                => $message->id,
+      'dispatch_id'       => $message->dispatch_id,
+      'sender_type'       => $message->sender_type,
+      'sender_name'       => $message->sender_name,
+      'conversation_type' => $message->conversation_type,
+      'message'           => $message->message,
+      'created_at'        => $message->created_at->toIso8601String(),
+      'is_read'           => $message->is_read,
+    ]))->toOthers();
 
     return response()->json([
       'success' => true,
