@@ -645,6 +645,7 @@ class ShopController extends Controller
         "reviews.id",
         "reviews.rating",
         "reviews.comment",
+        "reviews.services",
         "reviews.created_at",
         "dispatch_requests.issue_type",
         "dispatch_requests.request_type",

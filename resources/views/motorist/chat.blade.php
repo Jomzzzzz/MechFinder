@@ -30,7 +30,7 @@
                     <i class="fa-solid fa-wrench text-[11px] mr-1"></i>Mechanic
                 </button>
                 <button id="tab-shop" type="button" onclick="switchChatTab('shop')" class="px-4 py-2 rounded-full border border-white/10 bg-transparent text-[13px] text-gray-400 font-semibold transition-all hover:border-orange-500">
-                    <i class="fa-solid fa-store text-[11px] mr-1"></i>Shop
+                    <i class="fa-solid fa-store text-[11px] mr-1"></i>Shoph
                 </button>
             </div>
             <p id="chat-mode-text" class="text-[12px] text-gray-500 flex items-center gap-1">

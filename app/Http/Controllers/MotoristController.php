@@ -245,7 +245,14 @@ class MotoristController extends Controller
       ->leftJoin("mechanic_profiles as mp", "mp.user_id", "=", "dm.mechanic_id")
       ->where("dispatch_requests.id", $id)
       ->select(
-        "dispatch_requests.*",
+        "dispatch_requests.id",
+        "dispatch_requests.shop_id",
+        "dispatch_requests.motorist_id",
+        "dispatch_requests.status",
+        "dispatch_requests.issue_type",
+        "dispatch_requests.location",
+        "dispatch_requests.created_at",
+        "dispatch_requests.updated_at",
         "shops.shop_name as shop_name",
         "shops.phone as shop_phone",
         "shops.address as shop_address",
@@ -323,13 +330,16 @@ class MotoristController extends Controller
       "dispatch_id" => "nullable|exists:dispatch_requests,id",
       "rating" => "required|integer|min:1|max:5",
       "comment" => "nullable|string",
+      "services" => "nullable|string",
     ]);
 
     DB::table("reviews")->insert([
       "shop_id" => $validated["shop_id"],
       "dispatch_id" => $validated["dispatch_id"] ?? null,
+      "motorist_id" => Auth::id(),
       "rating" => $validated["rating"],
       "comment" => $validated["comment"] ?? null,
+      "services" => $validated["services"] ?? null,
       "created_at" => now(),
       "updated_at" => now(),
     ]);

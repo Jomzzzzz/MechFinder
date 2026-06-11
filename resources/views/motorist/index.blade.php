@@ -1745,48 +1745,53 @@
         </div>
 
         {{-- ══ REQUEST DETAILS MODAL ══ --}}
-        <div id="detailsModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:1000;overflow-y:auto;padding:16px;">
-            <div style="background:linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);border-radius:20px;max-width:500px;margin:60px auto;border:1px solid rgba(255,255,255,0.1);overflow:hidden;box-shadow:0 25px 50px rgba(0,0,0,0.5);">
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:24px;border-bottom:1px solid rgba(255,255,255,0.05);background:linear-gradient(90deg, rgba(255,133,29,0.1) 0%, rgba(255,255,255,0.05) 100%);">
-                    <h2 style="margin:0;font-size:20px;font-weight:700;color:#fff;">📋 Request Details</h2>
-                    <button onclick="closeDetailsModal()" style="background:none;border:none;color:var(--text-3);font-size:24px;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">
+        <div id="detailsModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.18);backdrop-filter:blur(10px);z-index:1000;overflow-y:auto;padding:20px;">
+            <div style="max-width:560px;width:100%;margin:40px auto;border-radius:24px;overflow:hidden;background:#FFFFFF;border:1px solid rgba(15,23,42,0.08);box-shadow:0 24px 60px rgba(15,23,42,0.12);">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;padding:22px 22px 16px;background:#FFFFFF;">
+                    <div>
+                        
+                        <h2 style="margin:0;font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.02em;">Request details</h2>
+                    </div>
+                    <button onclick="closeDetailsModal()" style="width:36px;height:36px;background:#F8FAFC;border:1px solid #E5E7EB;color:#111827;font-size:16px;cursor:pointer;border-radius:12px;display:grid;place-items:center;transition:background 0.2s;" onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='#F8FAFC'">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-                <div style="padding:24px;space-y:8;">
-                    <div style="margin-bottom:20px;">
-                        <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">🔧 ISSUE TYPE</div>
-                        <div id="detailIssueType" style="font-size:18px;font-weight:700;color:#fff;"></div>
+                <div style="display:grid;gap:16px;padding:20px 22px 22px;">
+                    <div style="display:grid;gap:8px;">
+                        <div style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Issue</div>
+                        <div id="detailIssueType" style="font-size:20px;font-weight:700;color:#111827;line-height:1.2;"></div>
                     </div>
-                    <div style="margin-bottom:20px;">
-                        <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">📍 LOCATION</div>
-                        <div id="detailLocation" style="font-size:15px;color:#d1d5db;line-height:1.5;"></div>
+                    <div style="display:grid;gap:8px;">
+                        <div style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Location</div>
+                        <div id="detailLocation" style="font-size:15px;color:#475569;line-height:1.6;"></div>
                     </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
-                        <div>
-                            <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">🚦 STATUS</div>
-                            <div id="detailStatus" style="font-size:14px;font-weight:600;color:#10b981;padding:8px 12px;background:rgba(16,185,129,0.1);border-radius:8px;border:1px solid rgba(16,185,129,0.2);text-align:center;"></div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+                        <div style="border:1px solid #E5E7EB;border-radius:18px;padding:16px;background:#F8FAFC;">
+                            <div style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">Status</div>
+                            <div id="detailStatus" style="font-size:14px;font-weight:700;color:#047857;line-height:1.4;"></div>
                         </div>
-                        <div>
-                            <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">⏱️ TIME</div>
-                            <div id="detailTime" style="font-size:14px;font-weight:600;color:#9ca3af;padding:8px 12px;background:rgba(155,160,170,0.1);border-radius:8px;border:1px solid rgba(155,160,170,0.2);text-align:center;"></div>
+                        <div style="border:1px solid #E5E7EB;border-radius:18px;padding:16px;background:#F8FAFC;">
+                            <div style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">Time</div>
+                            <div id="detailTime" style="font-size:14px;font-weight:700;color:#475569;line-height:1.4;"></div>
                         </div>
                     </div>
-                    <div style="margin-bottom:20px;padding:12px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-                        <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">🏪 SHOP</div>
-                        <div id="detailShop" style="font-size:15px;color:#fff;font-weight:600;"></div>
-                    </div>
-                    <div style="margin-bottom:0;padding:12px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-                        <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">🔨 MECHANIC</div>
-                        <div id="detailMechanic" style="font-size:15px;color:#fff;font-weight:600;"></div>
+                    <div style="display:grid;gap:12px;">
+                        <div style="padding:18px;border:1px solid #E5E7EB;border-radius:20px;background:#F8FAFC;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                            <span style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Shop</span>
+                            <span id="detailShop" style="font-size:15px;color:#111827;font-weight:700;"></span>
+                        </div>
+                        <div style="padding:18px;border:1px solid #E5E7EB;border-radius:20px;background:#F8FAFC;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                            <span style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Mechanic</span>
+                            <span id="detailMechanic" style="font-size:15px;color:#111827;font-weight:700;"></span>
+                        </div>
                     </div>
                 </div>
-                <div style="display:flex;gap:12px;padding:20px 24px;border-top:1px solid rgba(255,255,255,0.05);background:rgba(0,0,0,0.2);">
-                    <button onclick="closeDetailsModal()" style="flex:1;padding:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                <div style="display:flex;flex-wrap:wrap;gap:12px;padding:18px 22px 22px;background:#FFFFFF;border-top:1px solid #E5E7EB;">
+                    <button onclick="closeDetailsModal()" style="flex:1;min-width:140px;padding:14px 18px;background:#FFFFFF;border:1px solid #D1D5DB;border-radius:16px;color:#111827;font-size:14px;font-weight:700;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='#FFFFFF'">
                         Close
                     </button>
-                    <button onclick="goToMessage()" style="flex:1;padding:12px;background:linear-gradient(135deg, #F7941D 0%, #ff8c00 100%);border:none;border-radius:10px;color:#000;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.boxShadow='0 10px 25px rgba(247,148,29,0.3)'" onmouseout="this.style.boxShadow='0 5px 15px rgba(247,148,29,0.2)';this.style.transform='translateY(0)'" style="box-shadow:0 5px 15px rgba(247,148,29,0.2);">
-                        💬 Message
+                    <button onclick="goToMessage()" style="flex:1;min-width:140px;padding:14px 18px;background:#2563EB;border:none;border-radius:16px;color:#FFFFFF;font-size:14px;font-weight:700;cursor:pointer;transition:transform 0.18s,box-shadow 0.18s;box-shadow:0 12px 30px rgba(37,99,235,0.18);" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 18px 40px rgba(37,99,235,0.24)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 12px 30px rgba(37,99,235,0.18)'">
+                        Message
                     </button>
                 </div>
             </div>
@@ -1834,17 +1839,56 @@
         </div>
 
         {{-- TRANSACTION COMPLETE MODAL --}}
-        <div id="completionModal">
-            <div class="cm-sheet">
-                <div class="completion-icon"><i class="fa-solid fa-circle-check"></i></div>
-                <div class="cm-title">Transaction Complete</div>
-                <div class="cm-body">Your rescue request has been completed. We hope your ride is back on the road safely.
-                    Thank you for using MechFinder!</div>
-                <div class="cm-actions">
-                    <button class="btn-primary" style="background:var(--green);" onclick="hideCompletionModal()">
-                        <i class="fa-solid fa-circle-check"></i> Done
-                    </button>
+        {{-- ═══ COMPLETION & REVIEW MODAL ═══ --}}
+        <div id="reviewNotificationOverlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 99999; padding: 20px;">
+        </div>
+        <div id="reviewModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 36px 28px; z-index: 100000; display: none; box-shadow: 0 25px 80px rgba(0,0,0,0.9); max-height: 90vh; overflow-y: auto;">
+            <!-- Success checkmark -->
+            <div style="text-align: center; margin-bottom: 28px;">
+                <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #2FB344 0%, #1fa02a 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 32px; color: white; box-shadow: 0 8px 20px rgba(47, 179, 68, 0.3);">
+                    <i class="fa-solid fa-check"></i>
                 </div>
+            </div>
+
+            <!-- Title and description -->
+            <h2 style="font-size: 24px; font-weight: 800; color: #fff; text-align: center; margin: 0 0 10px; letter-spacing: -0.5px;">Rescue Complete</h2>
+            <p style="font-size: 13px; color: #999; text-align: center; margin: 0 0 36px; line-height: 1.6;">Please rate the mechanic and shop to help us maintain quality service</p>
+
+            <!-- Rating stars -->
+            <div style="margin-bottom: 32px;">
+                <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; font-weight: 600;">Rate Experience</label>
+                <div style="display: flex; justify-content: center; gap: 14px; margin-bottom: 12px;">
+                    <button onclick="window.setReviewRating(1)" class="rating-star" data-rating="1" style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
+                    <button onclick="window.setReviewRating(2)" class="rating-star" data-rating="2" style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
+                    <button onclick="window.setReviewRating(3)" class="rating-star" data-rating="3" style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
+                    <button onclick="window.setReviewRating(4)" class="rating-star" data-rating="4" style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
+                    <button onclick="window.setReviewRating(5)" class="rating-star" data-rating="5" style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
+                </div>
+                <p id="ratingLabel" style="font-size: 12px; color: #777; text-align: center; margin: 0; font-weight: 500;">Select rating</p>
+            </div>
+
+            <!-- Comments -->
+            <div style="margin-bottom: 28px;">
+                <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;">Comments (optional)</label>
+                <textarea id="reviewCommentField" placeholder="Tell us about your experience..." maxlength="500" style="width: 100%; height: 90px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ddd; padding: 12px; border-radius: 8px; font-family: inherit; font-size: 13px; resize: none; outline: none; box-sizing: border-box;"></textarea>
+                <div style="font-size: 11px; color: #666; margin-top: 6px; text-align: right;"><span id="charCountDisplay">0</span>/500</div>
+            </div>
+
+            <!-- Service tags -->
+            <div style="margin-bottom: 28px;">
+                <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;">What went well? (optional)</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button onclick="window.toggleTag('Professional')" class="tag-btn" data-tag="Professional" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 11px;"></i><span>Professional</span></button>
+                    <button onclick="window.toggleTag('Timely')" class="tag-btn" data-tag="Timely" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 11px;"></i><span>Timely</span></button>
+                    <button onclick="window.toggleTag('Friendly')" class="tag-btn" data-tag="Friendly" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 11px;"></i><span>Friendly</span></button>
+                    <button onclick="window.toggleTag('Fair Price')" class="tag-btn" data-tag="Fair Price" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 11px;"></i><span>Fair Price</span></button>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div style="display: flex; gap: 10px;">
+                <button onclick="window.submitReview()" id="submitBtn" style="flex: 1; background: linear-gradient(135deg, #F7941D 0%, #ff8c00 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(247, 148, 29, 0.3);">Submit Review</button>
+                <button onclick="window.skipReview()" style="flex: 1; background: transparent; color: #999; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease;">Skip</button>
             </div>
         </div>
 
@@ -2252,6 +2296,15 @@
             declined: '<i class="fa-solid fa-circle-xmark"></i> No shops available',
             cancelled: '<i class="fa-solid fa-ban"></i> Request cancelled',
         };
+        const STATUS_TEXT = {
+            requested: 'Finding nearest shop',
+            accepted: 'Shop accepted your request',
+            en_route: 'Mechanic is on the way',
+            arrived: 'Mechanic has arrived — job complete',
+            completed: 'All done',
+            declined: 'No shops available',
+            cancelled: 'Request cancelled',
+        };
         const STEP_ORDER = ['requested', 'accepted', 'en_route', 'arrived', 'completed'];
         const STEP_PROGRESS = {
             requested: 10,
@@ -2299,8 +2352,20 @@
             userLng = 120.2842;
         let selectedIssue = null;
         const currentUserId = {{ auth()->id() ?? 'null' }};
+        const reviewEndpoint = "{{ route('motorist.review.store') }}";
         let currentRequestId = null;
         let currentRequestGuestToken = null;
+        let currentDispatchShopId = null;
+        let currentMotoristId = null;
+        let reviewContext = {
+            requestId: null,
+            shopId: null,
+            motoristId: null,
+        };
+        
+        /* ── REVIEW STATE ── */
+        let currentReviewRating = 0;
+        let selectedServiceTags = new Set();
         const currentRequestStored = LS.get('mf_current_request_id');
         if (currentRequestStored) {
             try {
@@ -2954,14 +3019,28 @@
                     }
                     if (d.status !== _lastKnownStatus) {
                         _lastKnownStatus = d.status;
+                        if (d.status === 'completed') {
+                            currentDispatchShopId = d?.shop_id || currentDispatchShopId;
+                            currentMotoristId = d?.motorist_id || currentUserId || currentMotoristId;
+                            reviewContext = {
+                                requestId: requestId,
+                                shopId: currentDispatchShopId,
+                                motoristId: currentMotoristId,
+                            };
+                        }
                         showStatusStrip(d.status, d.mechanic_name, d.mechanic_phone, d.mechanic_plate);
                         if (['completed', 'declined', 'cancelled'].includes(d.status)) {
                             stopStatusPolling();
                             setTimeout(() => {
-                                LS.del('mf_current_request_id');
-                                currentRequestId = null;
-                                if (pusherClient) pusherClient.disconnect();
-                                document.getElementById('reqBadge').classList.remove('show');
+                                if (!document.getElementById('reviewModal') || document.getElementById('reviewModal').style.display === 'none') {
+                                    LS.del('mf_current_request_id');
+                                    currentRequestId = null;
+                                    currentDispatchShopId = null;
+                                    currentMotoristId = null;
+                                    reviewContext = { requestId: null, shopId: null, motoristId: null };
+                                    if (pusherClient) pusherClient.disconnect();
+                                    document.getElementById('reqBadge').classList.remove('show');
+                                }
                             }, d.status === 'completed' ? 12000 : 5000);
                         }
                     }
@@ -2995,8 +3074,43 @@
                 pusherClient.subscribe('dispatch-status.' + requestId).bind('dispatch.status', ({
                     status
                 }) => {
+                    console.log('[Pusher dispatch.status] received status:', status);
                     _lastKnownStatus = status;
-                    showStatusStrip(status);
+                    
+                    // For completed status, fetch request data first to set shop_id and motorist_id
+                    if (['completed', 'declined', 'cancelled'].includes(status)) {
+                        console.log('[Pusher dispatch.status] final status detected, fetching request data for requestId:', requestId);
+                        fetch(`/motorist/request/${requestId}`)
+                            .then(r => {
+                                console.log('[Pusher dispatch.status] fetch response status:', r.status);
+                                return r.json();
+                            })
+                            .then(d => {
+                                console.log('[Pusher dispatch.status] request data received:', d);
+                                console.log('[Pusher dispatch.status] shop_id from response:', d?.shop_id);
+                                console.log('[Pusher dispatch.status] motorist_id from response:', d?.motorist_id);
+                                
+                                if (status === 'completed') {
+                                    currentDispatchShopId = d?.shop_id || null;
+                                    currentMotoristId = d?.motorist_id || currentUserId || null;
+                                    reviewContext = {
+                                        requestId: requestId,
+                                        shopId: currentDispatchShopId,
+                                        motoristId: currentMotoristId,
+                                    };
+                                    console.log('[Pusher dispatch.status] set currentDispatchShopId:', currentDispatchShopId);
+                                    console.log('[Pusher dispatch.status] set currentMotoristId:', currentMotoristId);
+                                }
+                                showStatusStrip(status);
+                            })
+                            .catch(err => {
+                                console.error('[Pusher dispatch.status] fetch error:', err);
+                                showStatusStrip(status);
+                            });
+                    } else {
+                        showStatusStrip(status);
+                    }
+                    
                     if (['accepted', 'en_route', 'arrived'].includes(status) && !_dispatchShopLat) {
                         fetch(`/motorist/request/${requestId}`)
                             .then(r => r.json())
@@ -3033,10 +3147,15 @@
                     if (['completed', 'declined', 'cancelled'].includes(status)) {
                         stopStatusPolling();
                         setTimeout(() => {
-                            LS.del('mf_current_request_id');
-                            currentRequestId = null;
-                            if (pusherClient) pusherClient.disconnect();
-                            document.getElementById('reqBadge').classList.remove('show');
+                            if (!document.getElementById('reviewModal') || document.getElementById('reviewModal').style.display === 'none') {
+                                LS.del('mf_current_request_id');
+                                currentRequestId = null;
+                                currentDispatchShopId = null;
+                                currentMotoristId = null;
+                                reviewContext = { requestId: null, shopId: null, motoristId: null };
+                                if (pusherClient) pusherClient.disconnect();
+                                document.getElementById('reqBadge').classList.remove('show');
+                            }
                         }, status === 'completed' ? 12000 : 5000);
                     }
                 });
@@ -3088,6 +3207,17 @@
                         moveMechanicMarker(parseFloat(d.mechanic_lat), parseFloat(d.mechanic_lng));
                     }
                     subscribeToDispatch(requestId); // also starts polling fallback
+                    document.getElementById('reqBadge').classList.add('show');
+                } else if (d.status === 'completed') {
+                    currentDispatchShopId = d?.shop_id || null;
+                    currentMotoristId = d?.motorist_id || currentUserId || null;
+                    reviewContext = {
+                        requestId: requestId,
+                        shopId: currentDispatchShopId,
+                        motoristId: currentMotoristId,
+                    };
+                    showStatusStrip('completed', d.mechanic_name, d.mechanic_phone, d.mechanic_plate);
+                    subscribeToDispatch(requestId);
                     document.getElementById('reqBadge').classList.add('show');
                 } else {
                     LS.del('mf_current_request_id');
@@ -3165,12 +3295,14 @@
         }
 
         function updateRescueBar(status, mechName, mechPhone, mechPlate = null) {
+            console.log('[updateRescueBar] status=', status, 'mechName=', mechName);
             const idle = document.getElementById('barIdle');
             const active = document.getElementById('barActive');
             const activeText = document.getElementById('barActiveText');
             const cancelBtn = document.getElementById('cancelBtn');
             const bar = document.getElementById('rescueBar');
             if (!status || ['completed', 'declined', 'cancelled'].includes(status)) {
+                console.log('[updateRescueBar] entering final status block, status=', status);
                 idle.style.display = 'flex';
                 active.style.display = 'none';
                 bar.classList.remove('bar-active');
@@ -3183,7 +3315,31 @@
                 _dispatchShopLat = null;
                 _dispatchShopLng = null;
                 if (allShops.length) renderShopPins(allShops);
-                if (status === 'completed') showCompletionModal();
+                if (status === 'completed') {
+                    console.log('[updateRescueBar] calling showReviewModal()');
+                    const reviewRequestId = currentRequestId || reviewContext.requestId;
+                    if (!currentDispatchShopId && reviewRequestId) {
+                        console.log('[updateRescueBar] fetching completed request data before showing review modal');
+                        fetch(`/motorist/request/${reviewRequestId}`)
+                            .then(r => r.ok ? r.json() : Promise.reject('Request failed'))
+                            .then(d => {
+                                currentDispatchShopId = d?.shop_id || currentDispatchShopId;
+                                currentMotoristId = d?.motorist_id || currentUserId || currentMotoristId;
+                                reviewContext = {
+                                    requestId: reviewRequestId,
+                                    shopId: currentDispatchShopId,
+                                    motoristId: currentMotoristId,
+                                };
+                                window.showReviewModal();
+                            })
+                            .catch(err => {
+                                console.error('[updateRescueBar] failed to fetch completed request before modal', err);
+                                window.showReviewModal();
+                            });
+                    } else {
+                        window.showReviewModal();
+                    }
+                }
                 return;
             }
             idle.style.display = 'none';
@@ -3494,7 +3650,7 @@
       <span>Sent</span><span>Accepted</span><span>En Route</span><span>Arrived</span><span>Working</span><span>Done</span>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px;">
-      <button onclick="loadRequestDetailsForCard('${id}')" style="flex:1;padding:8px 12px;background-color:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.1);border-radius:8px;text-align:center;font-size:12px;color:inherit;cursor:pointer;transition:background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.15)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.1)'">View</button>
+      <button onclick="loadRequestDetailsForCard('${id}')" style="flex:1;padding:8px 12px;background-color:rgba(255,255,255,0.1);border:1px solid black;border-radius:8px;text-align:center;font-size:12px;color:inherit;cursor:pointer;transition:background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.15)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.1)'">View</button>
       <button onclick="openRequestChat('${id}')" style="flex:1;padding:8px 12px;background-color:#F7941D;color:black;border:none;border-radius:8px;text-align:center;font-size:12px;font-weight:600;transition:background-color 0.2s;cursor:pointer;" onmouseover="this.style.backgroundColor='#ff9e2a'" onmouseout="this.style.backgroundColor='#F7941D'">Message</button>
     </div>
   </div>`;
@@ -3842,15 +3998,6 @@
             return date ? date.toLocaleString([], { hour: 'numeric', minute: '2-digit' }) : value || '';
         }
 
-        /* ── COMPLETION MODAL ── */
-        function showCompletionModal() {
-            document.getElementById('completionModal').classList.add('show');
-        }
-
-        function hideCompletionModal() {
-            document.getElementById('completionModal').classList.remove('show');
-        }
-
         /* ── REQUEST DETAILS MODAL ── */
         function closeDetailsModal() {
             const modal = document.getElementById('detailsModal');
@@ -3868,7 +4015,7 @@
 
                 document.getElementById('detailIssueType').textContent = data.issue_type || 'No issue';
                 document.getElementById('detailLocation').textContent = data.location || 'No location';
-                document.getElementById('detailStatus').textContent = (STATUS_LABEL[data.status] || data.status || 'Unknown');
+                document.getElementById('detailStatus').textContent = (STATUS_TEXT[data.status] || data.status || 'Unknown');
                 const detailTime = parseTimestamp(data.created_at);
                 document.getElementById('detailTime').textContent = detailTime ? detailTime.toLocaleString() : 'Unknown';
                 document.getElementById('detailShop').textContent = data.shop_name || 'Finding shop...';
@@ -3900,7 +4047,7 @@
 
                 document.getElementById('detailIssueType').textContent = data.issue_type || 'No issue';
                 document.getElementById('detailLocation').textContent = data.location || 'No location';
-                document.getElementById('detailStatus').textContent = (STATUS_LABEL[data.status] || data.status || 'Unknown');
+                document.getElementById('detailStatus').textContent = (STATUS_TEXT[data.status] || data.status || 'Unknown');
                 const detailTime = parseTimestamp(data.created_at);
                 document.getElementById('detailTime').textContent = detailTime ? detailTime.toLocaleString() : 'Unknown';
                 document.getElementById('detailShop').textContent = data.shop_name || 'Finding shop...';
@@ -3919,5 +4066,215 @@
                 closeDetailsModal();
             }
         });
+
+        /* ══════════════════════════════════════════════
+           REVIEW SYSTEM - COMPLETELY REWRITTEN
+           ══════════════════════════════════════════════ */
+        
+        window.reviewData = {
+            rating: 0,
+            tags: new Set(),
+            comment: ''
+        };
+
+        window.showReviewModal = function() {
+            console.log('[showReviewModal] OPENING REVIEW MODAL');
+            const modal = document.getElementById('reviewModal');
+            const overlay = document.getElementById('reviewNotificationOverlay');
+            const ratingLabel = document.getElementById('ratingLabel');
+            const commentField = document.getElementById('reviewCommentField');
+            const charCountDisplay = document.getElementById('charCountDisplay');
+
+            if (!modal || !overlay) {
+                console.error('Modal elements not found!');
+                return;
+            }
+
+            window.reviewData = { rating: 0, tags: new Set(), comment: '' };
+            if (ratingLabel) {
+                ratingLabel.textContent = 'Select rating';
+                ratingLabel.style.color = '#777';
+            }
+            if (commentField) {
+                commentField.value = '';
+            }
+            if (charCountDisplay) {
+                charCountDisplay.textContent = '0';
+            }
+
+            document.querySelectorAll('.rating-star').forEach(btn => {
+                btn.style.color = '#444';
+                btn.style.fontSize = '36px';
+            });
+
+            document.querySelectorAll('.tag-btn').forEach(btn => {
+                btn.style.background = 'rgba(255,255,255,0.04)';
+                btn.style.borderColor = 'rgba(255,255,255,0.1)';
+                btn.style.color = '#999';
+                const icon = btn.querySelector('i');
+                if (icon) icon.style.opacity = '0';
+            });
+
+            overlay.style.display = 'block';
+            overlay.style.pointerEvents = 'auto';
+            overlay.style.opacity = '1';
+            overlay.style.zIndex = '99999';
+            modal.style.display = 'block';
+            modal.style.zIndex = '100000';
+            document.body.style.overflow = 'hidden';
+
+            overlay.addEventListener('click', window.hideReviewModal, { once: true });
+            console.log('[showReviewModal] MODAL DISPLAYED');
+        };
+
+        window.hideReviewModal = function() {
+            const modal = document.getElementById('reviewModal');
+            const overlay = document.getElementById('reviewNotificationOverlay');
+            if (modal) modal.style.display = 'none';
+            if (overlay) overlay.style.display = 'none';
+            document.body.style.overflow = '';
+        };
+
+        window.setReviewRating = function(rating) {
+            console.log('[setReviewRating] rating:', rating);
+            window.reviewData.rating = rating;
+            
+            const labels = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
+            document.getElementById('ratingLabel').textContent = labels[rating] || 'Select rating';
+            document.getElementById('ratingLabel').style.color = rating > 0 ? '#F7941D' : '#888';
+            
+            // Update stars
+            document.querySelectorAll('.rating-star').forEach((btn, idx) => {
+                if (idx + 1 <= rating) {
+                    btn.style.color = '#F7941D';
+                    btn.style.fontSize = '40px';
+                } else {
+                    btn.style.color = '#444';
+                    btn.style.fontSize = '36px';
+                }
+            });
+        };
+
+        window.toggleTag = function(tag) {
+            console.log('[toggleTag] tag:', tag);
+            const btn = document.querySelector(`[data-tag="${tag}"]`);
+            if (!btn) return;
+            
+            if (window.reviewData.tags.has(tag)) {
+                window.reviewData.tags.delete(tag);
+                btn.style.background = 'rgba(255,255,255,0.04)';
+                btn.style.borderColor = 'rgba(255,255,255,0.1)';
+                btn.style.color = '#999';
+                const icon = btn.querySelector('i');
+                if (icon) icon.style.opacity = '0';
+            } else {
+                window.reviewData.tags.add(tag);
+                btn.style.background = 'rgba(247, 148, 29, 0.15)';
+                btn.style.borderColor = '#F7941D';
+                btn.style.color = '#F7941D';
+                const icon = btn.querySelector('i');
+                if (icon) icon.style.opacity = '1';
+            }
+        };
+
+        window.submitReview = async function() {
+            console.log('[submitReview] starting submission');
+            console.log('[submitReview] currentDispatchShopId:', currentDispatchShopId);
+            console.log('[submitReview] currentRequestId:', currentRequestId);
+            console.log('[submitReview] currentMotoristId:', currentMotoristId);
+            console.log('[submitReview] currentUserId:', currentUserId);
+            
+            if (window.reviewData.rating === 0) {
+                showToast('Please select a rating', 'warning');
+                return;
+            }
+            
+            // Try to get shop_id, it might not be set during modal opening
+            let shopId = currentDispatchShopId || reviewContext.shopId;
+            let requestId = currentRequestId || reviewContext.requestId;
+            let motoristId = currentMotoristId || reviewContext.motoristId || currentUserId || null;
+
+            if (!shopId && requestId) {
+                console.log('[submitReview] shop_id not set, trying to fetch...');
+                try {
+                    const res = await fetch(`/motorist/request/${requestId}`);
+                    const data = await res.json();
+                    shopId = data?.shop_id;
+                    currentDispatchShopId = shopId;
+                    reviewContext.shopId = shopId;
+                    reviewContext.requestId = requestId;
+                    reviewContext.motoristId = motoristId;
+                    console.log('[submitReview] fetched shop_id:', shopId);
+                } catch (e) {
+                    console.error('[submitReview] failed to fetch shop_id:', e);
+                }
+            }
+            
+            if (!shopId) {
+                console.error('Shop ID still not set:', shopId);
+                showToast('Error: Shop information missing. Please try again.', 'error');
+                return;
+            }
+            
+            const payload = {
+                dispatch_id: requestId || null,
+                shop_id: shopId,
+                motorist_id: motoristId,
+                rating: window.reviewData.rating,
+                comment: document.getElementById('reviewCommentField').value || '',
+                services: Array.from(window.reviewData.tags).join(', ')
+            };
+            
+            console.log('[submitReview] payload:', payload);
+            
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+            
+            try {
+                const response = await fetch(reviewEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': window.csrfToken || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('[submitReview] success');
+                    showToast('Thank you! Your review has been submitted.', 'success');
+                    window.hideReviewModal();
+                } else {
+                    console.error('[submitReview] failed:', data.message);
+                    showToast(data.message || 'Failed to submit review', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Submit Review';
+                }
+            } catch (error) {
+                console.error('[submitReview] error:', error);
+                showToast('Error submitting review', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Submit Review';
+            }
+        };
+
+        window.skipReview = function() {
+            console.log('[skipReview] skipping review');
+            window.hideReviewModal();
+        };
+
+        // Character counter
+        document.addEventListener('DOMContentLoaded', function() {
+            const field = document.getElementById('reviewCommentField');
+            if (field) {
+                field.addEventListener('input', function() {
+                    document.getElementById('charCountDisplay').textContent = this.value.length;
+                });
+            }
+        });
+
     </script>
 @endsection
