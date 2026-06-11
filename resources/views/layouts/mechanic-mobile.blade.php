@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="referrer" content="no-referrer">
 
     <title>MechFinder Mechanic</title>
 
@@ -20,9 +21,9 @@
 
     @vite(['resources/css/app.css'])
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <style>
         :root {
@@ -51,6 +52,18 @@
             --sh-card: 0 1px 4px rgba(0, 0, 0, .08);
         }
 
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
         html,
         body {
             margin: 0;
@@ -59,25 +72,28 @@
             background: #E8ECF0;
             font-family: Inter, system-ui, -apple-system, sans-serif;
             overscroll-behavior: none;
+            overflow-x: hidden;
             color: var(--text-1);
             -webkit-font-smoothing: antialiased;
         }
 
         .mechanic-app {
-            min-height: 100svh;
-            min-height: 100dvh;
+            min-height: 100vh;
             background:
                 radial-gradient(circle at top, rgba(247, 148, 29, 0.12), transparent 28%),
                 linear-gradient(180deg, #11141b 0%, #0b0f14 40%, #050505 100%);
+            overflow-x: hidden;
         }
 
         .phone {
+            position: relative;
             max-width: 430px;
             margin: 0 auto;
-            min-height: 100svh;
-            min-height: 100dvh;
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+            min-height: 100vh;
+        }
+
+        .mechanic-main {
+            /* Padding is handled per-page for better control */
         }
 
         .glass {
@@ -98,15 +114,15 @@
         }
 
         #bottomNav {
-            position: fixed;
+            position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
             height: calc(var(--nav-h) + env(safe-area-inset-bottom));
             padding-bottom: env(safe-area-inset-bottom);
             z-index: 40;
-            background: rgba(255, 255, 255, 0.96);
-            border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.94);
+            border-top: 1px solid rgba(226, 232, 240, .95);
             display: flex;
             align-items: stretch;
             box-shadow: 0 -2px 12px rgba(15, 23, 42, 0.08);
@@ -124,15 +140,17 @@
             color: var(--text-3);
             background: none;
             border: none;
-            transition: color .15s;
+            transition: color .15s, transform .15s;
             -webkit-tap-highlight-color: transparent;
             text-decoration: none;
-            padding: 0 6px;
+            padding: 4px 0;
+            min-height: var(--nav-h);
             position: relative;
         }
 
         .nav-btn.active {
             color: var(--brand);
+            transform: translateY(-1px);
         }
 
         .n-icon {
@@ -145,11 +163,62 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: .06em;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 430px) {
+            .phone {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .phone {
+                padding-left: 8px;
+                padding-right: 8px;
+            }
+
+            .nav-btn {
+                gap: 2px;
+                padding: 0 6px;
+                min-height: calc(var(--nav-h) - 4px);
+            }
+        }
+
+        @media (max-width: 380px) {
+            .phone {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .phone {
+                padding-left: 8px;
+                padding-right: 8px;
+            }
         }
 
         @media (min-width: 768px) {
+            .phone {
+                width: 100%;
+                max-width: 430px;
+                padding-top: 20px;
+                padding-bottom: calc(var(--nav-h) + 40px);
+                padding-left: 20px;
+                padding-right: 20px;
+                min-height: unset;
+            }
+
             #bottomNav {
-                display: none;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(255, 255, 255, 0.98);
+                border: 1px solid var(--border);
             }
         }
     </style>
@@ -157,8 +226,40 @@
 
 <body>
     <div class="mechanic-app">
-        <main class="@yield('main-class', 'px-4 pt-4 pb-8') phone bg-white flex-1 flex flex-col">
+        <main id="mechanicMainContent" class="@yield('main-class', 'px-4 pt-4 pb-8') phone">
             @yield('content')
+
+            @unless(View::hasSection('hide-bottom-nav'))
+                <nav id="bottomNav">
+                    @if(request()->routeIs('mechanic.dashboard'))
+                        <button type="button" id="navJobs" class="nav-btn active" title="Jobs" onclick="showMechanicTab('jobs')">
+                            <span class="n-icon"><i class="fas fa-briefcase"></i></span>
+                            <span class="n-label">Jobs</span>
+                        </button>
+                        <button type="button" id="navMessages" class="nav-btn" title="Messages" onclick="showMechanicTab('messages')">
+                            <span class="n-icon"><i class="fas fa-comments"></i></span>
+                            <span class="n-label">Messages</span>
+                        </button>
+                        <button type="button" id="navProfile" class="nav-btn" title="Profile" onclick="showMechanicTab('profile')">
+                            <span class="n-icon"><i class="fas fa-user"></i></span>
+                            <span class="n-label">Profile</span>
+                        </button>
+                    @else
+                        <a href="{{ route('mechanic.dashboard') }}" class="nav-btn {{ request()->routeIs('mechanic.dashboard') ? 'active' : '' }}" title="Jobs">
+                            <span class="n-icon"><i class="fas fa-briefcase"></i></span>
+                            <span class="n-label">Jobs</span>
+                        </a>
+                        <a href="{{ route('mechanic.messages') }}" class="nav-btn {{ request()->routeIs('mechanic.messages') ? 'active' : '' }}" title="Messages">
+                            <span class="n-icon"><i class="fas fa-comments"></i></span>
+                            <span class="n-label">Messages</span>
+                        </a>
+                        <a href="{{ route('mechanic.profile') }}" class="nav-btn {{ request()->routeIs('mechanic.profile') ? 'active' : '' }}" title="Profile">
+                            <span class="n-icon"><i class="fas fa-user"></i></span>
+                            <span class="n-label">Profile</span>
+                        </a>
+                    @endif
+                </nav>
+            @endunless
         </main>
     </div>
 
@@ -304,6 +405,111 @@
                 if (attempts < 30) setTimeout(() => subscribeDispatchEvents(attempts + 1), 200);
             }
         })(0);
+    </script>
+
+    <script>
+        (function () {
+            const mainEl = document.getElementById('mechanicMainContent');
+            const nav = document.getElementById('bottomNav');
+
+            function isMechanicNavUrl(href) {
+                try {
+                    const url = new URL(href, location.href);
+                    if (url.origin !== location.origin) return false;
+                    const path = url.pathname.replace(/\/$/, '');
+                    return ['/mechanic', '/mechanic/dashboard', '/mechanic/messages', '/mechanic/profile'].includes(path);
+                } catch (error) {
+                    return false;
+                }
+            }
+
+            function runScript(script) {
+                const newScript = document.createElement('script');
+                if (script.src) {
+                    newScript.src = script.src;
+                    newScript.async = false;
+                } else {
+                    newScript.textContent = script.textContent;
+                }
+                document.body.appendChild(newScript);
+                document.body.removeChild(newScript);
+            }
+
+            async function loadMechanicPage(url, replaceHistory = false) {
+                try {
+                    const response = await fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Unable to load page');
+                    }
+
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newMain = doc.querySelector('main');
+
+                    if (!newMain) {
+                        throw new Error('Invalid page response');
+                    }
+
+                    mainEl.className = newMain.className;
+                    const cloned = newMain.cloneNode(true);
+                    const scripts = Array.from(cloned.querySelectorAll('script'));
+                    scripts.forEach((script) => script.remove());
+                    mainEl.innerHTML = cloned.innerHTML;
+                    document.title = doc.title || document.title;
+                    syncActiveNav(url);
+                    if (replaceHistory) {
+                        history.replaceState({ ajax: true }, '', url);
+                    } else {
+                        history.pushState({ ajax: true }, '', url);
+                    }
+                    window.scrollTo(0, 0);
+                    scripts.forEach(runScript);
+                } catch (e) {
+                    window.location.href = url;
+                }
+            }
+
+            function syncActiveNav(href) {
+                if (!nav) return;
+                const path = new URL(href, location.href).pathname.replace(/\/$/, '');
+                nav.querySelectorAll('a').forEach((link) => {
+                    const linkPath = new URL(link.href, location.href).pathname.replace(/\/$/, '');
+                    if (path === '/mechanic' && linkPath === '/mechanic/dashboard') {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.toggle('active', linkPath === path);
+                    }
+                });
+            }
+
+            nav?.addEventListener('click', (event) => {
+                const anchor = event.target.closest('a');
+                if (!anchor) return;
+                const href = anchor.href;
+                if (isMechanicNavUrl(href)) {
+                    event.preventDefault();
+                    if (href === location.href) return;
+                    loadMechanicPage(href);
+                }
+            });
+
+            window.addEventListener('popstate', () => {
+                if (location.pathname.startsWith('/mechanic')) {
+                    loadMechanicPage(location.href, true);
+                }
+            });
+
+            if (!history.state) {
+                history.replaceState({ ajax: true }, '', location.href);
+            }
+        })();
     </script>
 </body>
 

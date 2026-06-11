@@ -4,56 +4,31 @@
 
 @section('content')
     <style>
-        :root {
-            --nav-h: 60px;
-            --brand: #F7941D;
-            --brand-dk: #C87010;
-            --brand-bg: rgba(247, 148, 29, .09);
-            --surface: #FFFFFF;
-            --surface-2: #F5F6F8;
-            --border: #E4E7EC;
-            --border-2: #CDD1D9;
-            --text-1: #111827;
-            --text-2: #6B7280;
-            --text-3: #9CA3AF;
-            --red: #EF4444;
-            --green: #10B981;
-            --action: #1E293B;
-            --action-bg: rgba(30, 41, 59, .06);
-            --r1: 6px;
-            --r2: 10px;
-            --r3: 14px;
-            --sh-card: 0 1px 4px rgba(0, 0, 0, .08);
-            --sh-float: 0 4px 18px rgba(0, 0, 0, .12);
-        }
+        html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
 
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        #mfApp {
-            height: 100svh;
-            height: 100dvh;
-            position: relative;
-            overflow: hidden;
-            background:
-                radial-gradient(circle at top, rgba(247, 148, 29, .12), transparent 28%),
-                linear-gradient(180deg, #11141b 0%, #0b0f14 40%, #050505 100%);
-            font-family: Inter, system-ui, -apple-system, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            display: flex;
-            flex-direction: column;
-        }
+#mfApp {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100svh;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #F4F6F8;
+}
 
         .top-header {
             flex-shrink: 0;
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 14px 16px;
+            background: transparent;
+            padding: 14px 16px 10px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -62,12 +37,12 @@
         .top-header-logo {
             width: 36px;
             height: 36px;
-            border-radius: var(--r1);
+            border-radius: 12px;
             background: var(--brand);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 15px;
+            font-size: 16px;
             color: #fff;
             flex-shrink: 0;
         }
@@ -77,45 +52,533 @@
         }
 
         .top-header-title h1 {
-            font-size: 17px;
+            font-size: 18px;
             font-weight: 800;
             color: var(--text-1);
             margin: 0;
+            letter-spacing: -.02em;
         }
 
         .top-header-sub {
-            font-size: 11px;
+            font-size: 12px;
+            color: var(--text-2);
+            margin: 4px 0 0;
+        }
+
+        #mechanicPanels {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .panel {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform .33s cubic-bezier(.4, 0, .2, 1);
+            background: transparent;
+            overflow: hidden;
+        }
+
+        .panel.open {
+            transform: translateY(0);
+        }
+
+        .chat-tab {
+            min-width: 0;
+            flex: 1;
+            padding: 11px 14px;
+            border: none;
+            border-bottom: 2px solid transparent;
+            background: transparent;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 700;
+            transition: color .2s ease, border-color .2s ease;
+        }
+
+        .chat-tab.active {
+            color: #111827;
+            border-bottom-color: #f7941d;
+        }
+
+        .chat-item {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 14px;
+            transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .chat-link {
+            display: block;
+            text-decoration: none;
+        }
+
+        .chat-link:hover .chat-item {
+            border-color: transparent;
+            background: #f8fafc;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, .06);
+        }
+
+        .profile-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            background: #fff;
+            padding: 18px;
+        }
+
+        .prof-hero {
+            background: linear-gradient(145deg, var(--action) 0%, var(--action-2) 100%);
+            padding: 28px 20px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .prof-avatar {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: var(--brand);
+            color: #fff;
+            font-size: 26px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid rgba(255, 255, 255, .2);
+        }
+
+        .prof-hero-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+        }
+
+        .prof-hero-email {
+            font-size: 12px;
+            color: rgba(255, 255, 255, .55);
+            margin-top: 1px;
+            text-align: center;
+        }
+
+        .prof-hero-badge {
+            margin-top: 6px;
+            padding: 3px 10px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, .12);
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .7);
+            letter-spacing: .05em;
+        }
+
+        .prof-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .09em;
             color: var(--text-3);
-            margin: 2px 0 0;
+            padding: 0 2px;
+            margin-bottom: 6px;
+        }
+
+        .prof-group {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r2);
+            overflow: hidden;
+        }
+
+        .prof-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 14px;
+            cursor: pointer;
+            border: none;
+            background: var(--surface);
+            width: 100%;
+            text-align: left;
+            transition: background .15s, box-shadow .15s;
+        }
+
+        .prof-row:hover {
+            background: var(--surface-2);
+            box-shadow: inset 0 0 0 1px rgba(247, 148, 29, .08);
+        }
+
+        .prof-row+.prof-row {
+            border-top: 1px solid var(--border);
+        }
+
+        .prof-row.no-action {
+            cursor: default;
+        }
+
+        .prof-row.no-action:hover {
+            background: var(--surface);
+            box-shadow: none;
+        }
+
+        .sub-panel {
+            position: absolute;
+            inset: 0;
+            background: #F4F6F8;
+            z-index: 50;
+            display: none;
+            transform: translateY(100%);
+            transition: transform .3s ease;
+            overflow: hidden;
+        }
+
+        .sub-panel.open {
+            display: block;
+            transform: translateY(0);
+        }
+
+        .ph {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 13px 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+        }
+
+        .ph-back {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--r1);
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: var(--text-2);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .ph-title {
+            font-size: 17px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .ph-note {
+            padding: 12px 14px;
+            font-size: 12px;
+            line-height: 1.55;
+            color: var(--text-2);
+        }
+
+        .prof-row-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: var(--r1);
+            flex-shrink: 0;
+            background: var(--action-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prof-row-icon i {
+            font-size: 13px;
+            color: var(--action);
+        }
+
+        .prof-row-icon.red {
+            background: rgba(239, 68, 68, .08);
+        }
+
+        .prof-row-icon.red i {
+            color: var(--red);
+        }
+
+        .prof-row-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .prof-row-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-1);
+        }
+
+        .prof-row-sub {
+            font-size: 11px;
+            color: var(--text-2);
+            margin-top: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .prof-row-sub.empty {
+            color: var(--text-3);
+            font-style: italic;
+        }
+
+        .prof-row-chevron {
+            font-size: 10px;
+            color: var(--text-3);
+            flex-shrink: 0;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .field-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-2);
+            padding-left: 2px;
+        }
+
+        .field-hint {
+            font-size: 10px;
+            color: var(--text-3);
+            padding-left: 2px;
+            line-height: 1.4;
+        }
+
+        .profile-label {
+            display: block;
+            margin-bottom: .55rem;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-2);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .profile-field {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border-2);
+            border-radius: var(--r1);
+            padding: 11px 12px;
+            font-size: 14px;
+            color: var(--text-1);
+            font-family: inherit;
+            outline: none;
+            transition: border-color .2s;
+        }
+
+        .profile-field:focus {
+            border-color: var(--action);
+        }
+
+        .profile-field::placeholder {
+            color: var(--text-3);
+        }
+
+        .button-primary,
+        .button-secondary {
+            width: 100%;
+            border-radius: var(--r2);
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: opacity .15s;
+        }
+
+        .button-primary {
+            background: var(--action);
+            color: #fff;
+        }
+
+        .button-primary:disabled {
+            opacity: .35;
+            cursor: not-allowed;
+        }
+
+        .button-primary:not(:disabled):active {
+            opacity: .85;
+        }
+
+        .button-secondary {
+            background: #fff;
+            color: var(--text-1);
+            border: 1.5px solid var(--border);
+        }
+
+        .button-secondary:hover {
+            background: var(--surface-2);
+        }
+
+        .save-panel-btn {
+            background: linear-gradient(135deg, #F7941D 0%, #FF9500 100%);
+            color: #111;
+            border: none;
+            border-radius: var(--r2);
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s, opacity .15s;
+        }
+
+        .save-panel-btn:active {
+            transform: translateY(1px);
+            opacity: .95;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 14px;
+            background: none;
+            border: 1.5px solid var(--red);
+            border-radius: var(--r2);
+            color: var(--red);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity .15s;
+        }
+
+        .logout-btn:active {
+            opacity: .85;
+        }
+
+        .alert {
+            border-radius: 16px;
+            border: 1px solid #d1fae5;
+            background: #ecfdf5;
+            color: #065f46;
+            padding: 14px 16px;
+            font-size: 13px;
+        }
+
+        .form-error {
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--red);
+        }
+
+        .info-banner {
+            background: var(--action-bg);
+            border: 1px solid rgba(30, 41, 59, .12);
+            border-radius: var(--r2);
+            padding: 11px 13px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .info-banner i {
+            color: var(--action);
+            font-size: 13px;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+
+        .info-banner span {
+            font-size: 12px;
+            color: var(--action);
+            line-height: 1.5;
+        }
+
+        .panel-body {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: calc(var(--nav-h) + 14px);
+        }
+
+        .profile-content {
+            padding-bottom: calc(var(--nav-h) + 14px);
+        }
+
+        .mechanic-tab-panels {
+            position: relative;
+        }
+
+        .mechanic-tab-panel {
+            opacity: 0;
+            transform: translateY(10px);
+            max-height: 0;
+            overflow: hidden;
+            pointer-events: none;
+            transition: opacity .28s ease, transform .28s ease, max-height .28s ease;
+        }
+
+        .mechanic-tab-panel.open {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 9999px;
+            pointer-events: auto;
         }
 
         .mechanic-content {
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 12px 14px calc(var(--nav-h) + 12px);
+            padding: 0 14px calc(var(--nav-h) + 12px);
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            background: var(--surface-2);
+            gap: 12px;
+            background: transparent;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .job-card,
+        .profile-box,
+        .job-map-wrap,
+        .job-map {
+            width: 100%;
+            max-width: 100%;
         }
 
         .job-card {
             background: var(--surface);
-            border-radius: var(--r3);
-            padding: 14px;
+            border-radius: 18px;
+            padding: 16px;
             border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            box-shadow: var(--sh-card);
+            gap: 12px;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, .06);
         }
 
         .job-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            gap: 8px;
+            gap: 10px;
         }
 
         .job-title {
@@ -123,27 +586,27 @@
         }
 
         .job-title h3 {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 700;
             color: var(--text-1);
             margin: 0;
         }
 
         .job-meta {
-            font-size: 11px;
-            color: var(--text-2);
-            margin: 3px 0 0;
+            font-size: 12px;
+            color: var(--text-3);
+            margin: 4px 0 0;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
-            padding: 3px 9px;
-            border-radius: 99px;
-            font-size: 10px;
+            padding: 5px 11px;
+            border-radius: 999px;
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: .04em;
+            letter-spacing: .05em;
             white-space: nowrap;
             flex-shrink: 0;
         }
@@ -176,32 +639,29 @@
         .req-steps {
             display: flex;
             align-items: center;
-            margin: 2px 0;
+            gap: 6px;
+            margin: 4px 0 0;
         }
 
         .rs-dot {
-            width: 9px;
-            height: 9px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             flex-shrink: 0;
             background: var(--border-2);
-            transition: background .3s;
+            transition: background .3s ease;
         }
 
-        .rs-dot.done {
-            background: var(--brand);
-        }
-
+        .rs-dot.done,
         .rs-dot.active {
             background: var(--brand);
-            box-shadow: 0 0 0 3px var(--brand-bg);
         }
 
         .rs-line {
             flex: 1;
             height: 2px;
             background: var(--border);
-            transition: background .3s;
+            transition: background .3s ease;
         }
 
         .rs-line.done {
@@ -209,73 +669,72 @@
         }
 
         .status-strip {
-            background: var(--brand-bg);
-            border-left: 3px solid var(--brand);
-            border-radius: var(--r1);
-            padding: 8px 11px;
-            font-size: 12px;
-            font-weight: 600;
+            background: rgba(247, 148, 29, .08);
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
             color: var(--brand-dk);
-            line-height: 1.4;
+            line-height: 1.45;
         }
 
         .job-actions {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+            align-items: stretch;
+            width: 100%;
         }
 
         .act-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
-            padding: 9px 14px;
-            border-radius: var(--r2);
+            gap: 6px;
+            padding: 11px 14px;
+            border-radius: 14px;
             border: none;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
-            transition: all .15s;
+            transition: transform .15s ease, background .15s ease;
             text-decoration: none;
             letter-spacing: .02em;
             -webkit-tap-highlight-color: transparent;
+            min-width: 0;
+            flex: 1;
         }
 
         .act-btn:active {
-            transform: scale(.96);
+            transform: translateY(1px);
         }
 
         .act-btn-primary {
             background: var(--brand);
-            color: #fff;
+            color: #000;
             flex: 1;
         }
 
-        .act-btn-primary:active {
-            background: var(--brand-dk);
-        }
-
         .act-btn-secondary {
-            background: var(--surface-2);
+            background: #fff;
             color: var(--text-1);
-            border: 1px solid var(--border);
+            border: 1px solid rgba(220, 226, 235, .9);
         }
 
         /* ── JOB MAP ── */
         .job-map-wrap {
             position: relative;
             display: block;
-            border-radius: var(--r2);
+            border-radius: 18px;
             overflow: hidden;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(220, 226, 235, .9);
             text-decoration: none;
         }
 
         .job-map {
             width: 100%;
             height: 160px;
-            background: var(--surface-2);
+            background: #EFF3F7;
             pointer-events: none;
         }
 
@@ -288,10 +747,10 @@
             width: 38px;
             height: 38px;
             border-radius: 50%;
-            background: var(--surface);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+            background: #fff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, .08);
             color: var(--action);
-            border: 1px solid rgba(30, 41, 59, .12);
+            border: 1px solid rgba(30, 41, 59, .1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -302,7 +761,95 @@
         }
 
         .job-map-dir:active {
-            background: var(--surface-2);
+            background: #F5F6F8;
+        }
+
+        @media (max-width: 420px) {
+            .top-header {
+                padding: 12px 12px;
+                gap: 10px;
+            }
+
+            .top-header-logo {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+            }
+
+            .top-header-title h1 {
+                font-size: 16px;
+            }
+
+            .mechanic-content {
+                padding: 10px 12px calc(var(--nav-h) + 12px);
+                gap: 8px;
+            }
+
+            .job-card {
+                padding: 12px;
+            }
+
+            .job-header {
+                gap: 6px;
+            }
+
+            .job-title h3 {
+                font-size: 14px;
+            }
+
+            .status-strip {
+                padding: 7px 10px;
+                font-size: 11px;
+            }
+
+            .job-actions {
+                gap: 6px;
+                flex-direction: column;
+            }
+
+            .act-btn {
+                padding: 10px 12px;
+                font-size: 11px;
+                width: 100%;
+            }
+
+            .job-map {
+                height: 140px;
+            }
+
+            .job-map-dir {
+                width: 36px;
+                height: 36px;
+            }
+
+            .no-jobs {
+                padding: 46px 16px 16px;
+            }
+
+            .no-jobs-icon {
+                width: 64px;
+                height: 64px;
+                font-size: 26px;
+            }
+        }
+
+        @media (max-width: 340px) {
+            .top-header {
+                padding: 10px 10px;
+            }
+
+            .mechanic-content {
+                padding: 10px 10px calc(var(--nav-h) + 10px);
+            }
+
+            .job-card {
+                padding: 10px;
+            }
+
+            .act-btn {
+                padding: 10px 10px;
+                font-size: 10px;
+            }
         }
 
         /* mf-pin — identical to motorist */
@@ -351,47 +898,57 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 56px 20px 20px;
+            padding: 40px 20px 20px;
             text-align: center;
-            gap: 12px;
+            gap: 14px;
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid rgba(220, 226, 235, .9);
         }
 
         .no-jobs-icon {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            background: var(--brand-bg);
+            width: 62px;
+            height: 62px;
+            border-radius: 16px;
+            background: rgba(247, 148, 29, .12);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 30px;
+            font-size: 26px;
         }
 
         .no-jobs-title {
-            font-size: 15px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 800;
             color: var(--text-1);
+            margin: 0;
         }
 
         .no-jobs-text {
             font-size: 13px;
             color: var(--text-2);
             line-height: 1.6;
-            max-width: 280px;
+            max-width: 300px;
+            margin: 0;
         }
 
         #bottomNav {
-            position: absolute;
+            position: fixed;
             bottom: 0;
-            left: 0;
-            right: 0;
-            height: var(--nav-h);
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(100%, 430px);
+            max-width: 390px;
+            height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
             z-index: 40;
-            background: var(--surface);
-            border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, .94);
+            border-top: 1px solid rgba(226, 232, 240, .95);
             display: flex;
             align-items: stretch;
             -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 -2px 12px rgba(15, 23, 42, .08);
+            backdrop-filter: blur(12px);
         }
 
         .nav-btn {
@@ -405,14 +962,17 @@
             color: var(--text-3);
             background: none;
             border: none;
-            transition: color .15s;
+            transition: color .15s, transform .15s;
             -webkit-tap-highlight-color: transparent;
             text-decoration: none;
-            padding: 0;
+            padding: 4px 0;
+            min-height: var(--nav-h);
+            position: relative;
         }
 
         .nav-btn.active {
             color: var(--brand);
+            transform: translateY(-1px);
         }
 
         .n-icon {
@@ -545,8 +1105,9 @@
     </style>
 
     <div id="mfApp">
-
-        <div class="top-header">
+        <div id="mechanicPanels">
+            <section id="jobsPanel" class="panel open">
+                <div class="top-header">
             <div class="top-header-logo"><i class="fas fa-wrench"></i></div>
             <div class="top-header-title">
                 <h1>My Jobs</h1>
@@ -638,6 +1199,11 @@
                                 </button>
                             @endif
 
+                            <button onclick="location.href='{{ route('mechanic.chat', ['dispatchId' => $req->id]) }}?conversation_type=motorist'"
+                                class="act-btn act-btn-secondary">
+                                <i class="fas fa-comments"></i> Chat
+                            </button>
+
                             @if ($status === 'accepted' || $status === 'requested')
                                 <button onclick="updateStatus({{ $req->id }}, 'en_route')"
                                     class="act-btn act-btn-primary">
@@ -660,19 +1226,231 @@
             @endif
 
         </div>
+            </section>
 
-        <nav id="bottomNav">
-            <a href="{{ route('mechanic.dashboard') }}"
-                class="nav-btn {{ request()->routeIs('mechanic.dashboard') ? 'active' : '' }}">
-                <span class="n-icon"><i class="fas fa-briefcase"></i></span>
-                <span class="n-label">Jobs</span>
-            </a>
-            <a href="{{ route('mechanic.profile') }}"
-                class="nav-btn {{ request()->routeIs('mechanic.profile') ? 'active' : '' }}">
-                <span class="n-icon"><i class="fas fa-user"></i></span>
-                <span class="n-label">Profile</span>
-            </a>
-        </nav>
+            <section id="messagesPanel" class="panel">
+                <div class="top-header">
+                    <div class="top-header-logo"><i class="fas fa-comments"></i></div>
+                    <div class="top-header-title">
+                        <h1>Messages</h1>
+                        <p class="top-header-sub">Shop and motorist conversations</p>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="px-4 py-4 border-b border-slate-200/70">
+                        <div class="flex items-center gap-3 mb-4">
+                            <input id="message-search" type="search" placeholder="Search conversations..." class="w-full rounded-[14px] border border-slate-300 px-4 py-3 text-[13px] text-slate-700 placeholder:text-slate-400 outline-none focus:border-[#F7941D] transition-colors" aria-label="Search conversations">
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="tab-shop" type="button" class="chat-tab active" onclick="switchMechanicMessageTab('shop')">Shop</button>
+                            <button id="tab-motorist" type="button" class="chat-tab" onclick="switchMechanicMessageTab('motorist')">Motorist</button>
+                        </div>
+                    </div>
+                    <div id="chat-list-panel" class="content-scroll px-4 py-4 space-y-3 mechanic-tab-panels">
+                        <div id="shop-panel" class="mechanic-tab-panel open space-y-2">
+                            @forelse($shopConversations as $conv)
+                                <a href="{{ route('mechanic.chat', ['dispatchId' => $conv['dispatch_id']]) }}?conversation_type=shop" class="chat-item chat-link">
+                                    <div class="flex gap-3 items-start">
+                                        <div class="w-12 h-12 rounded-[12px] bg-slate-100 text-slate-900 border border-slate-200 flex items-center justify-center text-lg font-extrabold">
+                                            {{ strtoupper(substr($conv['shop_name'] ?? 'S', 0, 1)) }}
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center justify-between gap-2 mb-1">
+                                                <h3 class="text-[13px] font-semibold truncate">{{ $conv['shop_name'] }}</h3>
+                                                <span class="text-[11px] text-slate-500 whitespace-nowrap" data-time>—</span>
+                                            </div>
+                                            <p class="text-[12px] text-slate-500 truncate mb-1">Motorist: {{ $conv['motorist_name'] }}</p>
+                                            <p class="text-[12px] text-slate-500 truncate">{{ ucfirst(str_replace('_', ' ', $conv['issue_type'])) }}</p>
+                                        </div>
+                                        <div class="chat-badge hidden rounded-full bg-[#F7941D] px-2 py-1 text-[11px] font-semibold text-white" data-unread-count="{{ $conv['unread_count'] ?? 0 }}"></div>
+                                    </div>
+                                </a>
+                            @empty
+                                <div class="flex justify-center items-center h-32">
+                                    <div class="text-center">
+                                        <p class="text-slate-500 text-[13px] font-semibold">No shop conversations yet</p>
+                                        <p class="text-[12px] text-slate-400">Accept a dispatch to start chatting.</p>
+                                    </div>
+                                </div>
+                            @endforelse
+                        </div>
+                        <div id="motorist-panel" class="mechanic-tab-panel space-y-2">
+                            @forelse($motoristConversations as $conv)
+                                <a href="{{ route('mechanic.chat', ['dispatchId' => $conv['dispatch_id']]) }}?conversation_type=motorist" class="chat-item chat-link">
+                                    <div class="flex gap-3 items-start">
+                                        <div class="w-12 h-12 rounded-[12px] bg-slate-100 text-slate-900 border border-slate-200 flex items-center justify-center text-lg font-extrabold">
+                                            {{ strtoupper(substr($conv['motorist_name'] ?? 'M', 0, 1)) }}
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center justify-between gap-2 mb-1">
+                                                <h3 class="text-[13px] font-semibold truncate">{{ $conv['motorist_name'] }}</h3>
+                                                <span class="text-[11px] text-slate-500 whitespace-nowrap" data-time>—</span>
+                                            </div>
+                                            <p class="text-[12px] text-slate-500 truncate mb-1">Shop: {{ $conv['shop_name'] }}</p>
+                                            <p class="text-[12px] text-slate-500 truncate">{{ ucfirst(str_replace('_', ' ', $conv['issue_type'])) }}</p>
+                                        </div>
+                                        <div class="chat-badge hidden rounded-full bg-[#F7941D] px-2 py-1 text-[11px] font-semibold text-white" data-unread-count="{{ $conv['unread_count'] ?? 0 }}"></div>
+                                    </div>
+                                </a>
+                            @empty
+                                <div class="flex justify-center items-center h-32">
+                                    <div class="text-center">
+                                        <p class="text-slate-500 text-[13px] font-semibold">No motorist conversations yet</p>
+                                        <p class="text-[12px] text-slate-400">Accept a dispatch to start chatting.</p>
+                                    </div>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="profilePanel" class="panel">
+                <div class="top-header">
+                    <div class="top-header-logo"><i class="fas fa-user"></i></div>
+                    <div class="top-header-title">
+                        <h1>Profile</h1>
+                        <p class="top-header-sub">Manage your mechanic account</p>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="content-scroll profile-content">
+                        @if (session('success'))
+                            <div class="alert alert-success">{{ session('success') }}</div>
+                        @endif
+                        @if (session('pw_success'))
+                            <div class="alert alert-success">{{ session('pw_success') }}</div>
+                        @endif
+
+                        <div class="prof-hero">
+                            <div class="prof-avatar">{{ strtoupper(substr($mechanic->name ?? 'M', 0, 1)) }}</div>
+                            <div class="prof-hero-name">{{ $mechanic->name }}</div>
+                            <div class="prof-hero-email">{{ $mechanic->email }}</div>
+                            <div class="prof-hero-badge"><i class="fas fa-user-cog" style="margin-right:4px"></i>Mechanic Account</div>
+                        </div>
+
+                        <div style="padding: 20px 0 0; display:flex; flex-direction:column; gap:20px;">
+                            <div>
+                                <p class="prof-section-label">Profile summary</p>
+                                <div class="prof-group">
+                                    <button class="prof-row" type="button" onclick="openMechanicSubPanel('editProfilePanel')">
+                                        <div class="prof-row-icon"><i class="fas fa-phone"></i></div>
+                                        <div class="prof-row-body">
+                                            <div class="prof-row-title">Contact number</div>
+                                            <div class="prof-row-sub {{ !$profile->phone ? 'empty' : '' }}">{{ $profile->phone ?? 'Tap to add' }}</div>
+                                        </div>
+                                        <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
+                                    </button>
+                                    <button class="prof-row" type="button" onclick="openMechanicSubPanel('editProfilePanel')">
+                                        <div class="prof-row-icon"><i class="fas fa-id-badge"></i></div>
+                                        <div class="prof-row-body">
+                                            <div class="prof-row-title">Plate number</div>
+                                            <div class="prof-row-sub {{ !$profile->plate_number ? 'empty' : '' }}">{{ $profile->plate_number ?? 'Tap to add' }}</div>
+                                        </div>
+                                        <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
+                                    </button>
+                                    <div class="prof-row no-action">
+                                        <div class="prof-row-icon red"><i class="fas fa-check-circle"></i></div>
+                                        <div class="prof-row-body">
+                                            <div class="prof-row-title">Status</div>
+                                            <div class="prof-row-sub">{{ ucfirst(optional($profile)->status ?? 'Active') }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="prof-section-label">Account & Security</p>
+                                <div class="prof-group">
+                                    <button class="prof-row" type="button" onclick="openMechanicSubPanel('changePasswordPanel')">
+                                        <div class="prof-row-icon"><i class="fas fa-lock"></i></div>
+                                        <div class="prof-row-body">
+                                            <div class="prof-row-title">Change password</div>
+                                            <div class="prof-row-sub">Update your login password</div>
+                                        </div>
+                                        <i class="fa-chevron-right fa-solid prof-row-chevron"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Logout --}}
+                        <div style="padding: 0 20px 20px;">
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="logout-btn">
+                                    <i class="fa-right-from-bracket fa-solid"></i> Log Out
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="editProfilePanel" class="panel sub-panel" style="display:none;">
+                <div class="ph">
+                    <button class="ph-back" type="button" onclick="closeMechanicSubPanel('editProfilePanel')">
+                        <i class="fa-arrow-left fa-solid"></i>
+                    </button>
+                    <div class="ph-title">Edit profile</div>
+                </div>
+                <div class="ph-note">Update your phone number and plate number. These values are shared with dispatch and messaging.</div>
+                <div style="padding: 12px 14px 20px; overflow-y:auto; display: flex; flex-direction: column; gap: 14px;">
+                    <form method="POST" action="{{ route('mechanic.profile.update') }}" class="space-y-4">
+                        @csrf
+                        <div class="field-group">
+                            <label class="field-label" for="phone">PHONE NUMBER</label>
+                            <input id="phone" name="phone" type="tel" value="{{ old('phone', $profile->phone ?? '') }}" class="profile-field" placeholder="09171234567">
+                            @if ($errors->has('phone'))
+                                <p class="form-error">{{ $errors->first('phone') }}</p>
+                            @endif
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label" for="plate_number">PLATE NUMBER</label>
+                            <input id="plate_number" name="plate_number" type="text" value="{{ old('plate_number', $profile->plate_number ?? '') }}" class="profile-field" placeholder="ABC 1234">
+                            @if ($errors->has('plate_number'))
+                                <p class="form-error">{{ $errors->first('plate_number') }}</p>
+                            @endif
+                        </div>
+                        <button type="submit" class="button-primary">Save profile</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="changePasswordPanel" class="panel sub-panel" style="display:none;">
+                <div class="ph">
+                    <button class="ph-back" type="button" onclick="closeMechanicSubPanel('changePasswordPanel')">
+                        <i class="fa-arrow-left fa-solid"></i>
+                    </button>
+                    <div class="ph-title">Change password</div>
+                </div>
+                <div class="ph-note">For security, enter your current password first and choose a new password you haven't used before.</div>
+                <div style="padding: 12px 14px 20px; overflow-y:auto; display: flex; flex-direction: column; gap: 14px;">
+                    <form method="POST" action="{{ route('mechanic.profile.password') }}" class="space-y-4">
+                        @csrf
+                        <div class="field-group">
+                            <label class="field-label" for="current_password">CURRENT PASSWORD</label>
+                            <input id="current_password" name="current_password" type="password" class="profile-field" autocomplete="current-password">
+                            @if ($errors->has('current_password'))
+                                <p class="form-error">{{ $errors->first('current_password') }}</p>
+                            @endif
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label" for="password">NEW PASSWORD</label>
+                            <input id="password" name="password" type="password" class="profile-field" autocomplete="new-password">
+                            @if ($errors->has('password'))
+                                <p class="form-error">{{ $errors->first('password') }}</p>
+                            @endif
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label" for="password_confirmation">CONFIRM PASSWORD</label>
+                            <input id="password_confirmation" name="password_confirmation" type="password" class="profile-field" autocomplete="new-password">
+                        </div>
+                        <button type="submit" class="button-primary">Update password</button>
+                    </form>
+                </div>
+            </section>
+        </div>
 
         <div id="confirmModal">
             <div class="cm-sheet">
@@ -762,7 +1540,76 @@
         }
 
         // Store map instances to allow updating without re-creating
-        const _jobMaps = {}; // id → { map, mechMarker, routeLayer }
+        function getJobMaps() {
+            window._jobMaps = window._jobMaps || {};
+            return window._jobMaps;
+        }
+
+        function updateMechanicHash(value) {
+            const url = window.location.pathname + window.location.search + '#' + value;
+            if (window.location.href !== url) {
+                history.replaceState(null, '', url);
+            }
+        }
+
+        function showMechanicTab(tab) {
+            const validTabs = ['jobs', 'messages', 'profile'];
+            if (!validTabs.includes(tab)) return;
+
+            validTabs.forEach(name => {
+                const panel = document.getElementById(`${name}Panel`);
+                if (panel) panel.classList.toggle('open', name === tab);
+                const navBtn = document.getElementById(`nav${name.charAt(0).toUpperCase() + name.slice(1)}`);
+                if (navBtn) navBtn.classList.toggle('active', name === tab);
+            });
+
+            try {
+                localStorage.setItem('mf_mechanic_active_tab', tab);
+            } catch (_e) {
+                // ignore
+            }
+
+            updateMechanicHash(tab);
+        }
+
+        function switchMechanicMessageTab(tab) {
+            const shopPanel = document.getElementById('shop-panel');
+            const motoristPanel = document.getElementById('motorist-panel');
+            const shopTab = document.getElementById('tab-shop');
+            const motoristTab = document.getElementById('tab-motorist');
+
+            if (tab === 'shop') {
+                shopPanel.classList.add('open');
+                motoristPanel.classList.remove('open');
+                shopTab.classList.add('active');
+                motoristTab.classList.remove('active');
+            } else {
+                shopPanel.classList.remove('open');
+                motoristPanel.classList.add('open');
+                shopTab.classList.remove('active');
+                motoristTab.classList.add('active');
+            }
+        }
+
+        function openMechanicSubPanel(id) {
+            const panel = document.getElementById(id);
+            if (!panel) return;
+            panel.style.display = 'block';
+            requestAnimationFrame(() => panel.classList.add('open'));
+            updateMechanicHash(id);
+        }
+
+        function closeMechanicSubPanel(id) {
+            const panel = document.getElementById(id);
+            if (!panel) return;
+            panel.classList.remove('open');
+            setTimeout(() => {
+                panel.style.display = 'none';
+            }, 320);
+            if (window.location.hash.replace('#', '') === id) {
+                updateMechanicHash('profile');
+            }
+        }
 
         function _drawRoute(entry, mechLat, mechLng, destLat, destLng) {
             const {
@@ -841,6 +1688,7 @@
                     (storedLng !== null) ? storedLng :
                     shopLng;
 
+                const _jobMaps = getJobMaps();
                 // Map already exists — just update route with better position
                 if (_jobMaps[el.id]) {
                     if (mechLat !== null && !isNaN(mechLat)) {
@@ -951,6 +1799,60 @@
                 timeout: 15000
             });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('message-search');
+            searchInput?.addEventListener('input', () => {
+                const phrase = searchInput.value.toLowerCase();
+                document.querySelectorAll('#chat-list-panel .chat-item').forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = text.includes(phrase) ? 'block' : 'none';
+                });
+            });
+
+            const params = new URLSearchParams(window.location.search);
+            const requestedTab = params.get('tab');
+            const hashValue = window.location.hash.replace('#', '');
+            const savedTab = localStorage.getItem('mf_mechanic_active_tab');
+            const validTabs = ['jobs', 'messages', 'profile'];
+            const validPanels = ['editProfilePanel', 'changePasswordPanel'];
+            const activeTab = validTabs.includes(hashValue)
+                ? hashValue
+                : (requestedTab && validTabs.includes(requestedTab)
+                    ? requestedTab
+                    : (savedTab && validTabs.includes(savedTab) ? savedTab : 'jobs'));
+
+            showMechanicTab(activeTab);
+            if (validPanels.includes(hashValue)) {
+                showMechanicTab('profile');
+                openMechanicSubPanel(hashValue);
+            }
+            if (requestedTab && !validTabs.includes(hashValue) && !validPanels.includes(hashValue)) {
+                params.delete('tab');
+                const search = params.toString();
+                const baseUrl = window.location.pathname + (search ? `?${search}` : '');
+                history.replaceState(null, '', baseUrl + '#' + activeTab);
+            }
+            window.addEventListener('hashchange', () => {
+                const newHash = window.location.hash.replace('#', '');
+                if (validTabs.includes(newHash)) {
+                    showMechanicTab(newHash);
+                } else if (validPanels.includes(newHash)) {
+                    showMechanicTab('profile');
+                    openMechanicSubPanel(newHash);
+                }
+            });
+
+            @if(session('success') || session('pw_success') || $errors->any())
+                showMechanicTab('profile');
+            @endif
+
+            @if($errors->has('current_password') || $errors->has('password') || $errors->has('password_confirmation'))
+                openMechanicSubPanel('changePasswordPanel');
+            @elseif($errors->has('phone') || $errors->has('plate_number'))
+                openMechanicSubPanel('editProfilePanel');
+            @endif
+        });
     </script>
 
 @endsection

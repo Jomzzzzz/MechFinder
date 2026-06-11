@@ -1,34 +1,32 @@
 @extends('layouts.motorist')
 
 @section('content')
-<div class="min-h-screen flex flex-col text-white">
+<div class="min-h-screen flex flex-col text-white bg-[#06070d]">
     <!-- Header -->
     <div class="sticky top-0 z-20 bg-[#0d1118]/95 backdrop-blur border-b border-white/5 px-4 pt-4 pb-4">
-        <div class="flex items-center justify-between gap-3 mb-4">
+        <div class="flex items-center justify-between gap-3 mb-3">
             <div class="flex items-center gap-3 min-w-0">
-                <a href="{{ route('motorist.index') }}" class="w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-sm shrink-0">←</a>
-                <div>
-                    <h1 class="text-[15px] font-extrabold truncate">Shop Messages</h1>
-                    <p class="text-[12px] text-gray-400">Message shops near you</p>
+                <a href="{{ route('motorist.index') }}" class="w-10 h-10 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-sm shrink-0">←</a>
+                <div class="min-w-0">
+                    <h1 class="text-base font-extrabold truncate">Shop Messages</h1>
+                    <p class="text-xs text-gray-400 truncate">Chats with nearby shops</p>
                 </div>
             </div>
         </div>
 
-        <!-- Location Input -->
-        <div class="flex gap-2">
+        <div class="rounded-3xl bg-white/5 border border-white/10 px-3 py-3 flex items-center gap-2">
             <input 
                 type="text" 
                 id="location-input" 
-                placeholder="Enter your location..." 
-                class="flex-1 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-orange-500"
+                placeholder="Enter your location"
+                class="flex-1 rounded-2xl bg-transparent border-none px-2 py-2 text-sm text-white placeholder:text-gray-500 outline-none"
                 value="14.8386, 120.2842"
             >
-            <button onclick="updateLocation()" class="px-4 h-10 rounded-lg brand-btn text-sm">Update</button>
+            <button onclick="updateLocation()" class="inline-flex items-center justify-center rounded-2xl bg-orange-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-orange-600">Update</button>
         </div>
     </div>
 
-    <!-- Shops List -->
-    <div id="shops-list" class="flex-1 overflow-y-auto px-4 py-4 space-y-2">
+    <div id="shops-list" class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         <div class="flex justify-center items-center h-32">
             <div class="text-gray-400 text-sm">Loading shops...</div>
         </div>
@@ -39,7 +37,7 @@
 <div id="modal-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-40" onclick="closeModal()"></div>
 
 <!-- Shop Details & Chat Modal -->
-<div id="shop-modal" class="fixed bottom-0 left-0 right-0 bg-[#0d1118] border-t border-white/10 rounded-t-3xl hidden z-50 flex flex-col h-[90vh] max-w-2xl mx-auto">
+<div id="shop-modal" class="fixed bottom-0 left-0 right-0 bg-[#0d1118] border-t border-white/10 rounded-t-3xl hidden z-50 h-[90vh] max-w-2xl mx-auto">
     <!-- Modal Header -->
     <div class="sticky top-0 flex items-center justify-between gap-3 px-4 pt-4 pb-4 border-b border-white/5 flex-shrink-0">
         <button onclick="closeModal()" class="w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-sm">←</button>
@@ -97,13 +95,13 @@
         </div>
 
         <!-- Messages Tab -->
-        <div id="messages-tab" class="hidden h-full flex flex-col">
-            <div id="chat-messages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3"></div>
+        <div id="messages-tab" class="hidden flex-col flex-1 min-h-0">
+            <div id="chat-messages" class="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-3"></div>
         </div>
     </div>
 
     <!-- Message Input -->
-    <div id="chat-input-section" class="hidden px-4 pb-4 pt-2 border-t border-white/5 flex-shrink-0">
+    <div id="chat-input-section" class="hidden px-4 pb-4 pt-2 border-t border-white/5 flex-shrink-0 z-10">
         <form id="chat-form-modal" class="flex gap-2 items-center" onsubmit="return sendMessage(event)">
             <input
                 type="text"
@@ -130,6 +128,18 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('location-input').value = `${userLat}, ${userLng}`;
     
     loadShops(userLat, userLng);
+
+    const initialTab = window.location.hash.replace('#', '');
+    if (initialTab === 'details' || initialTab === 'messages') {
+        switchTab(initialTab);
+    }
+
+    window.addEventListener('hashchange', () => {
+        const nextTab = window.location.hash.replace('#', '');
+        if (nextTab === 'details' || nextTab === 'messages') {
+            switchTab(nextTab);
+        }
+    });
 });
 
 function updateLocation() {
@@ -159,7 +169,13 @@ function loadShops(lat, lng) {
     const shopsList = document.getElementById('shops-list');
     shopsList.innerHTML = '<div class="flex justify-center items-center h-32"><div class="text-gray-400 text-sm">Loading shops...</div></div>';
 
-    fetch(`/api/motorist/shops-for-messaging?lat=${lat}&lng=${lng}`)
+    const identity = typeof mfIdentity === 'function' ? mfIdentity() : { guest_token: '' };
+    const params = new URLSearchParams({ lat, lng });
+    if (identity.guest_token) {
+        params.set('guest_token', identity.guest_token);
+    }
+
+    fetch(`/api/motorist/shops-for-messaging?${params.toString()}`)
         .then(res => res.json())
         .then(data => {
             if (!data.success || !data.shops || data.shops.length === 0) {
@@ -226,10 +242,16 @@ function openShopModal(shopId) {
     }
     
     modal.classList.remove('hidden');
+    modal.classList.add('flex');
     backdrop.classList.remove('hidden');
 
     // Load shop details
-    fetch(`/api/motorist/shop-messages/${shopId}`)
+    const identity = typeof mfIdentity === 'function' ? mfIdentity() : { guest_token: '' };
+    const params = new URLSearchParams();
+    if (identity.guest_token) {
+        params.set('guest_token', identity.guest_token);
+    }
+    fetch(`/api/motorist/shop-messages/${shopId}?${params.toString()}`)
         .then(res => {
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             return res.json();
@@ -300,17 +322,16 @@ function displayMessages(messages, userType) {
         bubble.className = `flex ${isMine ? 'justify-end' : 'justify-start'}`;
 
         bubble.innerHTML = `
-            <div class="max-w-[84%]">
-                <div class="mb-1 px-1 text-[11px] ${isMine ? 'text-right text-gray-500' : 'text-left text-gray-500'}">
-                    ${isMine ? 'You' : 'Shop'} · ${formatTime(msg.created_at)}
-                </div>
-
-                <div class="rounded-[8px] px-4 py-3 text-[15px] leading-snug border ${
-                    isMine
-                        ? 'bg-[#1a1a1a] border-orange-500/40 text-[#ffd899]'
-                        : 'bg-[#2a2d33] border-white/10 text-white'
-                }">
-                    ${escapeHtml(msg.message)}
+            <div class="max-w-[82%]">
+                <div class="flex flex-col ${isMine ? 'items-end' : 'items-start'} gap-2">
+                    <div class="rounded-3xl px-4 py-3 text-sm leading-6 border ${
+                        isMine
+                            ? 'bg-orange-500/15 border-orange-500/40 text-orange-100'
+                            : 'bg-white/5 border-white/10 text-white'
+                    }">
+                        ${escapeHtml(msg.message)}
+                    </div>
+                    <div class="text-[11px] text-gray-500">${formatTime(msg.created_at)}</div>
                 </div>
             </div>
         `;
@@ -328,9 +349,16 @@ function switchTab(tab) {
     const tabMessagesBtn = document.getElementById('tab-messages');
     const chatInputSection = document.getElementById('chat-input-section');
 
+    const baseUrl = window.location.pathname + window.location.search;
+    const newUrl = baseUrl + '#' + tab;
+    if (window.location.href !== newUrl) {
+        history.replaceState(null, '', newUrl);
+    }
+
     if (tab === 'details') {
         detailsTab.classList.remove('hidden');
         messagesTab.classList.add('hidden');
+        messagesTab.classList.remove('flex');
         tabDetailsBtn.classList.add('border-orange-500');
         tabDetailsBtn.classList.remove('border-transparent', 'text-gray-400');
         tabMessagesBtn.classList.remove('border-orange-500');
@@ -339,6 +367,7 @@ function switchTab(tab) {
     } else {
         detailsTab.classList.add('hidden');
         messagesTab.classList.remove('hidden');
+        messagesTab.classList.add('flex');
         tabDetailsBtn.classList.remove('border-orange-500');
         tabDetailsBtn.classList.add('border-transparent', 'text-gray-400');
         tabMessagesBtn.classList.add('border-orange-500');
@@ -358,6 +387,7 @@ function sendMessage(e) {
         return false;
     }
 
+    const identity = typeof mfIdentity === 'function' ? mfIdentity() : { guest_token: '' };
     const submitBtn = document.querySelector('#chat-form-modal button[type="submit"]');
     if (submitBtn) submitBtn.disabled = true;
 
@@ -369,7 +399,8 @@ function sendMessage(e) {
         },
         body: JSON.stringify({
             shop_id: currentShopId,
-            message: message
+            message: message,
+            guest_token: identity.guest_token || ''
         })
     })
     .then(res => {
@@ -401,6 +432,7 @@ function closeModal() {
     const backdrop = document.getElementById('modal-backdrop');
     
     modal.classList.add('hidden');
+    modal.classList.remove('flex');
     backdrop.classList.add('hidden');
     currentShopId = null;
 
@@ -411,7 +443,9 @@ function closeModal() {
 
     // Reset tabs
     document.getElementById('details-tab').classList.remove('hidden');
-    document.getElementById('messages-tab').classList.add('hidden');
+    const messagesTabEl = document.getElementById('messages-tab');
+    messagesTabEl.classList.add('hidden');
+    messagesTabEl.classList.remove('flex');
     document.getElementById('tab-details').classList.add('border-orange-500');
     document.getElementById('tab-details').classList.remove('border-transparent', 'text-gray-400');
     document.getElementById('tab-messages').classList.remove('border-orange-500');
@@ -430,7 +464,10 @@ function escapeHtml(str) {
 
 function formatTime(dateString) {
     if (!dateString) return '';
-    const date = new Date(dateString.replace(' ', 'T'));
+    let date = new Date(dateString);
+    if (isNaN(date.getTime()) && typeof dateString === 'string') {
+        date = new Date(dateString.replace(' ', 'T'));
+    }
     if (isNaN(date.getTime())) return dateString;
     
     const now = new Date();

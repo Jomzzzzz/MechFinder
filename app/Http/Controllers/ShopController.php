@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DispatchMessageSent;
 use App\Events\DispatchStatusUpdated;
 use App\Events\ShopStatusUpdated;
 use App\Models\MechanicProfile;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class ShopController extends Controller
 {
@@ -584,6 +586,32 @@ class ShopController extends Controller
         "dispatch_requests.guest_name",
         DB::raw(
           'COALESCE(users.name, dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
+        ),
+        DB::raw(
+          '(SELECT COUNT(*) FROM messages WHERE messages.dispatch_id = dispatch_requests.id AND messages.conversation_type = "motorist" AND messages.sender_type = "motorist" AND messages.is_read = 0) as unread_count'
+        )
+      )
+      ->latest("dispatch_requests.updated_at")
+      ->get();
+
+    $mechanicConversations = DB::table("dispatch_requests")
+      ->leftJoin("dispatch_mechanics", "dispatch_requests.id", "=", "dispatch_mechanics.dispatch_request_id")
+      ->leftJoin("users as mechanic", "dispatch_mechanics.mechanic_id", "=", "mechanic.id")
+      ->where("dispatch_requests.shop_id", $shopId)
+      ->whereNotNull("dispatch_mechanics.mechanic_id")
+      ->select(
+        "dispatch_requests.id as dispatch_id",
+        "dispatch_requests.issue_type",
+        "dispatch_requests.status",
+        "dispatch_requests.guest_name",
+        DB::raw(
+          'COALESCE(mechanic.name, "Mechanic") as mechanic_name'
+        ),
+        DB::raw(
+          'COALESCE(dispatch_requests.guest_name, "Unknown Motorist") as motorist_name'
+        ),
+        DB::raw(
+          '(SELECT COUNT(*) FROM messages WHERE messages.dispatch_id = dispatch_requests.id AND messages.conversation_type = "shop" AND messages.sender_type = "mechanic" AND messages.is_read = 0) as unread_count'
         )
       )
       ->latest("dispatch_requests.updated_at")
@@ -596,7 +624,7 @@ class ShopController extends Controller
 
     return view(
       "shop.messages",
-      compact("conversations", "shopStatus", "shopStatusId")
+      compact("conversations", "mechanicConversations", "shopStatus", "shopStatusId")
     );
   }
 
@@ -728,36 +756,106 @@ class ShopController extends Controller
   public function getMessages(int $dispatchId)
   {
     $shopId = $this->getCurrentShopId();
+    $dispatch = DB::table('dispatch_requests')->where('id', $dispatchId)->firstOrFail();
+    if ($dispatch->shop_id !== $shopId) {
+      abort(403);
+    }
 
-    $messages = DB::table("messages")
-      ->where("dispatch_id", $dispatchId)
-      ->orderBy("created_at", "asc")
-      ->get();
+    $conversationType = request()->query('conversation_type');
+    if ($conversationType === 'mechanic') {
+      $conversationType = 'shop';
+    }
+
+    if (in_array($conversationType, ['shop', 'motorist'], true)) {
+      $markSender = $conversationType === 'motorist' ? 'motorist' : 'mechanic';
+      DB::table('messages')
+        ->where('dispatch_id', $dispatchId)
+        ->where('conversation_type', $conversationType)
+        ->where('sender_type', $markSender)
+        ->where('is_read', false)
+        ->update(['is_read' => true]);
+    }
+
+    $query = DB::table("messages")
+      ->leftJoin("users as m", "messages.motorist_id", "=", "m.id")
+      ->leftJoin("shops", "messages.shop_id", "=", "shops.id")
+      ->select(
+        "messages.*",
+        DB::raw(
+          "CASE WHEN messages.sender_type = 'motorist' THEN COALESCE(m.name, 'Motorist') WHEN messages.sender_type = 'shop' THEN COALESCE(shops.shop_name, 'Shop') WHEN messages.sender_type = 'mechanic' THEN 'Mechanic' ELSE 'User' END as sender_name"
+        )
+      )
+      ->where("dispatch_id", $dispatchId);
+
+    if (in_array($conversationType, ['shop', 'motorist'], true)) {
+      $query->where('conversation_type', $conversationType);
+      if ($conversationType === 'motorist') {
+        // Motorist conversations should not include mechanic->motorist messages.
+        $query->where('messages.sender_type', '!=', 'mechanic');
+      }
+    }
+
+    $messages = $query
+      ->orderBy("messages.created_at", "asc")
+      ->get()
+      ->map(function ($msg) {
+        $msg->created_at = Carbon::parse($msg->created_at)->toIso8601String();
+        return $msg;
+      });
 
     return response()->json([
       "success" => true,
       "messages" => $messages,
+      "current_user_id" => Auth::id(),
     ]);
   }
 
   public function sendMessage(Request $request)
   {
     $request->validate([
-      "dispatch_id" => "required",
+      "dispatch_id" => "required|exists:dispatch_requests,id",
       "message" => "required|string|max:1000",
+      "conversation_type" => "nullable|in:shop,motorist,mechanic",
     ]);
 
-    DB::table("messages")->insert([
+    $shopId = $this->getCurrentShopId();
+    $dispatch = DB::table('dispatch_requests')->where('id', $request->dispatch_id)->firstOrFail();
+    if ($dispatch->shop_id !== $shopId) {
+      abort(403);
+    }
+
+    $shopName = optional($this->getShop())->shop_name ?? 'Shop';
+    $conversationType = $request->conversation_type ?? 'shop';
+    if ($conversationType === 'mechanic') {
+      $conversationType = 'shop';
+    }
+
+    $messageId = DB::table("messages")->insertGetId([
       "dispatch_id" => $request->dispatch_id,
-      "shop_id" => $this->getCurrentShopId(),
+      "shop_id" => $shopId,
       "sender_type" => "shop",
+      "conversation_type" => $conversationType,
       "message" => $request->message,
       "created_at" => now(),
       "updated_at" => now(),
     ]);
 
+    $messageData = [
+      "id" => $messageId,
+      "dispatch_id" => $request->dispatch_id,
+      "shop_id" => $shopId,
+      "sender_type" => "shop",
+      "conversation_type" => $conversationType,
+      "sender_name" => $shopName,
+      "message" => $request->message,
+      "created_at" => now()->toIso8601String(),
+    ];
+
+    broadcast(new DispatchMessageSent($request->dispatch_id, $messageData));
+
     return response()->json([
       "success" => true,
+      "data" => $messageData,
     ]);
   }
 

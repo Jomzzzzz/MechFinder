@@ -175,17 +175,24 @@
         /* ── RESCUE BAR ── */
         #rescueBar {
             position: absolute;
-            left: 0;
-            right: 0;
-            bottom: var(--nav-h);
+            left: 12px;
+            right: 12px;
+            bottom: calc(var(--nav-h) + 10px);
             z-index: 20;
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-            box-shadow: 0 -2px 12px rgba(0, 0, 0, .07);
-            padding: 10px 14px;
+            background: #fff;
+            border: 1px solid rgba(226, 232, 240, .95);
+            border-radius: 22px;
+            box-shadow: 0 24px 48px rgba(15, 23, 42, .12);
+            padding: 16px 18px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 14px;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        #rescueBar:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 28px 52px rgba(15, 23, 42, .14);
         }
 
         /* Find-a-shop trigger button */
@@ -207,6 +214,10 @@
 
         .btn-shops:active {
             background: var(--border);
+        }
+
+        .btn-shops:hover {
+            background: rgba(247, 148, 29, .06);
         }
 
         .btn-shops-icon {
@@ -412,8 +423,282 @@
             transform: translateY(0);
         }
 
+        .panel.chat-panel {
+            display: none;
+            position: fixed;
+            left: 12px;
+            right: 12px;
+            bottom: calc(var(--nav-h) + 10px);
+            width: auto;
+            margin: 16px 0 0;
+            z-index: 45;
+            transform: none;
+            transition: none;
+            max-height: min(calc(100vh - var(--nav-h) - 40px), 92vh);
+            overflow: hidden;
+            border-radius: 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+
+        .panel.chat-panel.open {
+            display: flex;
+        }
+
+        #requestChatPanel.open.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            max-height: 100vh;
+            margin: 0;
+            border-radius: 0;
+            box-shadow: none;
+            z-index: 60;
+        }
+
+        #mfApp.chat-open #bottomNav {
+            display: none;
+        }
+
+        .chat-panel {
+            max-height: 100%;
+        }
+
+        /* When chat panel is placed inside the requests panel, make it behave like a full tab panel. */
+        #requestsPanel .chat-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            margin: 0;
+            border-radius: 0;
+            transform: translateY(100%);
+            transition: transform .33s cubic-bezier(.4, 0, .2, 1);
+            overflow: hidden;
+            background: var(--surface);
+            border: none;
+        }
+
+        #requestsPanel .chat-panel.open {
+            transform: translateY(0);
+        }
+
+        .chat-panel {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            background: var(--surface);
+            border: 1px solid rgba(226, 232, 240, .9);
+            border-radius: 20px;
+            box-shadow: 0 18px 32px rgba(15, 23, 42, .08);
+        }
+
+        .chat-panel .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 14px 14px 10px;
+            position: sticky;
+            top: 0;
+            background: transparent;
+            z-index: 2;
+            border-bottom: none;
+            flex-shrink: 0;
+        }
+
+        .chat-panel .chat-header h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-1);
+        }
+
+        .chat-panel .chat-tab-bar {
+            display: flex;
+            gap: 8px;
+            padding: 0 14px;
+            margin-top: 8px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+            z-index: 5;
+        }
+
+        .chat-panel .chat-tab {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(15, 23, 42, .08);
+            background: rgba(15, 23, 42, .04);
+            color: var(--text-2);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: background .2s, border-color .2s, color .2s;
+        }
+
+        .chat-panel .chat-tab:hover {
+            background: rgba(15, 23, 42, .08);
+        }
+
+        .chat-panel .chat-tab.active {
+            background: rgba(247, 148, 29, .15);
+            color: var(--brand-dk);
+            border-color: rgba(247, 148, 29, .22);
+        }
+
+        .chat-panel .chat-body {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 0;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 0 14px 14px 14px;
+            gap: 12px;
+            background: transparent;
+            max-height: calc(100vh - 230px);
+        }
+
+        .chat-panel .chat-bubble {
+            max-width: 90%;
+            word-break: break-word;
+        }
+
+        .chat-panel .chat-footer {
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+            flex-shrink: 0;
+            background: transparent;
+            padding: 12px 14px 14px;
+            border-top: none;
+        }
+
+        .chat-panel .chat-input {
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid rgba(15, 23, 42, .12);
+            background: var(--surface);
+            color: var(--text-1);
+            padding: 14px 16px;
+            font-size: 14px;
+            outline: none;
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .03);
+        }
+
+        .chat-panel .chat-send {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: var(--brand);
+            border: none;
+            color: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform .15s, box-shadow .15s;
+        }
+
+        .chat-panel .chat-send:hover {
+            box-shadow: 0 12px 24px rgba(247, 148, 29, .16);
+            transform: translateY(-1px);
+        }
+
+        .chat-panel .chat-empty {
+            text-align: center;
+            color: var(--text-3);
+            padding: 40px 14px;
+            font-size: 13px;
+        }
+
+        .chat-panel .chat-closed {
+            color: var(--text-3);
+            font-size: 13px;
+            padding: 10px 14px;
+            text-align: center;
+        }
+
+        .chat-panel .bubble-own {
+            align-self: flex-end;
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+        }
+
+        .chat-panel .bubble-other {
+            align-self: flex-start;
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        .chat-panel .bubble-content {
+            border-radius: 20px;
+            padding: 12px 16px;
+            line-height: 1.55;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
+        }
+
+        .chat-panel .bubble-own .bubble-content {
+            background: rgba(247, 148, 29, .14);
+            color: var(--text-1);
+            border: 1px solid rgba(247, 148, 29, .18);
+        }
+
+        .chat-panel .bubble-other .bubble-content {
+            background: rgba(15, 23, 42, .05);
+            color: var(--text-1);
+            border: 1px solid rgba(15, 23, 42, .08);
+        }
+
+        .chat-panel .bubble-meta {
+            margin-top: 6px;
+            font-size: 11px;
+            color: var(--text-3);
+        }
+
+        .chat-panel .chat-empty,
+        .chat-panel .chat-closed {
+            color: var(--text-3);
+            font-size: 13px;
+            text-align: center;
+            padding: 24px 14px;
+        }
+
+        @media (max-width: 640px) {
+            .panel.chat-panel {
+                left: 8px;
+                right: 8px;
+                bottom: calc(var(--nav-h) + 8px);
+                margin: 12px 0 0;
+                max-height: min(calc(100vh - var(--nav-h) - 28px), 90vh);
+            }
+
+            .chat-panel .chat-body {
+                max-height: calc(100vh - 220px);
+            }
+
+            .chat-panel .chat-footer {
+                padding: 10px 12px 12px;
+            }
+
+            .chat-panel .chat-header,
+            .chat-panel .chat-tab-bar {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+        }
+
         .ph {
-            /* panel header */
             background: var(--surface);
             border-bottom: 1px solid var(--border);
             padding: 13px 14px;
@@ -423,6 +708,7 @@
             position: sticky;
             top: 0;
             z-index: 1;
+            backdrop-filter: blur(10px);
         }
 
         .ph-back {
@@ -668,6 +954,23 @@
             opacity: .85;
         }
 
+        .save-panel-btn {
+            background: linear-gradient(135deg, #F7941D 0%, #FF9500 100%);
+            color: #111;
+            border: none;
+            border-radius: var(--r2);
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .15s, box-shadow .15s, opacity .15s;
+        }
+
+        .save-panel-btn:active {
+            transform: translateY(1px);
+            opacity: .95;
+        }
+
         /* ── SEARCH OVERLAY ── */
         #searchOverlay {
             position: absolute;
@@ -815,12 +1118,18 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 13px 14px;
+            padding: 16px 14px;
             cursor: pointer;
             border: none;
-            background: none;
+            background: var(--surface);
             width: 100%;
             text-align: left;
+            transition: background .15s, box-shadow .15s;
+        }
+
+        .prof-row:hover {
+            background: var(--surface-2);
+            box-shadow: inset 0 0 0 1px rgba(247, 148, 29, .08);
         }
 
         .prof-row+.prof-row {
@@ -981,8 +1290,9 @@
             right: 0;
             height: var(--nav-h);
             z-index: 40;
-            background: var(--surface);
-            border-top: 1px solid var(--border);
+            background: rgba(255, 255, 255, .94);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(226, 232, 240, .95);
             display: flex;
             align-items: stretch;
         }
@@ -998,13 +1308,15 @@
             color: var(--text-3);
             background: none;
             border: none;
-            transition: color .15s;
+            transition: color .15s, transform .15s;
             -webkit-tap-highlight-color: transparent;
             position: relative;
+            padding: 4px 0;
         }
 
         .nav-btn.active {
             color: var(--brand);
+            transform: translateY(-1px);
         }
 
         .n-icon {
@@ -1037,18 +1349,25 @@
 
         /* ── REQUEST CARD ── */
         .req-card {
-            background: var(--surface);
-            border-radius: var(--r2);
-            border: 1px solid var(--border);
-            padding: 14px;
-            margin-bottom: 8px;
-            box-shadow: var(--sh-card);
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid rgba(226, 232, 240, .95);
+            padding: 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 18px 32px rgba(15, 23, 42, .06);
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .req-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 22px 36px rgba(15, 23, 42, .08);
         }
 
         .req-steps {
             display: flex;
             align-items: center;
-            margin-top: 10px;
+            gap: 8px;
+            margin-top: 12px;
         }
 
         .rs-dot {
@@ -1273,6 +1592,59 @@
             font-size: 30px;
             margin: 0 auto 16px;
         }
+        /* ── RESPONSIVE TWEAKS FOR MOBILE ── */
+        @media (max-width: 360px) {
+            :root { --nav-h: 56px; }
+            .panel.chat-panel {
+                left: 8px;
+                right: 8px;
+                border-radius: 12px;
+                max-height: calc(100vh - var(--nav-h) - 32px);
+            }
+            .chat-panel .chat-body { max-height: calc(100vh - var(--nav-h) - 120px); }
+        }
+
+        @media (min-width: 361px) and (max-width: 420px) {
+            :root { --nav-h: 58px; }
+            .panel.chat-panel {
+                left: 10px;
+                right: 10px;
+                border-radius: 14px;
+                max-height: calc(100vh - var(--nav-h) - 40px);
+            }
+            .chat-panel .chat-body { max-height: calc(100vh - var(--nav-h) - 120px); }
+        }
+
+        /* Portrait short screens: reduce header/footer impact */
+        @media (max-height: 720px) {
+            .panel.chat-panel { max-height: calc(100vh - var(--nav-h) - 28px); }
+            .chat-panel .chat-body { max-height: calc(100vh - var(--nav-h) - 120px); }
+        }
+
+        /* Landscape phones: use wider panel and less height reserved for header/footer */
+        @media (orientation: landscape) and (max-width: 900px) {
+            .panel.chat-panel {
+                left: 12px;
+                right: 12px;
+                bottom: calc(var(--nav-h) + 10px);
+                max-height: calc(100vh - var(--nav-h) - 20px);
+            }
+            .chat-panel .chat-body { max-height: calc(100vh - var(--nav-h) - 72px); }
+        }
+
+        /* Ensure the chat footer visually sits above nav with consistent 10px gap */
+        .panel.chat-panel { box-sizing: border-box; }
+        /* Smooth swap between request list and chat panel */
+        #requestsList {
+            transition: opacity .28s ease, transform .28s ease;
+            will-change: opacity, transform;
+        }
+
+        #requestsList.hidden-for-chat {
+            opacity: 0;
+            transform: translateY(-6px);
+            pointer-events: none;
+        }
     </style>
 
     <div id="mfApp">
@@ -1366,13 +1738,57 @@
                             </span>
                         </div>
                     </div>
-                    <button onclick="event.stopPropagation()"
-                        style="flex-shrink:0;display:flex;align-items:center;gap:5px;background:#3B82F6;color:#fff;border:none;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;">
-                        <i class="fa-solid fa-message" style="font-size:10px;"></i> Message
-                    </button>
                 </div>
                 {{-- Sub message --}}
                 <div id="barSubMsg" style="font-size:11px;color:var(--text-3);margin-top:5px;"></div>
+            </div>
+        </div>
+
+        {{-- ══ REQUEST DETAILS MODAL ══ --}}
+        <div id="detailsModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:1000;overflow-y:auto;padding:16px;">
+            <div style="background:linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);border-radius:20px;max-width:500px;margin:60px auto;border:1px solid rgba(255,255,255,0.1);overflow:hidden;box-shadow:0 25px 50px rgba(0,0,0,0.5);">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:24px;border-bottom:1px solid rgba(255,255,255,0.05);background:linear-gradient(90deg, rgba(255,133,29,0.1) 0%, rgba(255,255,255,0.05) 100%);">
+                    <h2 style="margin:0;font-size:20px;font-weight:700;color:#fff;">📋 Request Details</h2>
+                    <button onclick="closeDetailsModal()" style="background:none;border:none;color:var(--text-3);font-size:24px;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div style="padding:24px;space-y:8;">
+                    <div style="margin-bottom:20px;">
+                        <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">🔧 ISSUE TYPE</div>
+                        <div id="detailIssueType" style="font-size:18px;font-weight:700;color:#fff;"></div>
+                    </div>
+                    <div style="margin-bottom:20px;">
+                        <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">📍 LOCATION</div>
+                        <div id="detailLocation" style="font-size:15px;color:#d1d5db;line-height:1.5;"></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+                        <div>
+                            <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">🚦 STATUS</div>
+                            <div id="detailStatus" style="font-size:14px;font-weight:600;color:#10b981;padding:8px 12px;background:rgba(16,185,129,0.1);border-radius:8px;border:1px solid rgba(16,185,129,0.2);text-align:center;"></div>
+                        </div>
+                        <div>
+                            <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">⏱️ TIME</div>
+                            <div id="detailTime" style="font-size:14px;font-weight:600;color:#9ca3af;padding:8px 12px;background:rgba(155,160,170,0.1);border-radius:8px;border:1px solid rgba(155,160,170,0.2);text-align:center;"></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:20px;padding:12px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">🏪 SHOP</div>
+                        <div id="detailShop" style="font-size:15px;color:#fff;font-weight:600;"></div>
+                    </div>
+                    <div style="margin-bottom:0;padding:12px;background:rgba(255,255,255,0.05);border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+                        <div style="font-size:11px;color:#F7941D;margin-bottom:6px;font-weight:700;letter-spacing:0.5px;">🔨 MECHANIC</div>
+                        <div id="detailMechanic" style="font-size:15px;color:#fff;font-weight:600;"></div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:12px;padding:20px 24px;border-top:1px solid rgba(255,255,255,0.05);background:rgba(0,0,0,0.2);">
+                    <button onclick="closeDetailsModal()" style="flex:1;padding:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.12)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">
+                        Close
+                    </button>
+                    <button onclick="goToMessage()" style="flex:1;padding:12px;background:linear-gradient(135deg, #F7941D 0%, #ff8c00 100%);border:none;border-radius:10px;color:#000;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.boxShadow='0 10px 25px rgba(247,148,29,0.3)'" onmouseout="this.style.boxShadow='0 5px 15px rgba(247,148,29,0.2)';this.style.transform='translateY(0)'" style="box-shadow:0 5px 15px rgba(247,148,29,0.2);">
+                        💬 Message
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1537,10 +1953,10 @@
 
             {{-- Hero --}}
             <div class="prof-hero">
-                <div class="prof-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
+                <div class="prof-avatar">{{ strtoupper(substr(optional(Auth::user())->name ?? 'U', 0, 1)) }}</div>
                 <div>
-                    <div class="prof-hero-name">{{ Auth::user()->name }}</div>
-                    <div class="prof-hero-email">{{ Auth::user()->email }}</div>
+                    <div class="prof-hero-name">{{ optional(Auth::user())->name ?? 'Motorist' }}</div>
+                    <div class="prof-hero-email">{{ optional(Auth::user())->email ?? '' }}</div>
                 </div>
                 <div class="prof-hero-badge"><i class="fa-solid fa-shield-halved" style="margin-right:4px;"></i>Motorist
                     Account</div>
@@ -1611,8 +2027,7 @@
                 <div style="flex:1;">
                     <div class="ph-title">My Motorcycle</div>
                 </div>
-                <button onclick="saveMoto()"
-                    style="background:var(--action);color:#fff;font-size:13px;font-weight:700;border-radius:var(--r1);padding:8px 18px;border:none;cursor:pointer;">Save</button>
+                <button onclick="saveMoto()" class="save-panel-btn">Save</button>
             </div>
             <div style="padding:16px 14px 40px;display:flex;flex-direction:column;gap:16px;">
 
@@ -1653,8 +2068,7 @@
                 <div style="flex:1;">
                     <div class="ph-title">Dispatch Contact</div>
                 </div>
-                <button onclick="saveContact()"
-                    style="background:var(--action);color:#fff;font-size:13px;font-weight:700;border-radius:var(--r1);padding:8px 18px;border:none;cursor:pointer;">Save</button>
+                <button onclick="saveContact()" class="save-panel-btn">Save</button>
             </div>
             <div style="padding:16px 14px 40px;display:flex;flex-direction:column;gap:16px;">
 
@@ -1742,9 +2156,7 @@
         <div id="requestsPanel" class="panel">
 
             <div class="ph">
-                <button class="ph-back" onclick="showTab('map')">
-                    <i class="fa-arrow-left fa-solid"></i>
-                </button>
+            
                 <div>
                     <div class="ph-title">My Requests</div>
                     <div class="ph-subtitle">Recent rescue history from this device</div>
@@ -1755,6 +2167,33 @@
                 <div style="text-align:center;padding:48px 0;color:var(--text-3);font-size:13px;line-height:1.8;">
                     No requests yet.<br>
                     <span style="font-size:11px;color:var(--text-3);">Use the Map tab to request rescue.</span>
+                </div>
+            </div>
+
+            <div id="requestChatPanel" class="panel chat-panel">
+                <div class="chat-header">
+                    <button class="ph-back" onclick="closeRequestChat()">
+                        <i class="fa-arrow-left fa-solid"></i>
+                    </button>
+                    <div>
+                        <h2 id="chatPanelTitle">Chat</h2>
+                        <div id="chatPanelSubtitle" style="font-size:12px;color:var(--text-3);margin-top:4px;">Messages with your rescue team</div>
+                    </div>
+                    <div style="width:32px;height:60px;"></div>
+                </div>
+                <div class="chat-tab-bar" style="padding:0 14px 0;">
+                    <button id="chatTabMechanic" class="chat-tab active" type="button" onclick="switchRequestChatTab('mechanic')">Mechanic</button>
+                    <button id="chatTabShop" class="chat-tab" type="button" onclick="switchRequestChatTab('shop')">Shop</button>
+                </div>
+                <div id="requestChatBody" class="chat-body"></div>
+                <div id="requestChatClosed" class="chat-closed" style="display:none;">
+                    Chat is closed after rescue completion.
+                </div>
+                <div class="chat-footer">
+                    <form id="requestChatForm" class="flex items-center gap-3">
+                        <input id="requestChatInput" type="text" placeholder="Type a message..." class="chat-input" autocomplete="off" required>
+                        <button type="submit" class="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1823,9 +2262,28 @@
         };
 
         const LS = {
-            get: (k) => localStorage.getItem(k),
-            set: (k, v) => localStorage.setItem(k, v),
-            del: (k) => localStorage.removeItem(k)
+            get: (k) => {
+                try {
+                    return localStorage.getItem(k);
+                } catch (e) {
+                    console.warn('Storage access denied:', e.message);
+                    return null;
+                }
+            },
+            set: (k, v) => {
+                try {
+                    localStorage.setItem(k, v);
+                } catch (e) {
+                    console.warn('Storage access denied:', e.message);
+                }
+            },
+            del: (k) => {
+                try {
+                    localStorage.removeItem(k);
+                } catch (e) {
+                    console.warn('Storage access denied:', e.message);
+                }
+            }
         };
 
         /* ── STATE ── */
@@ -1840,7 +2298,20 @@
         let userLat = 14.8386,
             userLng = 120.2842;
         let selectedIssue = null;
-        let currentRequestId = LS.get('mf_current_request_id');
+        const currentUserId = {{ auth()->id() ?? 'null' }};
+        let currentRequestId = null;
+        let currentRequestGuestToken = null;
+        const currentRequestStored = LS.get('mf_current_request_id');
+        if (currentRequestStored) {
+            try {
+                const parsed = JSON.parse(currentRequestStored);
+                currentRequestId = parsed?.id ?? currentRequestStored;
+                currentRequestGuestToken = parsed?.guest_token ?? null;
+            } catch {
+                currentRequestId = currentRequestStored;
+                currentRequestGuestToken = null;
+            }
+        }
         let pusherClient = null;
         let shopStatusClient = null;
         let _statusPollTimer = null;
@@ -1853,6 +2324,51 @@
             locateUser();
             subscribeToShopStatus();
             if (currentRequestId) resumeActiveRequest(currentRequestId);
+            const validTabs = ['map', 'requests', 'profile'];
+            const validPanels = ['rescuePanel','shopsPanel','requestsPanel','profilePanel','requestChatPanel'];
+            const savedTab = LS.get('mf_motorist_active_tab');
+            const hashState = getMotoristHashState();
+
+            if (validTabs.includes(hashState.hashValue)) {
+                showTab(hashState.hashValue);
+            } else if (validPanels.includes(hashState.hashValue)) {
+                if (hashState.hashValue === 'rescuePanel' || hashState.hashValue === 'shopsPanel') {
+                    showTab('map');
+                    openPanel(hashState.hashValue);
+                } else if (hashState.hashValue === 'requestsPanel') {
+                    showTab('requests');
+                    openPanel('requestsPanel');
+                } else if (hashState.hashValue === 'profilePanel') {
+                    showTab('profile');
+                    openPanel('profilePanel');
+                } else if (hashState.hashValue === 'requestChatPanel' && hashState.requestId) {
+                    openRequestChat(hashState.requestId);
+                } else {
+                    showTab('requests');
+                    openPanel('requestChatPanel');
+                }
+            } else if (savedTab && validTabs.includes(savedTab)) {
+                showTab(savedTab);
+            }
+            window.addEventListener('hashchange', () => {
+                const state = getMotoristHashState();
+                if (validTabs.includes(state.hashValue)) {
+                    showTab(state.hashValue);
+                } else if (validPanels.includes(state.hashValue)) {
+                    if (state.hashValue === 'rescuePanel' || state.hashValue === 'shopsPanel') {
+                        showTab('map');
+                        openPanel(state.hashValue);
+                    } else if (state.hashValue === 'requestsPanel') {
+                        showTab('requests');
+                        openPanel('requestsPanel');
+                    } else if (state.hashValue === 'profilePanel') {
+                        showTab('profile');
+                        openPanel('profilePanel');
+                    } else if (state.hashValue === 'requestChatPanel' && state.requestId) {
+                        openRequestChat(state.requestId);
+                    }
+                }
+            });
             // Refresh profile UI once DB profile has loaded
             window.addEventListener('mfProfileLoaded', () => {
                 refreshIdentityCard();
@@ -2241,10 +2757,22 @@
                 loadShops(); // always fetch fresh status when panel opens
             }
             document.getElementById(id).classList.add('open');
+            if (id === 'requestChatPanel') {
+                updateMotoristHash(null, id, requestChatId);
+            } else {
+                updateMotoristHash(null, id);
+            }
         }
 
         function closePanel(id) {
             document.getElementById(id).classList.remove('open');
+            if (id === 'rescuePanel' || id === 'shopsPanel') {
+                updateMotoristHash('map');
+            } else if (id === 'requestsPanel' || id === 'requestChatPanel') {
+                updateMotoristHash('requests');
+            } else if (id === 'profilePanel') {
+                updateMotoristHash('profile');
+            }
         }
 
         let _toastTimer;
@@ -2336,7 +2864,11 @@
                 document.getElementById('searchOverlay').classList.remove('show');
                 if (data.success) {
                     currentRequestId = data.request_id;
-                    LS.set('mf_current_request_id', data.request_id);
+                    currentRequestGuestToken = id.guest_token || null;
+                    LS.set('mf_current_request_id', JSON.stringify({
+                        id: data.request_id,
+                        guest_token: currentRequestGuestToken
+                    }));
                     saveRequestHistory({
                         id: data.request_id,
                         issueType: selectedIssue
@@ -2532,6 +3064,10 @@
                 const d = await res.json();
                 if (!['completed', 'declined', 'cancelled'].includes(d.status)) {
                     _lastKnownStatus = d.status;
+                    if (d.guest_token) {
+                        currentRequestGuestToken = d.guest_token;
+                        saveRequestToken(requestId, d.guest_token);
+                    }
                     document.getElementById('rescueFab').style.display = 'none';
                     showStatusStrip(d.status, d.mechanic_name, d.mechanic_phone, d
                         .mechanic_plate); // also calls updateRescueBar
@@ -2700,30 +3236,90 @@
         }
 
         /* ── NAVIGATION ── */
+        // Global transition timer and configurable duration (ms)
+        let tabTransitionTimer = null;
+        window.MF_TAB_TRANS_MS = window.MF_TAB_TRANS_MS || 340;
+
+        function getMotoristHashState() {
+            const raw = window.location.hash.replace('#', '');
+            const [hashValue, hashQuery = ''] = raw.split('?');
+            const params = new URLSearchParams(hashQuery);
+            return {
+                hashValue: hashValue || '',
+                requestId: params.get('request')
+            };
+        }
+
+        function updateMotoristHash(tab, panel, requestId) {
+            let hash = '';
+            if (panel) {
+                hash = panel + (requestId ? '?request=' + encodeURIComponent(requestId) : '');
+            } else if (tab) {
+                hash = tab;
+            }
+            const url = window.location.pathname + window.location.search + (hash ? '#' + hash : '');
+            if (window.location.href !== url) {
+                history.replaceState(null, '', url);
+            }
+        }
+
+        function setTabTransition(ms) {
+            window.MF_TAB_TRANS_MS = Number(ms) || 340;
+        }
+
         function showTab(tab) {
+            updateMotoristHash(tab);
+
             ['map', 'requests', 'profile'].forEach(t => {
                 document.getElementById('nav' + t[0].toUpperCase() + t.slice(1))
                     .classList.toggle('active', t === tab);
             });
-            if (tab === 'map') {
-                closePanel('requestsPanel');
-                closePanel('profilePanel');
-                closePanel('rescuePanel');
-                closePanel('shopsPanel');
-                setTimeout(() => map.invalidateSize(), 350);
-            } else if (tab === 'requests') {
-                closePanel('profilePanel');
-                closePanel('rescuePanel');
-                closePanel('shopsPanel');
-                openPanel('requestsPanel');
-                loadRequests();
-            } else if (tab === 'profile') {
-                closePanel('requestsPanel');
-                closePanel('rescuePanel');
-                closePanel('shopsPanel');
-                renderProfileSummary();
-                openPanel('profilePanel');
+            LS.set('mf_motorist_active_tab', tab);
+            // panels that use slide animation
+            const panels = ['requestsPanel','profilePanel','rescuePanel','shopsPanel','requestChatPanel'];
+            const currentlyOpen = panels.find(id => document.getElementById(id) && document.getElementById(id).classList.contains('open'));
+
+            function openTarget() {
+                if (tab === 'map') {
+                    // nothing to open; keep map visible
+                    setTimeout(() => { try { map.invalidateSize(); } catch {} }, 50);
+                    return;
+                }
+                if (tab === 'requests') {
+                    document.getElementById('requestsList').style.display = 'block';
+                    openPanel('requestsPanel');
+                    loadRequests();
+                    return;
+                }
+                if (tab === 'profile') {
+                    renderProfileSummary();
+                    openPanel('profilePanel');
+                    return;
+                }
             }
+
+            // If nothing is open, just open the target (fast path)
+            if (!currentlyOpen) {
+                // cancel any pending timer
+                if (tabTransitionTimer) { clearTimeout(tabTransitionTimer); tabTransitionTimer = null; }
+                openTarget();
+                if (tab === 'map') setTimeout(() => map.invalidateSize(), window.MF_TAB_TRANS_MS + 50);
+                return;
+            }
+
+            // If the target panel is already open, do nothing
+            if ((tab === 'requests' && currentlyOpen === 'requestsPanel') || (tab === 'profile' && currentlyOpen === 'profilePanel')) {
+                return;
+            }
+
+            // Close currently open panel(s), cancel any pending open, and schedule opening of new target.
+            panels.forEach(id => closePanel(id));
+            if (tabTransitionTimer) clearTimeout(tabTransitionTimer);
+            tabTransitionTimer = setTimeout(() => {
+                openTarget();
+                tabTransitionTimer = null;
+                if (tab === 'map') setTimeout(() => map.invalidateSize(), 50);
+            }, window.MF_TAB_TRANS_MS);
         }
 
         /* ── PROFILE ── */
@@ -2795,13 +3391,49 @@
         }
 
         /* ── REQUEST HISTORY ── */
+        function getRequestTokenEntry(requestId) {
+            const tokens = JSON.parse(LS.get('mf_request_tokens') ?? '{}');
+            return tokens?.[requestId] ?? null;
+        }
+
+        function saveRequestToken(requestId, guestToken) {
+            if (!guestToken) return;
+            const tokens = JSON.parse(LS.get('mf_request_tokens') ?? '{}');
+            if (tokens[requestId] !== guestToken) {
+                tokens[requestId] = guestToken;
+                LS.set('mf_request_tokens', JSON.stringify(tokens));
+            }
+        }
+
         function saveRequestHistory(entry) {
+            const identity = typeof mfIdentity === 'function' ? mfIdentity() : { guest_token: null };
+            const token = identity.guest_token || currentRequestGuestToken || getRequestTokenEntry(entry.id) || null;
+            if (token) {
+                saveRequestToken(entry.id, token);
+            }
             const h = JSON.parse(LS.get('mf_request_history') ?? '[]');
-            h.unshift({
-                ...entry,
-                time: new Date().toISOString()
+            const next = [
+                { ...entry, guest_token: token, time: new Date().toISOString() },
+                ...h.filter(item => `${item.id}` !== `${entry.id}`)
+            ];
+            LS.set('mf_request_history', JSON.stringify(next.slice(0, 10)));
+        }
+
+        function updateRequestHistoryGuestToken(requestId, guestToken) {
+            if (!guestToken) return;
+            saveRequestToken(requestId, guestToken);
+            const h = JSON.parse(LS.get('mf_request_history') ?? '[]');
+            let updated = false;
+            const next = h.map(entry => {
+                if (`${entry.id}` === `${requestId}` && entry.guest_token !== guestToken) {
+                    updated = true;
+                    return { ...entry, guest_token: guestToken };
+                }
+                return entry;
             });
-            LS.set('mf_request_history', JSON.stringify(h.slice(0, 10)));
+            if (updated) {
+                LS.set('mf_request_history', JSON.stringify(next));
+            }
         }
 
         async function loadRequests() {
@@ -2861,6 +3493,10 @@
     <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:var(--text-3);">
       <span>Sent</span><span>Accepted</span><span>En Route</span><span>Arrived</span><span>Working</span><span>Done</span>
     </div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button onclick="loadRequestDetailsForCard('${id}')" style="flex:1;padding:8px 12px;background-color:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.1);border-radius:8px;text-align:center;font-size:12px;color:inherit;cursor:pointer;transition:background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(255,255,255,0.15)'" onmouseout="this.style.backgroundColor='rgba(255,255,255,0.1)'">View</button>
+      <button onclick="openRequestChat('${id}')" style="flex:1;padding:8px 12px;background-color:#F7941D;color:black;border:none;border-radius:8px;text-align:center;font-size:12px;font-weight:600;transition:background-color 0.2s;cursor:pointer;" onmouseover="this.style.backgroundColor='#ff9e2a'" onmouseout="this.style.backgroundColor='#F7941D'">Message</button>
+    </div>
   </div>`;
         }
 
@@ -2873,6 +3509,339 @@
             return Math.round(h / 24) + 'd ago';
         }
 
+        let requestChatId = null;
+        let requestChatConversation = 'motorist';
+        let requestChatMessageIds = new Set();
+        let requestChatStatus = null;
+        let requestChatTimer = null;
+        let requestChatGuestToken = null;
+
+        function getRequestHistoryEntry(requestId) {
+            const hist = JSON.parse(LS.get('mf_request_history') ?? '[]');
+            return hist.find(entry => `${entry.id}` === `${requestId}`) || null;
+        }
+
+        async function ensureRequestChatGuestToken(requestId, forceServer = false) {
+            if (!forceServer && requestChatGuestToken) {
+                return requestChatGuestToken;
+            }
+
+            const identity = typeof mfIdentity === 'function' ? mfIdentity() : { guest_token: null };
+            const historyEntry = getRequestHistoryEntry(requestId);
+
+            const tokenEntry = getRequestTokenEntry(requestId);
+            if (!forceServer && tokenEntry) {
+                requestChatGuestToken = tokenEntry;
+                return requestChatGuestToken;
+            }
+
+            if (!forceServer && historyEntry?.guest_token) {
+                requestChatGuestToken = historyEntry.guest_token;
+                return requestChatGuestToken;
+            }
+
+            if (!forceServer && requestId === currentRequestId && currentRequestGuestToken) {
+                requestChatGuestToken = currentRequestGuestToken;
+                return requestChatGuestToken;
+            }
+
+            if (!forceServer && requestId === currentRequestId && identity.guest_token) {
+                requestChatGuestToken = identity.guest_token;
+                return requestChatGuestToken;
+            }
+
+            try {
+                const requestStatusUrl = `/motorist/request/${requestId}${forceServer ? '?_=' + Date.now() : ''}`;
+                const res = await fetch(requestStatusUrl);
+                if (!res.ok) return requestChatGuestToken;
+                const data = await res.json();
+                if (data && data.guest_token) {
+                    requestChatGuestToken = data.guest_token;
+                    saveRequestToken(requestId, requestChatGuestToken);
+                    updateRequestHistoryGuestToken(requestId, requestChatGuestToken);
+                    if (requestId === currentRequestId) {
+                        currentRequestGuestToken = requestChatGuestToken;
+                        LS.set('mf_current_request_id', JSON.stringify({
+                            id: currentRequestId,
+                            guest_token: currentRequestGuestToken
+                        }));
+                    }
+                }
+            } catch (e) {
+                console.warn('Unable to resolve guest token from request status', e);
+            }
+            return requestChatGuestToken;
+        }
+
+        function switchRequestChatTab(tab) {
+            requestChatConversation = tab === 'shop' ? 'motorist' : 'mechanic';
+            document.getElementById('chatTabMechanic').classList.toggle('active', requestChatConversation === 'mechanic');
+            document.getElementById('chatTabShop').classList.toggle('active', requestChatConversation === 'motorist');
+            loadRequestChatMessages();
+        }
+
+        async function openRequestChat(requestId) {
+            // ensure requests panel is visible first (triggers slide if needed)
+            showTab('requests');
+            // cancel any pending scheduled chat open
+            if (requestChatTimer) { clearTimeout(requestChatTimer); requestChatTimer = null; }
+
+            const historyEntry = getRequestHistoryEntry(requestId);
+            const identity = typeof mfIdentity === 'function' ? mfIdentity() : { guest_token: null };
+            requestChatGuestToken = getRequestTokenEntry(requestId) || historyEntry?.guest_token || (requestId === currentRequestId ? currentRequestGuestToken : null) || identity.guest_token || null;
+            if (!requestChatGuestToken) {
+                await ensureRequestChatGuestToken(requestId, true);
+            }
+
+            const doOpenChat = () => {
+                // animate hiding the list then open chat
+                const list = document.getElementById('requestsList');
+                if (list) {
+                    list.classList.add('hidden-for-chat');
+                }
+                // small overlap so fade starts before chat slides in
+                const OPEN_DELAY = 80;
+                setTimeout(() => {
+                    if (list) list.style.display = 'none';
+                        requestChatId = requestId;
+                    requestChatMessageIds.clear();
+                    document.getElementById('chatPanelTitle').textContent = 'Chat Request #' + requestId;
+                    document.getElementById('chatPanelSubtitle').textContent = 'Messages with your shop and mechanic';
+                    document.getElementById('requestChatBody').innerHTML = '<div class="chat-empty">Loading messages…</div>';
+                    document.getElementById('requestChatClosed').style.display = 'none';
+                    document.getElementById('requestChatInput').disabled = false;
+                    document.getElementById('requestChatForm').style.display = 'flex';
+                    document.getElementById('chatTabMechanic').classList.toggle('active', true);
+                    document.getElementById('chatTabShop').classList.toggle('active', false);
+                    requestChatConversation = 'mechanic';
+                    if (!requestChatGuestToken) {
+                        const historyEntry = getRequestHistoryEntry(requestId);
+                        requestChatGuestToken = historyEntry?.guest_token || currentRequestGuestToken || null;
+                    }
+                    openPanel('requestChatPanel');
+                    const chatPanel = document.getElementById('requestChatPanel');
+                    if (chatPanel) {
+                        chatPanel.classList.add('fullscreen');
+                        document.getElementById('mfApp')?.classList.add('chat-open');
+                    }
+                    loadRequestChatDetails();
+                    loadRequestChatMessages();
+                    updateMotoristHash(null, 'requestChatPanel', requestId);
+                }, OPEN_DELAY);
+            };
+
+            // If requests panel is already open, open chat immediately; otherwise wait for tab transition
+            const requestsPanel = document.getElementById('requestsPanel');
+            if (requestsPanel && requestsPanel.classList.contains('open')) {
+                doOpenChat();
+            } else {
+                requestChatTimer = setTimeout(() => { doOpenChat(); requestChatTimer = null; }, window.MF_TAB_TRANS_MS + 20);
+            }
+        }
+
+        function closeRequestChat() {
+            // close chat panel with slide; then restore request list after transition
+            if (requestChatTimer) { clearTimeout(requestChatTimer); requestChatTimer = null; }
+            // slide chat out
+            const chatPanel = document.getElementById('requestChatPanel');
+            if (chatPanel) {
+                chatPanel.classList.remove('fullscreen');
+            }
+            document.getElementById('mfApp')?.classList.remove('chat-open');
+            closePanel('requestChatPanel');
+            // after chat slide finishes, show list and animate it back in
+            setTimeout(() => {
+                const list = document.getElementById('requestsList');
+                if (list) {
+                    list.style.display = 'block';
+                    // allow a frame then remove hidden class to trigger fade-in
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => list.classList.remove('hidden-for-chat'));
+                    });
+                }
+                requestChatId = null;
+                requestChatGuestToken = null;
+            }, window.MF_TAB_TRANS_MS);
+            // ensure requests tab is active
+            showTab('requests');
+            updateMotoristHash('requests');
+        }
+
+        async function loadRequestChatDetails() {
+            if (!requestChatId) return;
+            try {
+                const res = await fetch(`/motorist/request/${requestChatId}`);
+                if (!res.ok) return;
+                const data = await res.json();
+                requestChatStatus = data.status;
+                const title = data.shop_name ? (data.shop_name + ' Chat') : 'Request Chat';
+                document.getElementById('chatPanelTitle').textContent = title;
+                if (data.mechanic_name) {
+                    document.getElementById('chatPanelSubtitle').textContent = `Mechanic: ${data.mechanic_name}`;
+                } else {
+                    document.getElementById('chatPanelSubtitle').textContent = 'Messages with your shop and mechanic';
+                }
+                if (requestChatStatus === 'completed' || requestChatStatus === 'cancelled') {
+                    document.getElementById('requestChatClosed').style.display = 'block';
+                    document.getElementById('requestChatInput').disabled = true;
+                    document.getElementById('requestChatForm').style.display = 'none';
+                }
+            } catch (e) {
+                console.error('Unable to load request chat details', e);
+            }
+        }
+
+        async function loadRequestChatMessages() {
+            if (!requestChatId) return;
+            const body = document.getElementById('requestChatBody');
+            body.innerHTML = '<div class="chat-empty">Loading messages…</div>';
+            try {
+                await ensureRequestChatGuestToken(requestChatId);
+                let token = requestChatGuestToken || null;
+                let guestQuery = token ? `&guest_token=${encodeURIComponent(token)}` : '';
+                let res = await fetch(`/api/chat/${requestChatId}?conversation_type=${requestChatConversation}${guestQuery}`);
+
+                if (res.status === 403) {
+                    requestChatGuestToken = null;
+                    await ensureRequestChatGuestToken(requestChatId, true);
+                    token = requestChatGuestToken || null;
+                    guestQuery = token ? `&guest_token=${encodeURIComponent(token)}` : '';
+                    res = await fetch(`/api/chat/${requestChatId}?conversation_type=${requestChatConversation}${guestQuery}`);
+                }
+
+                if (!res.ok) {
+                    if (res.status === 403) {
+                        body.innerHTML = '<div class="chat-empty">You are not allowed to view this chat.</div>';
+                    } else {
+                        body.innerHTML = '<div class="chat-empty">Unable to load messages.</div>';
+                    }
+                    return;
+                }
+                const data = await res.json();
+                if (!data.success || !Array.isArray(data.messages)) {
+                    body.innerHTML = '<div class="chat-empty">No messages yet.</div>';
+                    return;
+                }
+                if (!data.messages.length) {
+                    body.innerHTML = '<div class="chat-empty">No messages yet. Say hello to your shop or mechanic.</div>';
+                    return;
+                }
+                body.innerHTML = '';
+                requestChatMessageIds.clear();
+                data.messages.forEach(msg => appendRequestChatMessage(msg));
+                body.scrollTop = body.scrollHeight;
+            } catch (e) {
+                body.innerHTML = '<div class="chat-empty">Unable to load messages.</div>';
+                console.error(e);
+            }
+        }
+
+        function appendRequestChatMessage(msg) {
+            if (requestChatMessageIds.has(msg.id)) return;
+            requestChatMessageIds.add(msg.id);
+            const wrapper = document.createElement('div');
+            const mine = msg.sender_type === 'motorist';
+            wrapper.className = mine ? 'bubble-own' : 'bubble-other';
+            wrapper.innerHTML = `
+                <div class="chat-bubble">
+                    <div class="bubble-content">${escapeHtml(msg.message)}</div>
+                    <div class="bubble-meta">${escapeHtml(msg.sender_type === 'motorist' ? 'You' : msg.sender_name || msg.sender_type)} • ${escapeHtml(formatTime(msg.created_at))}</div>
+                </div>
+            `;
+            const body = document.getElementById('requestChatBody');
+            body.appendChild(wrapper);
+        }
+
+        document.getElementById('requestChatForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            if (!requestChatId) return;
+            const input = document.getElementById('requestChatInput');
+            const message = input.value.trim();
+            if (!message) return;
+            input.disabled = true;
+            try {
+                await ensureRequestChatGuestToken(requestChatId);
+                let token = requestChatGuestToken || null;
+                let res = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': window.csrfToken
+                    },
+                    body: JSON.stringify({
+                        dispatch_id: requestChatId,
+                        message,
+                        sender_type: 'motorist',
+                        motorist_id: currentUserId || null,
+                        guest_token: token,
+                        conversation_type: requestChatConversation,
+                    })
+                });
+
+                if (res.status === 403) {
+                    requestChatGuestToken = null;
+                    await ensureRequestChatGuestToken(requestChatId, true);
+                    token = requestChatGuestToken || null;
+                    res = await fetch('/api/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': window.csrfToken
+                        },
+                        body: JSON.stringify({
+                            dispatch_id: requestChatId,
+                            message,
+                            sender_type: 'motorist',
+                            motorist_id: currentUserId || null,
+                            guest_token: token,
+                            conversation_type: requestChatConversation,
+                        })
+                    });
+                }
+
+                if (!res.ok) {
+                    if (res.status === 403) {
+                        alert('You are not allowed to send this message.');
+                    } else {
+                        alert('Failed to send message.');
+                    }
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.success) {
+                    input.value = '';
+                    loadRequestChatMessages();
+                } else {
+                    alert(data.message || 'Failed to send message.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Failed to send message.');
+            } finally {
+                input.disabled = false;
+            }
+        });
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        function parseTimestamp(value) {
+            if (!value) return null;
+            let date = new Date(value);
+            if (isNaN(date.getTime()) && typeof value === 'string') {
+                date = new Date(value.replace(' ', 'T'));
+            }
+            return isNaN(date.getTime()) ? null : date;
+        }
+
+        function formatTime(value) {
+            const date = parseTimestamp(value);
+            return date ? date.toLocaleString([], { hour: 'numeric', minute: '2-digit' }) : value || '';
+        }
+
         /* ── COMPLETION MODAL ── */
         function showCompletionModal() {
             document.getElementById('completionModal').classList.add('show');
@@ -2881,5 +3850,74 @@
         function hideCompletionModal() {
             document.getElementById('completionModal').classList.remove('show');
         }
+
+        /* ── REQUEST DETAILS MODAL ── */
+        function closeDetailsModal() {
+            const modal = document.getElementById('detailsModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        async function loadRequestDetailsForCard(requestId) {
+            const modal = document.getElementById('detailsModal');
+            if (!modal) return;
+
+            try {
+                const res = await fetch(`/motorist/request/${requestId}`);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                document.getElementById('detailIssueType').textContent = data.issue_type || 'No issue';
+                document.getElementById('detailLocation').textContent = data.location || 'No location';
+                document.getElementById('detailStatus').textContent = (STATUS_LABEL[data.status] || data.status || 'Unknown');
+                const detailTime = parseTimestamp(data.created_at);
+                document.getElementById('detailTime').textContent = detailTime ? detailTime.toLocaleString() : 'Unknown';
+                document.getElementById('detailShop').textContent = data.shop_name || 'Finding shop...';
+                document.getElementById('detailMechanic').textContent = data.mechanic_name || 'Not assigned yet';
+
+                modal.style.display = 'block';
+            } catch (e) {
+                console.error('Failed to load request details:', e);
+            }
+        }
+
+        function goToMessage() {
+            if (!currentRequestId) {
+                alert('No active request');
+                return;
+            }
+            openRequestChat(currentRequestId);
+        }
+
+        async function showDetailsModal() {
+            if (!currentRequestId) return;
+            const modal = document.getElementById('detailsModal');
+            if (!modal) return;
+
+            try {
+                const res = await fetch(`/motorist/request/${currentRequestId}`);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                document.getElementById('detailIssueType').textContent = data.issue_type || 'No issue';
+                document.getElementById('detailLocation').textContent = data.location || 'No location';
+                document.getElementById('detailStatus').textContent = (STATUS_LABEL[data.status] || data.status || 'Unknown');
+                const detailTime = parseTimestamp(data.created_at);
+                document.getElementById('detailTime').textContent = detailTime ? detailTime.toLocaleString() : 'Unknown';
+                document.getElementById('detailShop').textContent = data.shop_name || 'Finding shop...';
+                document.getElementById('detailMechanic').textContent = data.mechanic_name || 'Not assigned yet';
+
+                modal.style.display = 'block';
+            } catch (e) {
+                console.error('Failed to load request details:', e);
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('detailsModal');
+            if (modal && e.target === modal) {
+                closeDetailsModal();
+            }
+        });
     </script>
 @endsection

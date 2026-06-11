@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class OAuthController extends Controller
@@ -37,11 +39,11 @@ class OAuthController extends Controller
       'email' => $googleUser->getEmail(),
       'google_id' => $googleUser->getId(),
       'role' => $type === 'shop' ? 'shop' : 'motorist',
-      'password' => bcrypt(\Str::random(24)),
+      'password' => bcrypt(Str::random(24)),
     ]);
 
     if ($type === 'shop') {
-      \DB::table('shops')->insert([
+      DB::table('shops')->insert([
         'user_id' => $user->id,
         'shop_name' => $googleUser->getName(),
         'email' => $googleUser->getEmail(),
@@ -57,7 +59,7 @@ class OAuthController extends Controller
     return $this->redirectBasedOnRole($user->role);
   }
 
-  private function redirectBasedOnRole($role)
+  private function redirectBasedOnRole(string $role)
   {
     return match ($role) {
       'shop' => redirect('/shop/settings')->with('success', 'Account created! Please complete your shop profile.'),

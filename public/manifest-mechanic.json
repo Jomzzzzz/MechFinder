@@ -2,7 +2,7 @@
     "name": "MechFinder Mechanic",
     "short_name": "MechFinder",
     "description": "Manage your repair jobs, track locations, and connect with motorists.",
-    "start_url": "/mechanic/dashboard",
+    "start_url": "/mechanic/",
     "scope": "/mechanic/",
     "display": "standalone",
     "background_color": "#050505",

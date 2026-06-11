@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DispatchMessageSent;
 use App\Events\DispatchRequestCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
 
 class MotoristController extends Controller
 {
@@ -262,6 +264,16 @@ class MotoristController extends Controller
     return response()->json($request);
   }
 
+  public function requests()
+  {
+    $requests = DB::table("dispatch_requests")
+      ->where("motorist_id", Auth::id())
+      ->orderByDesc("created_at")
+      ->get();
+
+    return view("motorist.requests", compact("requests"));
+  }
+
   public function cancelDispatch(int $id)
   {
     $updated = DB::table("dispatch_requests")
@@ -392,18 +404,75 @@ class MotoristController extends Controller
     return $this->storeDispatch($request);
   }
 
-  public function getMessages(int $dispatchId)
+  public function chat(int $dispatchId)
   {
-    $messages = DB::table("messages")
-      ->where("dispatch_id", $dispatchId)
-      ->orderBy("created_at", "asc")
-      ->get();
+    $dispatch = DB::table("dispatch_requests")
+      ->leftJoin("shops", "dispatch_requests.shop_id", "=", "shops.id")
+      ->leftJoin("dispatch_mechanics as dm", "dm.dispatch_request_id", "=", "dispatch_requests.id")
+      ->leftJoin("users as mu", "mu.id", "=", "dm.mechanic_id")
+      ->where("dispatch_requests.id", $dispatchId)
+      ->where("dispatch_requests.motorist_id", Auth::id())
+      ->select("dispatch_requests.*", "shops.shop_name", "mu.name as mechanic_name")
+      ->orderByDesc("dm.id")
+      ->first();
 
-    if ($messages->isEmpty()) {
-      return response()->json([], 404);
+    if (!$dispatch) {
+      abort(404);
     }
 
-    return response()->json($messages);
+    return view("motorist.chat", compact("dispatch"));
+  }
+
+  public function getMessages(int $dispatchId)
+  {
+    $conversationType = request()->query('conversation_type');
+
+    $dispatch = DB::table('dispatch_requests')->where('id', $dispatchId)->firstOrFail();
+    if ($dispatch->motorist_id) {
+      if (!Auth::check() || Auth::user()->role !== 'motorist' || $dispatch->motorist_id !== Auth::id()) {
+        abort(403);
+      }
+    } else {
+      $guestToken = request()->query('guest_token');
+      if (!$guestToken || $dispatch->guest_token !== $guestToken) {
+        abort(403);
+      }
+    }
+
+    $query = DB::table("messages")
+      ->leftJoin("users as m", "messages.motorist_id", "=", "m.id")
+      ->leftJoin("shops", "messages.shop_id", "=", "shops.id")
+      ->select(
+        "messages.*",
+        DB::raw(
+          "CASE WHEN messages.sender_type = 'motorist' THEN COALESCE(m.name, 'Motorist') WHEN messages.sender_type = 'shop' THEN COALESCE(shops.shop_name, 'Shop') WHEN messages.sender_type = 'mechanic' THEN 'Mechanic' ELSE 'User' END as sender_name"
+        )
+      )
+      ->where("dispatch_id", $dispatchId);
+
+    if (in_array($conversationType, ['shop', 'motorist', 'mechanic'], true)) {
+      $query->where('conversation_type', $conversationType);
+      if ($conversationType === 'motorist') {
+        $query->where('messages.sender_type', '!=', 'mechanic');
+      }
+      if ($conversationType === 'mechanic') {
+        $query->where('messages.sender_type', '!=', 'shop');
+      }
+    }
+
+    $messages = $query
+      ->orderBy("messages.created_at", "asc")
+      ->get()
+      ->map(function ($msg) {
+        $msg->created_at = Carbon::parse($msg->created_at)->toIso8601String();
+        return $msg;
+      });
+
+    return response()->json([
+      "success" => true,
+      "messages" => $messages,
+      "current_user_id" => Auth::id(),
+    ]);
   }
 
   public function sendMessage(Request $request)
@@ -411,25 +480,89 @@ class MotoristController extends Controller
     $validated = $request->validate([
       "dispatch_id" => "required|exists:dispatch_requests,id",
       "message" => "required|string",
-      "sender_type" => "required|in:motorist,shop",
+      "sender_type" => "required|in:motorist",
+      "conversation_type" => "nullable|in:shop,motorist,mechanic",
       "motorist_id" => "nullable|exists:users,id",
       "shop_id" => "nullable|exists:shops,id",
       "guest_token" => "nullable|string|max:100",
     ]);
 
-    DB::table("messages")->insert([
+    $dispatch = DB::table('dispatch_requests')->where('id', $validated['dispatch_id'])->firstOrFail();
+    if ($dispatch->motorist_id) {
+      if (!Auth::check() || Auth::user()->role !== 'motorist' || $dispatch->motorist_id !== Auth::id()) {
+        abort(403);
+      }
+      $validated['motorist_id'] = Auth::id();
+    } else {
+      $guestToken = $validated['guest_token'] ?? null;
+      if (!$guestToken || $dispatch->guest_token !== $guestToken) {
+        abort(403);
+      }
+    }
+
+    $senderName = null;
+    if ($validated["sender_type"] === "motorist" && !empty($validated["motorist_id"])) {
+      $senderName = DB::table("users")
+        ->where("id", $validated["motorist_id"])
+        ->value("name");
+    } elseif ($validated["sender_type"] === "mechanic" && Auth::check()) {
+      $senderName = Auth::user()->name;
+    } elseif ($validated["sender_type"] === "shop" && !empty($validated["shop_id"])) {
+      $senderName = DB::table("shops")
+        ->where("id", $validated["shop_id"])
+        ->value("shop_name");
+    }
+
+    if (!$senderName) {
+      if ($validated["sender_type"] === "motorist") {
+        $senderName = "Motorist";
+      } elseif ($validated["sender_type"] === "shop") {
+        $senderName = "Shop";
+      } else {
+        $senderName = "Mechanic";
+      }
+    }
+
+    $conversationType = $validated["conversation_type"] ?? 'motorist';
+
+    $insertData = [
       "dispatch_id" => $validated["dispatch_id"],
       "motorist_id" => $validated["motorist_id"] ?? null,
       "shop_id" => $validated["shop_id"] ?? null,
       "message" => $validated["message"],
       "sender_type" => $validated["sender_type"],
+      "conversation_type" => $conversationType,
       "created_at" => now(),
       "updated_at" => now(),
-    ]);
+    ];
+
+    if ($validated["sender_type"] === "mechanic" && empty($insertData["shop_id"])) {
+      $shopId = DB::table("dispatch_requests")
+        ->where("id", $validated["dispatch_id"])
+        ->value("shop_id");
+      $insertData["shop_id"] = $shopId;
+    }
+
+    $messageId = DB::table("messages")->insertGetId($insertData);
+
+    $messageData = [
+      "id" => $messageId,
+      "dispatch_id" => $validated["dispatch_id"],
+      "motorist_id" => $insertData["motorist_id"],
+      "shop_id" => $insertData["shop_id"],
+      "sender_type" => $validated["sender_type"],
+      "sender_name" => $senderName,
+      "conversation_type" => $conversationType,
+      "message" => $validated["message"],
+      "created_at" => now()->toIso8601String(),
+    ];
+
+    broadcast(new DispatchMessageSent($validated["dispatch_id"], $messageData));
 
     return response()->json([
       "success" => true,
       "message" => "Message sent successfully.",
+      "data" => $messageData,
     ]);
   }
 
@@ -440,6 +573,9 @@ class MotoristController extends Controller
 
   public function getShopsForMessaging()
   {
+    $guestToken = request()->query('guest_token');
+    $motoristId = Auth::check() && (Auth::user()?->role === 'motorist') ? Auth::id() : null;
+
     $shops = DB::table("shops")
       ->leftJoin("reviews", "shops.id", "=", "reviews.shop_id")
       ->select(
@@ -452,13 +588,31 @@ class MotoristController extends Controller
       ->groupBy("shops.id", "shops.shop_name", "shops.address", "shops.phone")
       ->get();
 
+    $shops = $shops->map(function ($shop) use ($motoristId, $guestToken) {
+      $countQuery = DB::table('shop_messages')
+        ->where('shop_id', $shop->id)
+        ->where('sender_type', 'shop')
+        ->where('is_read', false);
+
+      if ($motoristId) {
+        $countQuery->where('motorist_id', $motoristId);
+      } elseif ($guestToken) {
+        $countQuery->where('guest_token', $guestToken);
+      } else {
+        $countQuery->whereRaw('1 = 0');
+      }
+
+      $shop->unread_count = (int) $countQuery->count('id');
+      return $shop;
+    });
+
     return response()->json($shops);
   }
 
   public function getShopMessages(int $shopId)
   {
     $guest_token = request()->query("guest_token");
-    $motorist_id = request()->query("motorist_id");
+    $motorist_id = Auth::check() && (Auth::user()?->role === 'motorist') ? Auth::id() : request()->query("motorist_id");
 
     $query = DB::table("shop_messages")->where("shop_id", $shopId);
 
@@ -473,7 +627,11 @@ class MotoristController extends Controller
       );
     }
 
-    $messages = $query->orderBy("created_at", "asc")->get();
+    $messages = $query->orderBy("created_at", "asc")->get()
+        ->map(function ($msg) {
+            $msg->created_at = \Carbon\Carbon::parse($msg->created_at)->toIso8601String();
+            return $msg;
+        });
 
     return response()->json($messages);
   }

@@ -67,7 +67,7 @@
 
     <!-- Shop Details & Chat Modal -->
     <div id="shop-modal"
-        class="fixed bottom-0 left-0 right-0 bg-[#0d1118] border-t border-white/10 rounded-t-3xl hidden z-50 flex flex-col h-[90vh] max-w-2xl mx-auto">
+        class="fixed bottom-0 left-0 right-0 bg-[#0d1118] border-t border-white/10 rounded-t-3xl hidden z-50 h-[90vh] max-w-2xl mx-auto">
         <!-- Modal Header -->
         <div
             class="sticky top-0 flex items-center justify-between gap-3 px-4 pt-4 pb-4 border-b border-white/5 flex-shrink-0">
@@ -130,7 +130,7 @@
             </div>
 
             <!-- Messages Tab -->
-            <div id="messages-tab" class="hidden h-full flex flex-col">
+            <div id="messages-tab" class="hidden h-full">
                 <div id="chat-messages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3"></div>
             </div>
         </div>
@@ -153,7 +153,7 @@
 
     <!-- Motorist Profile Modal -->
     <div id="profile-modal"
-        class="fixed inset-0 bg-[#0d1118] hidden z-50 flex flex-col max-w-2xl mx-auto overflow-hidden">
+        class="fixed inset-0 bg-[#0d1118] hidden z-50 max-w-2xl mx-auto overflow-hidden">
         <!-- Modal Header -->
         <div class="flex items-center justify-between gap-3 px-4 pt-4 pb-4 border-b border-white/5 flex-shrink-0">
             <h2 class="text-[15px] font-extrabold">MY PROFILE</h2>
@@ -236,6 +236,18 @@
         let isFetching = false;
 
         init();
+
+        const initialTab = window.location.hash.replace('#', '');
+        if (initialTab === 'details' || initialTab === 'messages') {
+            switchTab(initialTab);
+        }
+
+        window.addEventListener('hashchange', () => {
+            const nextTab = window.location.hash.replace('#', '');
+            if (nextTab === 'details' || nextTab === 'messages') {
+                switchTab(nextTab);
+            }
+        });
 
         function init() {
         if (navigator.geolocation) {
@@ -551,6 +563,12 @@
         const tabMessagesBtn = document.getElementById('tab-messages');
         const chatInputSection = document.getElementById('chat-input-section');
 
+        const baseUrl = window.location.pathname + window.location.search;
+        const newUrl = baseUrl + '#' + tab;
+        if (window.location.href !== newUrl) {
+            history.replaceState(null, '', newUrl);
+        }
+
         if (tab === 'details') {
         detailsTab.classList.remove('hidden');
         messagesTab.classList.add('hidden');
@@ -655,7 +673,10 @@
 
         function formatTime(dateString) {
         if (!dateString) return '';
-        const date = new Date(dateString.replace(' ', 'T'));
+        let date = new Date(dateString);
+        if (isNaN(date.getTime()) && typeof dateString === 'string') {
+            date = new Date(dateString.replace(' ', 'T'));
+        }
         if (isNaN(date.getTime())) return dateString;
 
         const now = new Date();
@@ -664,8 +685,14 @@
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMins < 1) return 'just now' ; if (diffMins < 60) return `${diffMins}m ago`; if (diffHours < 24) return
-            `${diffHours}h ago`; if (diffDays < 7) return `${diffDays}d ago`; return date.toLocaleDateString(); } // Profile
+        if (diffMins < 1) return 'just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString();
+        }
+
+        // Profile
             Modal Functions function openProfileModal() { const modal=document.getElementById('profile-modal'); const
             backdrop=document.getElementById('profile-modal-backdrop'); if (!modal || !backdrop) return; // Populate inputs
             from DB-backed profile cache const identity=getGuestIdentity();
@@ -675,9 +702,9 @@
             document.getElementById('prof-input-vehicle-variant-color').value=identity.vehicleVariantColor || '' ;
             document.getElementById('prof-input-plate-temp-number').value=identity.plateTempNumber || '' ;
             document.getElementById('profile-guest-id').textContent=identity.guestToken || 'Unknown' ;
-            modal.classList.remove('hidden'); backdrop.classList.remove('hidden'); } function closeProfileModal() { const
+            modal.classList.remove('hidden'); modal.classList.add('flex'); backdrop.classList.remove('hidden'); } function closeProfileModal() { const
             modal=document.getElementById('profile-modal'); const
-            backdrop=document.getElementById('profile-modal-backdrop'); if (modal) modal.classList.add('hidden'); if
+            backdrop=document.getElementById('profile-modal-backdrop'); if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); } if
             (backdrop) backdrop.classList.add('hidden'); } async function saveProfileModal() { const patch={ owner_name:
             document.getElementById('prof-input-owner-name').value.trim(), contact_number:
             document.getElementById('prof-input-contact-number').value.trim(), vehicle_make_model:

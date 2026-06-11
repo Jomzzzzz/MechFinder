@@ -13,7 +13,7 @@ Broadcast::channel("shop.{shopId}", function ($user, $shopId) {
   return (int) $user->shop_id === (int) $shopId || $user->role === "admin";
 });
 
-// Dispatch request channel — shop owner or the motorist who created the request
+// Dispatch request channel — shop owner, assigned mechanic, or the motorist who created the request
 Broadcast::channel("dispatch.{dispatchId}", function ($user, $dispatchId) {
   $request = DB::table("dispatch_requests")->where("id", $dispatchId)->first();
   if (!$request) {
@@ -25,7 +25,12 @@ Broadcast::channel("dispatch.{dispatchId}", function ($user, $dispatchId) {
     return false;
   }
 
+  $mechanicId = DB::table("dispatch_mechanics")
+    ->where("dispatch_request_id", $dispatchId)
+    ->value("mechanic_id");
+
   return (int) $user->shop_id === (int) $request->shop_id ||
     (int) $user->id === (int) $request->motorist_id ||
+    (int) $user->id === (int) $mechanicId ||
     $user->role === "admin";
 });

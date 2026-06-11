@@ -231,7 +231,7 @@
                     .then(data => {
                         if (data.success) {
                             alert('Dispatch request sent successfully.');
-                            window.location.href = '/motorist/requests';
+                            window.location.href = '/motorist/#requests';
                         } else {
                             alert(data.message || 'Failed to send dispatch request.');
                         }

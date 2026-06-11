@@ -195,6 +195,12 @@ Route::prefix("mechanic")
     Route::post("/profile/password", [MechanicController::class, "changePassword"])->name(
       "mechanic.profile.password"
     );
+    Route::get("/messages", [MechanicController::class, "messages"])->name(
+      "mechanic.messages"
+    );
+    Route::get("/chat/{dispatchId}", [MechanicController::class, "chat"])->name(
+      "mechanic.chat"
+    );
     Route::post("/request/{id}/status", [MechanicController::class, "updateRequestStatus"])->name(
       "mechanic.request.status"
     );
@@ -232,6 +238,9 @@ Route::prefix("motorist")->group(function () {
     MotoristController::class,
     "cancelDispatch",
   ])->name("motorist.request.cancel");
+  Route::get("/chat/{dispatchId}", [MotoristController::class, "chat"])
+    ->middleware(["auth", "role:motorist"])
+    ->name("motorist.chat");
   Route::post("/profile/password", [
     MotoristController::class,
     "changePassword",
@@ -247,6 +256,9 @@ Route::prefix("motorist")->group(function () {
 Route::prefix("motorist")
   ->middleware(["auth", "role:motorist"])
   ->group(function () {
+    Route::get("/requests", [MotoristController::class, "requests"])->name(
+      "motorist.requests"
+    );
     Route::get("/dashboard", [MotoristController::class, "dashboard"])->name(
       "motorist.dashboard"
     );
@@ -313,5 +325,17 @@ Route::prefix("api")->group(function () {
       ShopController::class,
       "sendMessage",
     ])->name("api.shop.messages.send");
+  });
+
+  // Mechanic API - role:mechanic
+  Route::middleware(["auth", "role:mechanic"])->group(function () {
+    Route::get("/mechanic/messages/{dispatchId}", [
+      MechanicController::class,
+      "getMessages",
+    ])->name("api.mechanic.messages");
+    Route::post("/mechanic/messages/send", [
+      MechanicController::class,
+      "sendMessage",
+    ])->name("api.mechanic.messages.send");
   });
 });

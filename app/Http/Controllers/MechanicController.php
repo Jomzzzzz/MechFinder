@@ -8,6 +8,7 @@ use App\Events\ShopStatusUpdated;
 use App\Models\DispatchMechanic;
 use App\Models\DispatchRequest;
 use App\Models\MechanicProfile;
+use App\Models\Message;
 use App\Models\Shop;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,15 +31,110 @@ class MechanicController extends Controller
 
     $profile = $mechanic->mechanicProfile;
 
-    return view("mechanic.dashboard-mobile", compact("jobs", "profile", "mechanic"));
+    $shopConversations = $jobs
+      ->filter(fn ($job) => $job->dispatchRequest && $job->dispatchRequest->shop)
+      ->map(function ($job) {
+        $dispatch = $job->dispatchRequest;
+
+        return [
+          "dispatch_id" => $dispatch->id,
+          "shop_name" => optional($dispatch->shop)->shop_name ?? "Shop",
+          "motorist_name" => optional($dispatch->motorist)->name ?? $dispatch->guest_name ?? "Motorist",
+          "issue_type" => $dispatch->issue_type ?? "New request",
+          "status" => $dispatch->status,
+          "unread_count" => Message::where('dispatch_id', $dispatch->id)
+              ->where('conversation_type', 'shop')
+              ->where('sender_type', 'shop')
+              ->where('is_read', false)
+              ->count('id'),
+        ];
+      })
+      ->values();
+
+    $motoristConversations = $jobs
+      ->filter(fn ($job) => $job->dispatchRequest)
+      ->map(function ($job) {
+        $dispatch = $job->dispatchRequest;
+
+        return [
+          "dispatch_id" => $dispatch->id,
+          "motorist_name" => optional($dispatch->motorist)->name ?? $dispatch->guest_name ?? "Motorist",
+          "shop_name" => optional($dispatch->shop)->shop_name ?? "Shop",
+          "issue_type" => $dispatch->issue_type ?? "New request",
+          "status" => $dispatch->status,
+          "unread_count" => Message::where('dispatch_id', $dispatch->id)
+              ->where('conversation_type', 'motorist')
+              ->where('sender_type', 'motorist')
+              ->where('is_read', false)
+              ->count('id'),
+        ];
+      })
+      ->values();
+
+    return view(
+      "mechanic.dashboard-mobile",
+      compact("jobs", "profile", "mechanic", "shopConversations", "motoristConversations")
+    );
   }
 
   public function profile()
   {
     $mechanic = Auth::user();
+
+    $jobs = DispatchMechanic::with([
+      "dispatchRequest.shop",
+      "dispatchRequest.motorist",
+    ])
+      ->where("mechanic_id", $mechanic->id)
+      ->latest()
+      ->get();
+
     $profile = $mechanic->mechanicProfile;
 
-    return view("mechanic.profile-mobile", compact("mechanic", "profile"));
+    $shopConversations = $jobs
+      ->filter(fn ($job) => $job->dispatchRequest && $job->dispatchRequest->shop)
+      ->map(function ($job) {
+        $dispatch = $job->dispatchRequest;
+
+        return [
+          "dispatch_id" => $dispatch->id,
+          "shop_name" => optional($dispatch->shop)->shop_name ?? "Shop",
+          "motorist_name" => optional($dispatch->motorist)->name ?? $dispatch->guest_name ?? "Motorist",
+          "issue_type" => $dispatch->issue_type ?? "New request",
+          "status" => $dispatch->status,
+          "unread_count" => Message::where('dispatch_id', $dispatch->id)
+              ->where('conversation_type', 'shop')
+              ->where('sender_type', 'shop')
+              ->where('is_read', false)
+              ->count('id'),
+        ];
+      })
+      ->values();
+
+    $motoristConversations = $jobs
+      ->filter(fn ($job) => $job->dispatchRequest)
+      ->map(function ($job) {
+        $dispatch = $job->dispatchRequest;
+
+        return [
+          "dispatch_id" => $dispatch->id,
+          "motorist_name" => optional($dispatch->motorist)->name ?? $dispatch->guest_name ?? "Motorist",
+          "shop_name" => optional($dispatch->shop)->shop_name ?? "Shop",
+          "issue_type" => $dispatch->issue_type ?? "New request",
+          "status" => $dispatch->status,
+          "unread_count" => Message::where('dispatch_id', $dispatch->id)
+              ->where('conversation_type', 'motorist')
+              ->where('sender_type', 'motorist')
+              ->where('is_read', false)
+              ->count('id'),
+        ];
+      })
+      ->values();
+
+    return view(
+      "mechanic.dashboard-mobile",
+      compact("jobs", "profile", "mechanic", "shopConversations", "motoristConversations")
+    );
   }
 
   public function maps()
@@ -91,7 +187,7 @@ class MechanicController extends Controller
     }
 
     return redirect()
-      ->route("mechanic.profile")
+      ->back()
       ->with("success", "Profile updated successfully.");
   }
 
@@ -128,8 +224,84 @@ class MechanicController extends Controller
     $mechanic->update(["password" => Hash::make($request->password)]);
 
     return redirect()
-      ->route("mechanic.profile")
+      ->back()
       ->with("pw_success", "Password updated successfully.");
+  }
+
+  public function chat(int $dispatchId)
+  {
+    $mechanic = Auth::user();
+    $job = DispatchMechanic::with(["dispatchRequest.shop"])
+      ->where("mechanic_id", $mechanic->id)
+      ->where("dispatch_request_id", $dispatchId)
+      ->firstOrFail();
+
+    $dispatch = $job->dispatchRequest;
+    if (!$dispatch) {
+      abort(404);
+    }
+
+    return view("mechanic.chat-mobile", compact("dispatch"));
+  }
+
+  public function messages()
+  {
+    $mechanic = Auth::user();
+
+    $jobs = DispatchMechanic::with([
+      "dispatchRequest.shop",
+      "dispatchRequest.motorist",
+    ])
+      ->where("mechanic_id", $mechanic->id)
+      ->latest()
+      ->get();
+
+    $profile = $mechanic->mechanicProfile;
+
+    $shopConversations = $jobs
+      ->filter(fn ($job) => $job->dispatchRequest && $job->dispatchRequest->shop)
+      ->map(function ($job) {
+        $dispatch = $job->dispatchRequest;
+
+        return [
+          "dispatch_id" => $dispatch->id,
+          "shop_name" => optional($dispatch->shop)->shop_name ?? "Shop",
+          "motorist_name" => optional($dispatch->motorist)->name ?? $dispatch->guest_name ?? "Motorist",
+          "issue_type" => $dispatch->issue_type ?? "New request",
+          "status" => $dispatch->status,
+          "unread_count" => Message::where('dispatch_id', $dispatch->id)
+              ->where('conversation_type', 'shop')
+              ->where('sender_type', 'shop')
+              ->where('is_read', false)
+              ->count('id'),
+        ];
+      })
+      ->values();
+
+    $motoristConversations = $jobs
+      ->filter(fn ($job) => $job->dispatchRequest)
+      ->map(function ($job) {
+        $dispatch = $job->dispatchRequest;
+
+        return [
+          "dispatch_id" => $dispatch->id,
+          "motorist_name" => optional($dispatch->motorist)->name ?? $dispatch->guest_name ?? "Motorist",
+          "shop_name" => optional($dispatch->shop)->shop_name ?? "Shop",
+          "issue_type" => $dispatch->issue_type ?? "New request",
+          "status" => $dispatch->status,
+          "unread_count" => Message::where('dispatch_id', $dispatch->id)
+              ->where('conversation_type', 'motorist')
+              ->where('sender_type', 'motorist')
+              ->where('is_read', false)
+              ->count('id'),
+        ];
+      })
+      ->values();
+
+    return view(
+      "mechanic.dashboard-mobile",
+      compact("jobs", "profile", "mechanic", "shopConversations", "motoristConversations")
+    );
   }
 
   public function updateRequestStatus(Request $request, int $id)
@@ -250,5 +422,149 @@ class MechanicController extends Controller
     broadcast(new MechanicLocationUpdated($dispatch->id, (float) $validated["lat"], (float) $validated["lng"]));
 
     return response()->json(["success" => true]);
+  }
+
+  public function getMessages(int $dispatchId)
+  {
+    $mechanic = Auth::user();
+
+    // Verify mechanic has access to this dispatch
+    $job = DispatchMechanic::where("dispatch_request_id", $dispatchId)
+      ->where("mechanic_id", $mechanic->id)
+      ->firstOrFail();
+
+    $dispatch = DispatchRequest::findOrFail($dispatchId);
+
+    $conversationType = request()->query('conversation_type');
+    if ($conversationType === 'mechanic') {
+      $conversationType = 'shop';
+    }
+
+    $shouldMarkRead = request()->query('mark_read') === '1';
+    $unreadCount = 0;
+    if (in_array($conversationType, ['shop', 'motorist'], true)) {
+      // Normalize 'motorist' to 'mechanic' for motorist→mechanic messages
+      $queryType = $conversationType === 'motorist' ? 'mechanic' : $conversationType;
+      $markSender = $conversationType === 'shop' ? 'shop' : 'motorist';
+      
+      $unreadCount = Message::where('dispatch_id', $dispatchId)
+        ->where('conversation_type', $queryType)
+        ->where('sender_type', $markSender)
+        ->where('is_read', false)
+        ->count('id');
+      
+      if ($shouldMarkRead) {
+        Message::where('dispatch_id', $dispatchId)
+          ->where('conversation_type', $queryType)
+          ->where('sender_type', $markSender)
+          ->where('is_read', false)
+          ->update(['is_read' => true]);
+      }
+    }
+
+    // Fetch messages for this dispatch and selected conversation type
+    $query = Message::where("dispatch_id", $dispatchId)
+      ->with(['motorist', 'shop', 'mechanic'])
+      ->latest('id');
+
+    if (in_array($conversationType, ['shop', 'motorist', 'mechanic'], true)) {
+      // Convert 'motorist' to 'mechanic' for querying motorist→mechanic messages
+      $queryType = $conversationType === 'motorist' ? 'mechanic' : $conversationType;
+      $query->where('conversation_type', $queryType);
+      
+      if ($queryType === 'mechanic') {
+        // For motorist↔mechanic: show messages from both motorist and mechanic
+        $query->whereIn('sender_type', ['motorist', 'mechanic']);
+      } elseif ($queryType === 'shop') {
+        // For shop↔mechanic: show messages from both shop and mechanic
+        $query->whereIn('sender_type', ['shop', 'mechanic']);
+      }
+    }
+
+    $messages = $query
+      ->get()
+      ->reverse()
+      ->map(function ($msg) {
+        return [
+          'id' => $msg->id,
+          'dispatch_id' => $msg->dispatch_id,
+          'sender_type' => $msg->sender_type,
+          'sender_name' => $msg->sender_name ?? match ($msg->sender_type) {
+            'motorist' => $msg->motorist?->name ?? 'Motorist',
+            'shop' => $msg->shop?->name ?? 'Shop',
+            'mechanic' => $msg->mechanic?->name ?? 'Mechanic',
+            default => 'Unknown'
+          },
+          'conversation_type' => $msg->conversation_type,
+          'message' => $msg->message,
+          'created_at' => $msg->created_at->toIso8601String(),
+          'is_read' => $msg->is_read,
+        ];
+      })
+      ->values();
+
+    return response()->json([
+      'success' => true,
+        'unread_count' => $unreadCount,
+      'messages' => $messages,
+      'dispatch' => [
+        'id' => $dispatch->id,
+        'shop_name' => $dispatch->shop?->shop_name ?? 'Shop',
+        'motorist_name' => $dispatch->motorist?->name ?? $dispatch->guest_name ?? 'Motorist',
+      ],
+    ]);
+  }
+
+  public function sendMessage(Request $request)
+  {
+    $mechanic = Auth::user();
+
+    $validated = $request->validate([
+      'dispatch_id' => ['required', 'integer', 'exists:dispatch_requests,id'],
+      'message' => ['required', 'string', 'min:1', 'max:1000'],
+      'conversation_type' => ['required', 'string', 'in:shop,motorist,mechanic'],
+    ]);
+
+    // Verify mechanic has access to this dispatch
+    $job = DispatchMechanic::where("dispatch_request_id", $validated['dispatch_id'])
+      ->where("mechanic_id", $mechanic->id)
+      ->firstOrFail();
+
+    $dispatch = DispatchRequest::findOrFail($validated['dispatch_id']);
+
+    $conversationType = $validated['conversation_type'] === 'mechanic'
+      ? 'shop'
+      : ($validated['conversation_type'] === 'motorist' ? 'mechanic' : $validated['conversation_type']);
+
+    // Create and save the message
+    $message = Message::create([
+      'dispatch_id' => $validated['dispatch_id'],
+      'mechanic_id' => $mechanic->id,
+      'shop_id' => $dispatch->shop_id,
+      'motorist_id' => $dispatch->motorist_id,
+      'message' => $validated['message'],
+      'sender_type' => 'mechanic',
+      'sender_name' => $mechanic->name,
+      'conversation_type' => $conversationType,
+      'is_read' => false,
+    ]);
+
+    // Broadcast the message event for real-time updates
+    if (class_exists('App\Events\MessageSent')) {
+      broadcast(new \App\Events\MessageSent($message))->toOthers();
+    }
+
+    return response()->json([
+      'success' => true,
+      'message' => [
+        'id' => $message->id,
+        'dispatch_id' => $message->dispatch_id,
+        'sender_type' => $message->sender_type,
+        'sender_name' => $message->sender_name,
+        'message' => $message->message,
+        'created_at' => $message->created_at->toIso8601String(),
+        'is_read' => $message->is_read,
+      ],
+    ]);
   }
 }

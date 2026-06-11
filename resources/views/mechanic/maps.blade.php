@@ -108,6 +108,9 @@
     .search-input-group {
         display: flex;
         gap: 10px;
+        flex-wrap: wrap;
+        align-items: stretch;
+        min-width: 0;
     }
 
     .search-input {
@@ -136,9 +139,11 @@
         font-weight: 700;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 8px;
         cursor: pointer;
         transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+        min-width: 0;
     }
 
     .refresh-btn:hover {
@@ -158,6 +163,41 @@
         min-height: 320px;
         width: 100%;
         display: block;
+        min-width: 0;
+    }
+
+    @media (max-width: 420px) {
+        .search-input-group {
+            gap: 8px;
+        }
+
+        .search-input,
+        .refresh-btn {
+            width: 100%;
+        }
+
+        .map-panel #map {
+            min-height: 240px;
+        }
+
+        .map-container {
+            padding: 12px 12px 90px;
+        }
+
+        .prof-hero {
+            padding: 20px 16px 18px;
+            gap: 8px;
+        }
+
+        .prof-avatar {
+            width: 58px;
+            height: 58px;
+            font-size: 22px;
+        }
+
+        .prof-hero-name {
+            font-size: 16px;
+        }
     }
 
     .map-legend {
@@ -261,25 +301,6 @@
         line-height: 1.5;
     }
 
-    #bottomNav {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: var(--nav-h);
-        z-index: 40;
-        background: var(--surface);
-        border-top: 1px solid var(--border);
-        display: flex;
-        align-items: stretch;
-        -webkit-tap-highlight-color: transparent;
-        box-shadow: 0 -1px 3px rgba(0, 0, 0, .05);
-    }
-
-    .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; color: var(--text-3); background: none; border: none; transition: color .15s; -webkit-tap-highlight-color: transparent; position: relative; text-decoration: none; padding: 0; }
-    .nav-btn.active { color: var(--brand); }
-    .n-icon { font-size: 20px; }
-    .n-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
 </style>
 
 <div id="mfApp">
@@ -328,16 +349,6 @@
         </div>
     </div>
 
-    <nav id="bottomNav">
-        <a href="{{ route('mechanic.dashboard') }}" class="nav-btn {{ request()->routeIs('mechanic.dashboard') ? 'active' : '' }}" title="Jobs">
-            <span class="n-icon"><i class="fas fa-briefcase"></i></span>
-            <span class="n-label">Jobs</span>
-        </a>
-        <a href="{{ route('mechanic.profile') }}" class="nav-btn {{ request()->routeIs('mechanic.profile') ? 'active' : '' }}" title="Profile">
-            <span class="n-icon"><i class="fas fa-user"></i></span>
-            <span class="n-label">Profile</span>
-        </a>
-    </nav>
 </div>
 
 @endsection

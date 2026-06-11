@@ -2,7 +2,7 @@
     "name": "MechFinder Motorist",
     "short_name": "MechFinder",
     "description": "Find nearby motorcycle repair shops and request emergency dispatch.",
-    "start_url": "/motorist",
+    "start_url": "/motorist/",
     "scope": "/motorist/",
     "display": "standalone",
     "background_color": "#050505",
