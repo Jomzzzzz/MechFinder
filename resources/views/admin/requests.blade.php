@@ -35,13 +35,17 @@
                         <td class="px-4 py-3">{{ $req->motorist_name }}</td>
                         <td class="px-4 py-3 text-[#AAA]">{{ $req->issue_type ?? '-' }}</td>
                         <td class="px-4 py-3">
-                            <span
-                                class="px-2 py-1 rounded text-xs
-                        @if ($req->status === 'pending') bg-yellow-900 text-yellow-300
-                        @elseif($req->status === 'accepted') bg-blue-900 text-blue-300
-                        @elseif($req->status === 'completed') bg-green-900 text-green-300
-                        @elseif($req->status === 'declined') bg-red-900 text-red-300
-                        @else bg-[#222] text-[#888] @endif">
+                            @php
+                                $statusThemes = [
+                                    'pending' => ['bg' => '#78350f', 'text' => '#fbbf24'],
+                                    'accepted' => ['bg' => '#1e3a8a', 'text' => '#93c5fd'],
+                                    'completed' => ['bg' => '#14532d', 'text' => '#86efac'],
+                                    'declined' => ['bg' => '#7f1d1d', 'text' => '#fecaca'],
+                                ];
+                                $theme = $statusThemes[$req->status] ?? ['bg' => '#111827', 'text' => '#9ca3af'];
+                            @endphp
+                            <span class="inline-flex px-2 py-1 rounded-full text-xs font-semibold"
+                                style="background-color: {{ $theme['bg'] }}; color: {{ $theme['text'] }};">
                                 {{ ucfirst(str_replace('_', ' ', $req->status)) }}
                             </span>
                         </td>

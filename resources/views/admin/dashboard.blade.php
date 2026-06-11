@@ -43,13 +43,31 @@
                         <td class="px-4 py-3">{{ $req->motorist_name }}</td>
                         <td class="px-4 py-3">{{ $req->issue_type ?? '-' }}</td>
                         <td class="px-4 py-3">
-                            <span
-                                class="px-2 py-1 rounded text-xs
-                        @if ($req->status === 'pending') bg-yellow-900 text-yellow-300
-                        @elseif($req->status === 'accepted') bg-blue-900 text-blue-300
-                        @elseif($req->status === 'completed') bg-green-900 text-green-300
-                        @elseif($req->status === 'declined') bg-red-900 text-red-300
-                        @else bg-[#222] text-[#888] @endif">
+                            @php
+                                switch ($req->status) {
+                                    case 'pending':
+                                        $bgColor = '#78350f';
+                                        $textColor = '#fbbf24';
+                                        break;
+                                    case 'accepted':
+                                        $bgColor = '#1e3a8a';
+                                        $textColor = '#93c5fd';
+                                        break;
+                                    case 'completed':
+                                        $bgColor = '#14532d';
+                                        $textColor = '#86efac';
+                                        break;
+                                    case 'declined':
+                                        $bgColor = '#7f1d1d';
+                                        $textColor = '#fecaca';
+                                        break;
+                                    default:
+                                        $bgColor = '#111827';
+                                        $textColor = '#9ca3af';
+                                }
+                            @endphp
+                            <span class="inline-flex px-2 py-1 rounded-full text-xs font-semibold"
+                                style="background-color: {{ $bgColor }}; color: {{ $textColor }};">
                                 {{ ucfirst($req->status) }}
                             </span>
                         </td>

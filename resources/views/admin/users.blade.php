@@ -20,11 +20,15 @@
                         <td class="px-4 py-3">{{ $user->name }}</td>
                         <td class="px-4 py-3 text-[#888]">{{ $user->email }}</td>
                         <td class="px-4 py-3">
-                            <span
-                                class="px-2 py-1 rounded text-xs
-                        @if ($user->role === 'admin') bg-purple-900 text-purple-300
-                        @elseif($user->role === 'shop') bg-blue-900 text-blue-300
-                        @else bg-[#222] text-[#888] @endif">
+                            @php
+                                $roleClasses = 'bg-[#222] text-[#888]';
+                                if ($user->role === 'admin') {
+                                    $roleClasses = 'bg-purple-900 text-purple-300';
+                                } elseif ($user->role === 'shop') {
+                                    $roleClasses = 'bg-blue-900 text-blue-300';
+                                }
+                            @endphp
+                            <span class="inline-flex px-2 py-1 rounded-full text-xs {{ $roleClasses }}">
                                 {{ ucfirst($user->role ?? 'user') }}
                             </span>
                         </td>

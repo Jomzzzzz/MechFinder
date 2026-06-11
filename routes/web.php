@@ -76,6 +76,39 @@ Route::prefix("admin")
     Route::get("/shops", [AdminController::class, "shops"])->name(
       "admin.shops"
     );
+    Route::get("/shops/create", [AdminController::class, "createShop"])->name(
+      "admin.shops.create"
+    );
+    Route::post("/shops", [AdminController::class, "storeShop"])->name(
+      "admin.shops.store"
+    );
+    Route::get("/shops/{id}/edit", [AdminController::class, "editShop"])->name(
+      "admin.shops.edit"
+    );
+    Route::put("/shops/{id}", [AdminController::class, "updateShop"])->name(
+      "admin.shops.update"
+    );
+    Route::get("/geocode", [AdminController::class, "geocodeAddress"])->name(
+      "admin.geocode"
+    );
+    Route::get("/maps", [AdminController::class, "maps"])->name(
+      "admin.maps"
+    );
+    Route::get("/maps/create", [AdminController::class, "createMap"])->name(
+      "admin.maps.create"
+    );
+    Route::post("/maps", [AdminController::class, "storeMap"])->name(
+      "admin.maps.store"
+    );
+    Route::get("/maps/{id}/edit", [AdminController::class, "editMap"])->name(
+      "admin.maps.edit"
+    );
+    Route::put("/maps/{id}", [AdminController::class, "updateMap"])->name(
+      "admin.maps.update"
+    );
+    Route::delete("/maps/{id}", [AdminController::class, "deleteMap"])->name(
+      "admin.maps.delete"
+    );
     Route::get("/requests", [AdminController::class, "requests"])->name(
       "admin.requests"
     );

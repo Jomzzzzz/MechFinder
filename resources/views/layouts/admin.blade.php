@@ -11,6 +11,7 @@
         rel="stylesheet">
 
     @vite('resources/css/app.css')
+    @stack('head')
 
     <style>
         body {
@@ -62,19 +63,22 @@
             </div>
         </aside>
 
-        <main class="flex-1 p-8 overflow-y-auto">
-            @if (session('success'))
-                <div class="bg-green-900 mb-4 p-3 rounded text-green-200 text-sm">{{ session('success') }}</div>
-            @endif
-            @if (session('error'))
-                <div class="bg-red-900 mb-4 p-3 rounded text-red-200 text-sm">{{ session('error') }}</div>
-            @endif
+        <main class="flex-1 p-8 overflow-hidden">
+            <div class="h-full overflow-y-auto pr-2">
+                @if (session('success'))
+                    <div class="bg-green-900 mb-4 p-3 rounded text-green-200 text-sm">{{ session('success') }}</div>
+                @endif
+                @if (session('error'))
+                    <div class="bg-red-900 mb-4 p-3 rounded text-red-200 text-sm">{{ session('error') }}</div>
 
-            @yield('content')
+                @endif
+                @yield('content')
+            </div>
         </main>
 
     </div>
 
+    @stack('scripts')
 </body>
 
 </html>
