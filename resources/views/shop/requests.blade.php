@@ -21,14 +21,13 @@
             'declined' => 'Declined',
         ];
     @endphp
-    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px; padding:4px 0; overflow-x:auto;">
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; padding:10px 12px; background:#f7f9fc; border:1px solid #e6e8ee; border-radius:999px; overflow-x:auto;">
         @foreach ($tabs as $st => $label)
             @php
                 $isActive = request('status') === $st || (!request('status') && $st === '');
             @endphp
             <a href="{{ route('shop.requests', ['status' => $st]) }}"
-                style="padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; text-decoration:none; white-space:nowrap; transition:all .15s;
-            {{ $isActive ? 'background:#206bc4; color:#fff;' : 'background:#fff; color:#667382; border:1px solid #e6e7eb;' }}">
+                style="padding:8px 16px; border-radius:999px; font-size:13px; font-weight:600; white-space:nowrap; transition:all .15s; min-height:38px; display:inline-flex; align-items:center; text-decoration:none; {{ $isActive ? 'background:#206bc4; color:#fff; border:1px solid transparent;' : 'background:#fff; color:#525f7f; border:1px solid #e6e7eb;' }}">
                 {{ $label }}
             </a>
         @endforeach
@@ -60,72 +59,58 @@
 
                 {{-- Card Header --}}
                 <div
-                    style="padding:16px 20px; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                    <div>
-                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px;">
-                            <h3 style="font-size:15px; font-weight:700; color:#1d273b; margin:0;">
+                    style="padding:18px 22px; display:flex; align-items:flex-start; justify-content:space-between; gap:18px; flex-wrap:wrap;">
+                    <div style="min-width:0;">
+                        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+                            <h3 style="font-size:15px; font-weight:700; color:#1d273b; margin:0; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                                 {{ $req->issue_type ?? 'Motorcycle Issue' }}</h3>
                             <span class="badge {{ $sc['badge'] }} status-badge"
-                                style="font-size:11px;">{{ strtoupper(str_replace('_', ' ', $req->status)) }}</span>
+                                style="font-size:11px; padding:7px 11px; line-height:1; text-transform:uppercase; letter-spacing:.04em;">{{ $sc['label'] }}</span>
                         </div>
-                        <p style="font-size:12px; color:#667382; margin:0;">Requested
-                            {{ \Carbon\Carbon::parse($req->created_at)->diffForHumans() }}</p>
+                        <p style="font-size:12px; color:#667382; margin:0;">
+                            <strong>{{ $motoristName }}</strong> · {{ \Carbon\Carbon::parse($req->created_at)->diffForHumans() }}</p>
                     </div>
                     @if (!empty($req->price))
-                        <div style="text-align:right;">
+                        <div style="text-align:right; min-width:120px;">
                             <p style="font-size:11px; color:#667382; margin:0;">Estimated</p>
-                            <p style="font-size:20px; font-weight:700; color:#206bc4; margin:2px 0 0;">
+                            <p style="font-size:20px; font-weight:700; color:#206bc4; margin:6px 0 0;">
                                 ₱{{ number_format($req->price, 2) }}</p>
                         </div>
                     @endif
                 </div>
 
                 {{-- Divider --}}
-                <div style="height:1px; background:#f0f2f5; margin:0 20px;"></div>
+                <div style="height:1px; background:#f0f2f5; margin:0;"></div>
 
                 {{-- Details Grid --}}
                 <div
-                    style="padding:14px 20px; display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr)); gap:12px 20px;">
-                    <div>
-                        <p
-                            style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 3px;">
-                            Motorist</p>
-                        <p style="font-size:13px; font-weight:600; color:#1d273b; margin:0;">{{ $motoristName }}</p>
+                    style="padding:18px 22px; display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:14px; align-items:start;">
+                    <div style="min-width:0;">
+                        <p style="font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; margin:0 0 6px; letter-spacing:.04em;">Motorist</p>
+                        <p style="font-size:13px; color:#1d273b; margin:0;">{{ $motoristName }}</p>
                     </div>
-                    <div>
-                        <p
-                            style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 3px;">
-                            Contact</p>
-                        <p style="font-size:13px; color:#1d273b; margin:0;">{{ $req->contact_number ?? 'Not provided' }}
-                        </p>
+                    <div style="min-width:0;">
+                        <p style="font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; margin:0 0 6px; letter-spacing:.04em;">Contact</p>
+                        <p style="font-size:13px; color:#1d273b; margin:0;">{{ $req->contact_number ?? 'Not provided' }}</p>
                     </div>
-                    <div>
-                        <p
-                            style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 3px;">
-                            Vehicle</p>
+                    <div style="min-width:0;">
+                        <p style="font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; margin:0 0 6px; letter-spacing:.04em;">Vehicle</p>
                         <p style="font-size:13px; color:#1d273b; margin:0;">{{ $vehicle }}</p>
                     </div>
                     @if ($variantColor)
-                        <div>
-                            <p
-                                style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 3px;">
-                                Color</p>
+                        <div style="min-width:0;">
+                            <p style="font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; margin:0 0 6px; letter-spacing:.04em;">Color</p>
                             <p style="font-size:13px; color:#1d273b; margin:0;">{{ $variantColor }}</p>
                         </div>
                     @endif
                     @if ($plateNumber)
-                        <div>
-                            <p
-                                style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 3px;">
-                                Plate No.</p>
-                            <p style="font-size:13px; font-family:monospace; color:#1d273b; margin:0;">{{ $plateNumber }}
-                            </p>
+                        <div style="min-width:0;">
+                            <p style="font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; margin:0 0 6px; letter-spacing:.04em;">Plate</p>
+                            <p style="font-size:13px; font-family:monospace; color:#1d273b; margin:0;">{{ $plateNumber }}</p>
                         </div>
                     @endif
-                    <div>
-                        <p
-                            style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 3px;">
-                            Type</p>
+                    <div style="min-width:0;">
+                        <p style="font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; margin:0 0 6px; letter-spacing:.04em;">Request Type</p>
                         <p style="font-size:13px; color:#1d273b; margin:0;">
                             @if (($req->request_type ?? '') === 'dispatch')
                                 <i class="fas fa-motorcycle" style="color:#206bc4;"></i> Dispatch
@@ -135,28 +120,21 @@
                         </p>
                     </div>
                     @if ($req->distance ?? null)
-                        <div>
-                            <p
-                                style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 3px;">
-                                Distance</p>
+                        <div style="min-width:0;">
+                            <p style="font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; margin:0 0 6px; letter-spacing:.04em;">Distance</p>
                             <p style="font-size:13px; color:#1d273b; margin:0;">{{ $req->distance }} km away</p>
                         </div>
                     @endif
                     @if (!empty($req->location))
-                        <div style="grid-column:1/-1;">
-                            <p
-                                style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 3px;">
-                                Location</p>
+                        <div style="grid-column:1/-1; background:#f8fbff; border:1px solid #e8eef6; border-radius:12px; padding:14px;">
+                            <p style="font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; margin:0 0 6px; letter-spacing:.04em;">Location</p>
                             <p style="font-size:13px; color:#1d273b; margin:0;">{{ $req->location }}</p>
                         </div>
                     @endif
                     @if (!empty($req->description))
-                        <div style="grid-column:1/-1;">
-                            <p
-                                style="font-size:11px; font-weight:600; color:#667382; text-transform:uppercase; margin:0 0 3px;">
-                                Description</p>
-                            <p style="font-size:13px; color:#1d273b; line-height:1.5; margin:0;">{{ $req->description }}
-                            </p>
+                        <div style="grid-column:1/-1; background:#f8fbff; border:1px solid #e8eef6; border-radius:12px; padding:14px;">
+                            <p style="font-size:11px; font-weight:700; color:#667382; text-transform:uppercase; margin:0 0 6px; letter-spacing:.04em;">Description</p>
+                            <p style="font-size:13px; color:#1d273b; line-height:1.6; margin:0;">{{ $req->description }}</p>
                         </div>
                     @endif
                 </div>
@@ -164,20 +142,27 @@
                 {{-- Mechanic Row (active statuses only) --}}
                 @if (in_array($req->status, ['accepted', 'en_route', 'arrived']))
                     <div id="mrow-{{ $req->id }}"
-                        style="padding:8px 20px 4px;display:flex;align-items:center;gap:8px;">
+                        style="padding:0 22px 14px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; border-top:1px solid #f0f2f5;">
                         @if (!empty($req->assigned_mechanic_name))
-                            <i class="fas fa-user-gear" style="color:#667382;font-size:12px;flex-shrink:0;"></i>
-                            <span
-                                style="font-size:12px;color:#374151;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $req->assigned_mechanic_name }}</span>
-                            <button class="btn btn-secondary btn-sm" style="padding:2px 8px;font-size:11px;flex-shrink:0;"
-                                onclick="openMechanicPicker({{ $req->id }})">Change</button>
+                            <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; background:#f4f8ff; border:1px solid #d7e4fa; border-radius:12px; flex:1; min-width:0;">
+                                <i class="fas fa-user-gear" style="color:#206bc4; font-size:14px; flex-shrink:0;"></i>
+                                <div style="min-width:0; overflow:hidden;">
+                                    <div style="font-size:13px; font-weight:600; color:#1d273b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ $req->assigned_mechanic_name }}</div>
+                                    <div style="font-size:11px; color:#667382; margin-top:2px;">Assigned Mechanic</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" style="padding:8px 12px; height:42px;" onclick="openMechanicPicker({{ $req->id }})">Change</button>
+                        @else
+                            <div style="padding:10px 14px; background:#fff4e6; border:1px solid #ffe0b7; border-radius:12px; color:#92400e; font-size:13px; flex:1; min-width:0;">
+                                No mechanic assigned yet.
+                            </div>
+                            <button class="btn btn-warning btn-sm" style="padding:8px 12px; height:42px;" onclick="openMechanicPicker({{ $req->id }})">Assign Mechanic</button>
                         @endif
                     </div>
                 @endif
 
-                {{-- Actions --}}
-                <div style="padding:12px 20px 16px; display:flex; gap:8px; flex-wrap:wrap; border-top:1px solid #f0f2f5;">
-                    <span id="req-actions-{{ $req->id }}">
+                <div style="padding:14px 22px 18px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; border-top:1px solid #f0f2f5; background:#fafbfc;">
+                    <span id="req-actions-{{ $req->id }}" style="display:flex; gap:10px; flex-wrap:wrap;">
                         @if ($req->status === 'requested')
                             <button onclick="acceptRequest({{ $req->id }})" class="btn btn-success btn-sm"><i
                                     class="fas fa-check"></i> Accept</button>

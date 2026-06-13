@@ -116,6 +116,8 @@ Route::prefix("admin")
       AdminController::class,
       "updateUserRole",
     ])->name("admin.users.role");
+    Route::delete("/users", [AdminController::class, "deleteUsers"])->name("admin.users.bulkDelete");
+    Route::delete("/users/{id}", [AdminController::class, "deleteUser"])->name("admin.users.delete");
     Route::delete("/shops/{id}", [AdminController::class, "deleteShop"])->name(
       "admin.shops.delete"
     );
@@ -271,9 +273,6 @@ Route::prefix("motorist")->group(function () {
     MotoristController::class,
     "cancelDispatch",
   ])->name("motorist.request.cancel");
-  Route::get("/chat/{dispatchId}", [MotoristController::class, "chat"])
-    ->middleware(["auth", "role:motorist"])
-    ->name("motorist.chat");
   Route::post("/profile/password", [
     MotoristController::class,
     "changePassword",
@@ -291,6 +290,9 @@ Route::prefix("motorist")
   ->group(function () {
     Route::get("/requests", [MotoristController::class, "requests"])->name(
       "motorist.requests"
+    );
+    Route::get('/chat/{dispatchId}', [MotoristController::class, 'chat'])->name(
+      'motorist.chat'
     );
     Route::get("/dashboard", [MotoristController::class, "dashboard"])->name(
       "motorist.dashboard"

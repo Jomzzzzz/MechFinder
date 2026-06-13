@@ -4,7 +4,7 @@
     <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <div class="text-[#F4B942] text-2xl heading-font">Shops</div>
-            <div class="text-[#AAA] text-sm mt-1 max-w-2xl">Minimal, professional shop management with the key details arranged for clarity and fast review.</div>
+            <div class="text-[#AAA] text-sm mt-1 max-w-2xl">Shop management with the key details arranged for clarity and fast review.</div>
         </div>
         <a href="{{ route('admin.shops.create') }}"
             class="inline-flex items-center justify-center rounded-lg bg-[#F4B942] px-4 py-2 text-sm font-semibold text-[#0A0A0B] hover:bg-[#e6b12a]">

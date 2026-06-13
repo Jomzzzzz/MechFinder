@@ -639,6 +639,37 @@
             el.textContent = Math.max(0, (parseInt(el.textContent) || 0) + delta) + suffix;
         }
 
+        function handleDispatchNewEvent(req) {
+            if (!req || !req.id) return;
+            queueDispatchPopup(req);
+            adjustCount('stat-pending', 1);
+            var pb = document.getElementById('pending-badge');
+            if (pb) {
+                var n = (parseInt(pb.textContent) || 0) + 1;
+                pb.textContent = n + ' unclaimed';
+                pb.style.display = '';
+            }
+        }
+
+        function handleDispatchStatusEvent(payload) {
+            if (!payload || !payload.dispatch_id) return;
+            var id = payload.dispatch_id;
+            var status = payload.status;
+            var c = document.getElementById('req-' + id);
+            if (!c) return;
+            updateCardBadge(id, status);
+            if (status === 'completed') {
+                if (c.dataset.completed !== 'true') {
+                    c.dataset.completed = 'true';
+                    c.style.opacity = '.5';
+                    var b = c.querySelector('.req-body');
+                    if (b) b.innerHTML = '';
+                    adjustCount('stat-active', -1);
+                    adjustCount('active-badge', -1);
+                }
+            }
+        }
+
         // ---------- Dispatch Popup ----------
         var _currentPopupReqId = null;
         var _currentPopupReq = null;

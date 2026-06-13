@@ -9,12 +9,47 @@ use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
-  public function dashboard()
+  public function dashboard(Request $request)
   {
     $totalShops = DB::table("shops")->count();
-    $totalUsers = DB::table("users")->where("role", "shop")->count();
+    $totalMechanics = DB::table("users")->where("role", "mechanic")->count();
     $totalRequests = DB::table("dispatch_requests")->count();
     $totalReviews = DB::table("reviews")->count();
+    $totalMotoristRequesters = DB::table("dispatch_requests")
+      ->whereNotNull('motorist_id')
+      ->distinct('motorist_id')
+      ->count('motorist_id');
+
+    $startDate = now()->subMonths(5)->startOfMonth();
+    $months = collect(range(0, 5))->map(function ($offset) {
+      return now()->subMonths(5 - $offset)->format('M Y');
+    })->toArray();
+
+    $requestsByMonth = DB::table('dispatch_requests')
+      ->select(DB::raw("DATE_FORMAT(created_at, '%b %Y') as month"), DB::raw('COUNT(*) as total'))
+      ->where('created_at', '>=', $startDate)
+      ->groupBy('month')
+      ->orderByRaw('MIN(created_at)')
+      ->pluck('total', 'month')
+      ->toArray();
+
+    $shopsByMonth = DB::table('shops')
+      ->select(DB::raw("DATE_FORMAT(created_at, '%b %Y') as month"), DB::raw('COUNT(*) as total'))
+      ->where('created_at', '>=', $startDate)
+      ->groupBy('month')
+      ->orderByRaw('MIN(created_at)')
+      ->pluck('total', 'month')
+      ->toArray();
+
+    $requestsMonthlyCounts = array_map(function ($month) use ($requestsByMonth) {
+      return $requestsByMonth[$month] ?? 0;
+    }, $months);
+
+    $shopsMonthlyCounts = array_map(function ($month) use ($shopsByMonth) {
+      return $shopsByMonth[$month] ?? 0;
+    }, $months);
+
+    $shopId = $request->query('shop');
 
     $recentRequests = DB::table("dispatch_requests")
       ->leftJoin("shops", "dispatch_requests.shop_id", "=", "shops.id")
@@ -29,9 +64,13 @@ class AdminController extends Controller
           'COALESCE(users.name, dispatch_requests.guest_name, "Guest") as motorist_name'
         )
       )
-      ->latest("dispatch_requests.created_at")
-      ->limit(20)
-      ->get();
+      ->latest("dispatch_requests.created_at");
+
+    if ($shopId) {
+      $recentRequests->where('dispatch_requests.shop_id', $shopId);
+    }
+
+    $recentRequests = $recentRequests->limit(20)->get();
 
     $shops = DB::table("shops")
       ->leftJoin("users", "shops.owner_id", "=", "users.id")
@@ -46,11 +85,16 @@ class AdminController extends Controller
       "admin.dashboard",
       compact(
         "totalShops",
-        "totalUsers",
+        "totalMechanics",
         "totalRequests",
         "totalReviews",
+        "totalMotoristRequesters",
+        "requestsMonthlyCounts",
+        "shopsMonthlyCounts",
+        "months",
         "recentRequests",
-        "shops"
+        "shops",
+        "shopId"
       )
     );
   }
@@ -59,11 +103,28 @@ class AdminController extends Controller
   {
     $users = DB::table("users")
       ->leftJoin("shops", "users.shop_id", "=", "shops.id")
+      ->whereIn("users.role", ["shop", "mechanic", "motorist"])
       ->select("users.*", "shops.shop_name")
       ->orderBy("users.created_at", "desc")
       ->get();
 
-    return view("admin.users", compact("users"));
+    $shops = $users->where("role", "shop");
+    $mechanics = $users->where("role", "mechanic");
+    $motorists = $users->where("role", "motorist");
+
+    $counts = [
+      "shop" => $shops->count(),
+      "mechanic" => $mechanics->count(),
+      "motorist" => $motorists->count(),
+    ];
+
+    return view("admin.users", compact(
+      "users",
+      "counts",
+      "shops",
+      "mechanics",
+      "motorists"
+    ));
   }
 
   public function shops()
@@ -270,7 +331,7 @@ class AdminController extends Controller
   public function updateUserRole(Request $request, int $id)
   {
     $request->validate([
-      "role" => "required|in:admin,shop,user",
+      "role" => "required|in:admin,shop,mechanic,motorist",
     ]);
 
     DB::table("users")
@@ -281,6 +342,37 @@ class AdminController extends Controller
       ]);
 
     return back()->with("success", "User role updated.");
+  }
+
+  public function deleteUser(int $id)
+  {
+    $user = DB::table("users")->find($id);
+
+    if (!$user) {
+      return back()->with("error", "User not found.");
+    }
+
+    DB::table("users")->where("id", $id)->delete();
+
+    return back()->with("success", "User deleted successfully.");
+  }
+
+  public function deleteUsers(Request $request)
+  {
+    $validated = $request->validate([
+      "user_ids" => "required|array|min:1",
+      "user_ids.*" => "integer|distinct",
+    ]);
+
+    $userIds = array_filter($validated["user_ids"]);
+
+    if (empty($userIds)) {
+      return back()->with("error", "No users selected for deletion.");
+    }
+
+    $deletedCount = DB::table("users")->whereIn("id", $userIds)->delete();
+
+    return back()->with("success", "$deletedCount user(s) deleted successfully.");
   }
 
   public function deleteShop(int $id)

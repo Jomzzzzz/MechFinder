@@ -12,7 +12,7 @@
     <div class="bg-white/5 p-8 border border-white/10 rounded-2xl w-full max-w-md">
 
         <h1 class="mb-2 font-black text-orange-500 text-4xl text-center">⚙ MECHFINDER</h1>
-        <p class="mb-8 text-gray-400 text-center">Create Motor Shop Account</p>
+        <p class="mb-8 text-gray-400 text-center">Shop sign up</p>
 
         @if (session('error'))
             <div class="bg-red-500/10 mb-4 p-4 border border-red-500/30 rounded-lg">
@@ -66,7 +66,7 @@
 
             <button type="submit"
                 class="bg-orange-500 hover:bg-orange-600 py-3 rounded-lg w-full font-bold text-white transition">
-                Create Account
+                Register
             </button>
         </form>
 

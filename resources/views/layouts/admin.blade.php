@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
 
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('head')
 
     <style>
@@ -46,10 +46,6 @@
                     class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('admin.shops') ? 'bg-[#F4B942] text-[#0A0A0B] font-semibold' : 'text-[#AAAAAA] hover:bg-[#1E1E21]' }}">
                     Shops
                 </a>
-                <a href="{{ route('admin.requests') }}"
-                    class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm {{ request()->routeIs('admin.requests') ? 'bg-[#F4B942] text-[#0A0A0B] font-semibold' : 'text-[#AAAAAA] hover:bg-[#1E1E21]' }}">
-                    Dispatch Requests
-                </a>
             </nav>
 
             <div class="mt-auto pt-6 border-[#1E1E21] border-t">
@@ -79,6 +75,33 @@
     </div>
 
     @stack('scripts')
+
+    <script>
+        (function subscribeAdminReload(attempts) {
+            if (window.Echo) {
+                try {
+                    // Reload admin when a new dispatch is created (global shop requests)
+                    window.Echo.channel('shop-requests').listen('.dispatch.new', function() {
+                        window.location.reload();
+                    });
+                } catch (e) {
+                    console.debug('Admin shop-requests subscribe failed', e);
+                }
+
+                try {
+                    // Reload admin on shop status changes
+                    window.Echo.channel('shops-status').listen('.shop.status', function() {
+                        window.location.reload();
+                    });
+                } catch (e) {
+                    console.debug('Admin shops-status subscribe failed', e);
+                }
+
+            } else if (attempts < 30) {
+                setTimeout(function() { subscribeAdminReload(attempts + 1); }, 200);
+            }
+        })(0);
+    </script>
 </body>
 
 </html>

@@ -13,19 +13,21 @@
         }
 
         body {
-            background: #fafafa;
+            background: #0A0E14;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            color: #E6EDF3;
         }
 
         .input-smooth {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid #e5e7eb;
-            background: #ffffff;
+            border: 1px solid #1f2937;
+            background: #071017;
+            color: #E6EDF3;
         }
 
         .input-smooth:focus {
-            border-color: #F7941D;
-            box-shadow: 0 0 0 3px rgba(247, 148, 29, 0.1);
+            border-color: #FF8A00;
+            box-shadow: 0 0 0 3px rgba(255,138,0, 0.08);
             outline: none;
         }
 
@@ -46,35 +48,28 @@
 <body>
 
     <!-- NAV -->
-    <nav class="sticky top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur-xl">
+    <nav class="sticky top-0 z-50 border-b border-[#1f2937] bg-[#071017]/90 backdrop-blur-xl">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <a href="/" class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-xl bg-[#0D0D0D] flex items-center justify-center text-base">⚙️</div>
-                <span class="font-bold text-base tracking-tight"
-                    style="font-family:system-ui,sans-serif">MechFinder</span>
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-[#262626] to-[#FF8A00] flex items-center justify-center text-base">⚙️</div>
+                <span class="font-bold text-white tracking-tight" style="font-family:system-ui,sans-serif">MechFinder</span>
             </a>
-
         </div>
     </nav>
 
-    <div class="min-h-[calc(100vh-64px)] grid lg:grid-cols-2">
-
-        <!-- LEFT SIDE - IMAGE -->
-        <div class="hidden lg:flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-300 p-12">
-            <div class="max-w-sm w-full">
-                <img src="{{ asset('images/login-image.jpg') }}" alt="Motorcycle Rider" alt="Motorcycle"
-                    class="w-full h-auto object-contain filter brightness-110">
-            </div>
-        </div>
-
-        <!-- RIGHT SIDE - LOGIN FORM -->
-        <div class="flex items-center justify-center px-6 py-12">
-            <div class="w-full max-w-sm">
+    <div class="min-h-[calc(100vh-64px)] flex items-center justify-center px-6 py-12">
+        <div class="w-full max-w-md">
 
                 <!-- HEADER -->
-                <div class="mb-10">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
-                    <p class="text-gray-500">Sign in to your account</p>
+                <div class="mb-6">
+                    <a href="{{ url()->previous() }}" class="inline-flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white">
+                        <span class="text-base">←</span>
+                        Back
+                    </a>
+                </div>
+                <div class="mb-6">
+                    <h1 class="text-3xl font-bold text-white mb-2">Welcome back</h1>
+                    <p class="text-slate-300">Sign in to your account</p>
                 </div>
 
                 <!-- MESSAGES -->
@@ -105,7 +100,7 @@
                     @csrf
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Email</label>
                         <input type="email" name="email" value="{{ old('email') }}" required
                             placeholder="you@example.com"
                             class="input-smooth w-full px-4 py-3 rounded-lg text-base {{ $errors->has('email') ? 'border-red-400' : '' }}">
@@ -115,7 +110,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <label class="block text-sm font-medium text-slate-300 mb-2">Password</label>
                         <div class="relative">
                             <input id="password" type="password" name="password" required placeholder="••••••••"
                                 class="input-smooth w-full px-4 py-3 rounded-lg text-base pr-12 {{ $errors->has('password') ? 'border-red-400' : '' }}">
@@ -145,16 +140,16 @@
                     <div class="flex items-center justify-between pt-2">
                         <label class="flex items-center">
                             <input type="checkbox" name="remember"
-                                class="w-4 h-4 border-gray-300 rounded accent-[#F7941D]">
-                            <span class="ml-2 text-sm text-gray-600">Remember me</span>
+                                class="w-4 h-4 border-gray-700 rounded accent-[#FF8A00]">
+                            <span class="ml-2 text-sm text-slate-300">Remember me</span>
                         </label>
-                        <a href="#" class="text-sm text-[#F7941D] hover:text-orange-600">
+                        <a href="#" class="text-sm mf-accent hover:brightness-90">
                             Forgot password?
                         </a>
                     </div>
 
                     <button type="submit"
-                        class="btn-smooth w-full bg-[#F7941D] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg mt-6">
+                        class="btn-smooth w-full bg-[#FF8A00] hover:brightness-95 text-[#071017] font-semibold py-3 rounded-lg mt-6">
                         Sign in
                     </button>
                 </form>
@@ -162,16 +157,15 @@
 
 
                 <!-- SIGNUP LINK -->
-                <p class="text-center mt-8 text-gray-600 text-sm">
+                <p class="text-center mt-8 text-slate-300 text-sm">
                     Don't have an account?
-                    <a href="{{ route('signup') }}" class="font-semibold text-[#F7941D] hover:text-orange-600">
-                        Create one
+                    <a href="{{ route('signup') }}" class="font-semibold mf-accent hover:brightness-90">
+                        Register
                     </a>
                 </p>
 
             </div>
         </div>
-
     </div>
 
     <script>

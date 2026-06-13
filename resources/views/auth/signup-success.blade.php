@@ -23,7 +23,7 @@
 
     <a href="{{ route('login') }}"
        class="block w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-bold transition">
-        Go to Login
+        Login
     </a>
 
 </div>

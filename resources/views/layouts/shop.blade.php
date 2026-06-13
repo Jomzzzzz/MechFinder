@@ -544,11 +544,19 @@
             function subscribeShopEvents(attempts) {
                 if (window.Echo && window.shopId) {
                     window.Echo.private('shop.' + window.shopId)
-                        .listen('.dispatch.new', function() {
-                            window.location.reload();
+                        .listen('.dispatch.new', function(req) {
+                            if (typeof handleDispatchNewEvent === 'function') {
+                                handleDispatchNewEvent(req);
+                            } else {
+                                window.location.reload();
+                            }
                         })
-                        .listen('.dispatch.status', function() {
-                            window.location.reload();
+                        .listen('.dispatch.status', function(payload) {
+                            if (typeof handleDispatchStatusEvent === 'function') {
+                                handleDispatchStatusEvent(payload);
+                            } else {
+                                window.location.reload();
+                            }
                         });
 
                     // Listen for global shop status updates and update UI when it concerns this shop
