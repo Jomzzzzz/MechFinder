@@ -121,6 +121,8 @@ Route::prefix("admin")
     Route::delete("/shops/{id}", [AdminController::class, "deleteShop"])->name(
       "admin.shops.delete"
     );
+    Route::get("/profile-change-requests", [AdminController::class, "profileChangeRequests"])->name("admin.profile-change-requests");
+    Route::post("/profile-change-requests/{id}/unlock", [AdminController::class, "unlockProfile"])->name("admin.profile-change-requests.unlock");
   });
 
 /*
@@ -346,6 +348,10 @@ Route::prefix("api")->group(function () {
     MotoristController::class,
     "saveGuestProfile",
   ])->name("api.motorist.guest-profile.save");
+  Route::post("/motorist/profile-change-request", [
+    MotoristController::class,
+    "requestProfileChange",
+  ])->name("api.motorist.profile-change-request");
 
   // Shop API - role:shop or admin
   Route::middleware(["auth", "role:shop,admin"])->group(function () {

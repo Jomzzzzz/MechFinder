@@ -694,13 +694,16 @@ class MotoristController extends Controller
       // Bootstrap profile from user account if not yet created
       if (!$profile) {
         $profile = (object) [
-          'guest_token'           => 'mf_user_' . Auth::id(),
-          'motorist_id'           => Auth::id(),
-          'owner_name'           => Auth::user()->name,
-          'contact_number'       => null,
-          'vehicle_make_model'   => null,
-          'vehicle_variant_color'=> null,
-          'plate_temp_number'    => null,
+          'guest_token'              => 'mf_user_' . Auth::id(),
+          'motorist_id'              => Auth::id(),
+          'owner_name'               => Auth::user()->name,
+          'contact_number'           => null,
+          'vehicle_make_model'       => null,
+          'vehicle_variant_color'    => null,
+          'plate_temp_number'        => null,
+          'profile_locked'           => false,
+          'profile_change_requested' => false,
+          'change_request_reason'    => null,
         ];
       }
 
@@ -720,15 +723,33 @@ class MotoristController extends Controller
   public function saveGuestProfile(Request $request)
   {
     $validated = $request->validate([
-      "guest_token" => "nullable|string|max:100",
-      "owner_name" => "nullable|string|max:150",
-      "contact_number" => "nullable|string|max:50",
-      "vehicle_make_model" => "nullable|string|max:150",
-      "vehicle_variant_color" => "nullable|string|max:150",
-      "plate_temp_number" => "nullable|string|max:80",
+      "guest_token"          => "nullable|string|max:100",
+      "owner_name"           => "nullable|string|max:150",
+      "contact_number"       => "nullable|string|max:50",
+      "vehicle_make_model"   => "nullable|string|max:150",
+      "vehicle_variant_color"=> "nullable|string|max:150",
+      "plate_temp_number"    => "nullable|string|max:80",
     ]);
 
     $isAuthMotorist = Auth::check() && Auth::user()->role === 'motorist';
+
+    // Determine existing record and enforce lock
+    if ($isAuthMotorist) {
+      $existing = DB::table("guest_profiles")->where("motorist_id", Auth::id())->first();
+    } else {
+      if (empty($validated["guest_token"])) {
+        return response()->json(["error" => "guest_token required"], 422);
+      }
+      $existing = DB::table("guest_profiles")->where("guest_token", $validated["guest_token"])->first();
+    }
+
+    if ($existing && $existing->profile_locked) {
+      return response()->json([
+        "error"  => "Profile is locked. Please request a change from admin.",
+        "locked" => true,
+      ], 423);
+    }
+
     $data = [
       "owner_name"           => $validated["owner_name"] ?? null,
       "contact_number"       => $validated["contact_number"] ?? null,
@@ -738,22 +759,60 @@ class MotoristController extends Controller
       "updated_at"           => now(),
     ];
 
+    // Lock the profile once the required fields are provided
+    $willBeComplete = !empty($validated["owner_name"]) && !empty($validated["contact_number"]);
+    if ($willBeComplete) {
+      $data["profile_locked"] = true;
+    }
+
     if ($isAuthMotorist) {
-      // Use a deterministic token for authenticated users to avoid unique conflicts
-      // with any guest_token row they may have created before logging in.
       $authToken = 'mf_user_' . Auth::id();
       DB::table("guest_profiles")->updateOrInsert(
         ["motorist_id" => Auth::id()],
         array_merge($data, ["guest_token" => $authToken])
       );
     } else {
-      if (empty($validated["guest_token"])) {
-        return response()->json(["error" => "guest_token required"], 422);
-      }
       DB::table("guest_profiles")->updateOrInsert(
         ["guest_token" => $validated["guest_token"]],
         $data
       );
+    }
+
+    return response()->json(["success" => true]);
+  }
+
+  public function requestProfileChange(Request $request)
+  {
+    $validated = $request->validate([
+      "guest_token" => "nullable|string|max:100",
+      "reason"      => "required|string|max:500",
+    ]);
+
+    $isAuthMotorist = Auth::check() && Auth::user()->role === 'motorist';
+
+    if ($isAuthMotorist) {
+      $updated = DB::table("guest_profiles")
+        ->where("motorist_id", Auth::id())
+        ->update([
+          "profile_change_requested" => true,
+          "change_request_reason"    => $validated["reason"],
+          "updated_at"               => now(),
+        ]);
+    } else {
+      if (empty($validated["guest_token"])) {
+        return response()->json(["error" => "guest_token required"], 422);
+      }
+      $updated = DB::table("guest_profiles")
+        ->where("guest_token", $validated["guest_token"])
+        ->update([
+          "profile_change_requested" => true,
+          "change_request_reason"    => $validated["reason"],
+          "updated_at"               => now(),
+        ]);
+    }
+
+    if (!$updated) {
+      return response()->json(["error" => "Profile not found."], 404);
     }
 
     return response()->json(["success" => true]);

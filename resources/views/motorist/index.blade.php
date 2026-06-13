@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                                           MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                                                                                                                                           ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                                                   MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                                                                                                                                   ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -1529,6 +1529,44 @@
             <div id="shopList" style="padding:12px 14px 32px;"></div>
         </div>
 
+        {{-- PROFILE SAVE CONFIRM MODAL --}}
+        <div id="profileSaveModal" onclick="if(event.target===this)_profSaveClose()"
+            style="position:absolute;inset:0;z-index:70;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s ease;">
+            <div class="cm-sheet" style="transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);">
+                <div class="cm-icon" style="background:rgba(251,191,36,.1);color:#f59e0b;"><i
+                        class="fa-solid fa-floppy-disk"></i></div>
+                <div class="cm-title" id="profSaveModalTitle">Save Changes?</div>
+                <div class="cm-body" id="profSaveModalBody">Are you sure you want to save these changes?</div>
+                <div class="cm-actions">
+                    <button id="profSaveConfirmBtn" class="cm-btn-cancel" style="background:var(--action);"><i
+                            class="fa-solid fa-check"></i> Save</button>
+                    <button class="cm-btn-back" onclick="_profSaveClose()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        {{-- PROFILE CHANGE REQUEST MODAL --}}
+        <div id="profileChangeReqModal" onclick="if(event.target===this)_profChangeClose()"
+            style="position:absolute;inset:0;z-index:70;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s ease;">
+            <div class="cm-sheet" style="transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);">
+                <div class="cm-icon" style="background:rgba(59,130,246,.1);color:#3b82f6;"><i
+                        class="fa-solid fa-lock"></i></div>
+                <div class="cm-title">Request Profile Change</div>
+                <div class="cm-body">Your profile is locked for accuracy. Briefly explain why you need to update it — our
+                    admin will review and unlock it for you.</div>
+                <textarea id="profChangeReason"
+                    style="width:100%;border:1px solid var(--border);border-radius:var(--r2);padding:10px 12px;font-size:13px;color:var(--text-1);background:var(--surface-2);resize:none;height:80px;outline:none;margin-bottom:4px;"
+                    placeholder="e.g. I changed my motorcycle, wrong plate number entered…"></textarea>
+                <div id="profChangeReasonErr" style="font-size:11px;color:var(--red);margin-bottom:12px;display:none;">
+                    Please explain the reason for your request.</div>
+                <div class="cm-actions">
+                    <button id="profChangeSubmitBtn" class="cm-btn-cancel" style="background:var(--blue,#3b82f6);"><i
+                            class="fa-solid fa-paper-plane"></i> Send Request</button>
+                    <button class="cm-btn-back" onclick="_profChangeClose()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
         {{-- CANCEL CONFIRMATION MODAL --}}
         <div id="confirmModal" onclick="_cmBgClick(event)">
             <div class="cm-sheet">
@@ -1984,8 +2022,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                                           MECHFINDER — APP LOGIC
-                                                                                                                                                                                                                                           ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                                                   MECHFINDER — APP LOGIC
+                                                                                                                                                                                                                                                   ══════════════════════════════════════════════ */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -3229,6 +3267,9 @@
         function openSubPanel(id) {
             // Load current values into sub-panel inputs before showing
             const identity = mfIdentity();
+            const locked = window._mfProfile && window._mfProfile.profile_locked;
+            const changeRequested = window._mfProfile && window._mfProfile.profile_change_requested;
+
             if (id === 'editMotoPanel') {
                 document.getElementById('pMakeModel').value = identity.vehicle_make_model;
                 document.getElementById('pColor').value = identity.vehicle_variant_color;
@@ -3237,8 +3278,45 @@
                 document.getElementById('pName').value = identity.owner_name;
                 document.getElementById('pContact').value = identity.contact_number;
             }
-            document.getElementById(id).style.display = 'block';
-            requestAnimationFrame(() => document.getElementById(id).classList.add('open'));
+
+            // Apply locked state to the panel
+            const panel = document.getElementById(id);
+            const inputs = panel.querySelectorAll('input, textarea');
+            const saveBtn = panel.querySelector('.save-panel-btn');
+            let lockBanner = panel.querySelector('.prof-lock-banner');
+
+            if (locked) {
+                inputs.forEach(el => {
+                    el.disabled = true;
+                    el.style.opacity = '0.55';
+                });
+                if (saveBtn) saveBtn.style.display = 'none';
+                if (!lockBanner) {
+                    lockBanner = document.createElement('div');
+                    lockBanner.className = 'prof-lock-banner';
+                    lockBanner.style.cssText =
+                        'background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.25);border-radius:var(--r2);padding:11px 13px;font-size:12px;color:#3b82f6;display:flex;gap:8px;align-items:flex-start;margin:0 14px 4px;';
+                    const icon = changeRequested ?
+                        '<i class="fa-solid fa-clock" style="margin-top:1px;flex-shrink:0;"></i>' :
+                        '<i class="fa-solid fa-lock" style="margin-top:1px;flex-shrink:0;"></i>';
+                    const msg = changeRequested ?
+                        'Your change request has been sent. Admin will review and unlock your profile.' :
+                        'This profile is locked. <button onclick="_openProfileChangeReq()" style="background:none;border:none;color:#3b82f6;font-weight:700;font-size:12px;cursor:pointer;padding:0;text-decoration:underline;">Request a change</button>';
+                    lockBanner.innerHTML = icon + '<span>' + msg + '</span>';
+                    const bodyEl = panel.querySelector('.ph');
+                    if (bodyEl) bodyEl.insertAdjacentElement('afterend', lockBanner);
+                }
+            } else {
+                inputs.forEach(el => {
+                    el.disabled = false;
+                    el.style.opacity = '';
+                });
+                if (saveBtn) saveBtn.style.display = '';
+                if (lockBanner) lockBanner.remove();
+            }
+
+            panel.style.display = 'block';
+            requestAnimationFrame(() => panel.classList.add('open'));
         }
 
         function closeSubPanel(id) {
@@ -3250,23 +3328,139 @@
             renderProfileSummary();
         }
 
-        async function saveMoto() {
-            const patch = {
-                vehicle_make_model: document.getElementById('pMakeModel').value.trim(),
-                vehicle_variant_color: document.getElementById('pColor').value.trim(),
-                plate_temp_number: document.getElementById('pPlate').value.trim(),
-            };
-            await mfSaveProfile(patch);
-            closeSubPanel('editMotoPanel');
+        /* ── PROFILE SAVE CONFIRM MODAL ── */
+        let _profSavePending = null;
+
+        function _profSaveOpen(title, body, onConfirm) {
+            document.getElementById('profSaveModalTitle').textContent = title;
+            document.getElementById('profSaveModalBody').textContent = body;
+            _profSavePending = onConfirm;
+            const modal = document.getElementById('profileSaveModal');
+            modal.style.pointerEvents = 'all';
+            modal.style.opacity = '1';
+            modal.querySelector('.cm-sheet').style.transform = 'translateY(0)';
         }
 
-        async function saveContact() {
-            const patch = {
-                owner_name: document.getElementById('pName').value.trim(),
-                contact_number: document.getElementById('pContact').value.trim(),
+        function _profSaveClose() {
+            _profSavePending = null;
+            const modal = document.getElementById('profileSaveModal');
+            modal.querySelector('.cm-sheet').style.transform = 'translateY(100%)';
+            modal.style.opacity = '0';
+            setTimeout(() => {
+                modal.style.pointerEvents = 'none';
+            }, 250);
+        }
+
+        document.getElementById('profSaveConfirmBtn').addEventListener('click', async () => {
+            if (!_profSavePending) return;
+            const fn = _profSavePending;
+            _profSaveClose();
+            await fn();
+        });
+
+        /* ── PROFILE CHANGE REQUEST MODAL ── */
+        function _openProfileChangeReq() {
+            document.getElementById('profChangeReason').value = '';
+            document.getElementById('profChangeReasonErr').style.display = 'none';
+            const modal = document.getElementById('profileChangeReqModal');
+            modal.style.pointerEvents = 'all';
+            modal.style.opacity = '1';
+            modal.querySelector('.cm-sheet').style.transform = 'translateY(0)';
+        }
+
+        function _profChangeClose() {
+            const modal = document.getElementById('profileChangeReqModal');
+            modal.querySelector('.cm-sheet').style.transform = 'translateY(100%)';
+            modal.style.opacity = '0';
+            setTimeout(() => {
+                modal.style.pointerEvents = 'none';
+            }, 250);
+        }
+
+        document.getElementById('profChangeSubmitBtn').addEventListener('click', async () => {
+            const reason = document.getElementById('profChangeReason').value.trim();
+            if (!reason) {
+                document.getElementById('profChangeReasonErr').style.display = 'block';
+                return;
+            }
+            document.getElementById('profChangeReasonErr').style.display = 'none';
+            const token = _mfGetToken();
+            const body = token ? {
+                guest_token: token,
+                reason
+            } : {
+                reason
             };
-            await mfSaveProfile(patch);
-            closeSubPanel('editContactPanel');
+            try {
+                const res = await fetch('/api/motorist/profile-change-request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': window.csrfToken
+                    },
+                    body: JSON.stringify(body),
+                });
+                const data = await res.json();
+                if (data.success) {
+                    _profChangeClose();
+                    await mfLoadProfile();
+                    // Re-render any open lock banner
+                    ['editMotoPanel', 'editContactPanel'].forEach(pid => {
+                        const banner = document.getElementById(pid)?.querySelector('.prof-lock-banner');
+                        if (banner) banner.innerHTML =
+                            '<i class="fa-solid fa-clock" style="margin-top:1px;flex-shrink:0;"></i><span>Your change request has been sent. Admin will review and unlock your profile.</span>';
+                    });
+                    showToast('Change request sent. Admin will review it shortly.', 'success');
+                } else {
+                    showToast(data.error || 'Failed to send request.', 'error');
+                }
+            } catch {
+                showToast('Something went wrong. Please try again.', 'error');
+            }
+        });
+
+        function saveMoto() {
+            const makeModel = document.getElementById('pMakeModel').value.trim();
+            if (!makeModel) {
+                showToast('Make & Model is required.', 'error');
+                return;
+            }
+            _profSaveOpen(
+                'Save Motorcycle Info?',
+                'This info will be shared with the mechanic when you request rescue.',
+                async () => {
+                    const patch = {
+                        vehicle_make_model: makeModel,
+                        vehicle_variant_color: document.getElementById('pColor').value.trim(),
+                        plate_temp_number: document.getElementById('pPlate').value.trim(),
+                    };
+                    await mfSaveProfile(patch);
+                    closeSubPanel('editMotoPanel');
+                    showToast('Motorcycle info saved.', 'success');
+                }
+            );
+        }
+
+        function saveContact() {
+            const ownerName = document.getElementById('pName').value.trim();
+            const contactNumber = document.getElementById('pContact').value.trim();
+            if (!ownerName || !contactNumber) {
+                showToast('Name and phone number are required.', 'error');
+                return;
+            }
+            _profSaveOpen(
+                'Save Contact Info?',
+                'Your name and contact number will be shared with mechanics during rescue.',
+                async () => {
+                    const patch = {
+                        owner_name: ownerName,
+                        contact_number: contactNumber
+                    };
+                    await mfSaveProfile(patch);
+                    closeSubPanel('editContactPanel');
+                    showToast('Contact info saved.', 'success');
+                }
+            );
         }
 
         /* ── REQUEST HISTORY ── */
@@ -3441,7 +3635,7 @@
                     'Unknown');
                 const detailTime = parseTimestamp(data.created_at);
                 document.getElementById('detailTime').textContent = detailTime ? detailTime.toLocaleString() :
-                'Unknown';
+                    'Unknown';
                 document.getElementById('detailShop').textContent = data.shop_name || 'Finding shop...';
                 document.getElementById('detailMechanic').textContent = data.mechanic_name || 'Not assigned yet';
 
@@ -3475,7 +3669,7 @@
                     'Unknown');
                 const detailTime = parseTimestamp(data.created_at);
                 document.getElementById('detailTime').textContent = detailTime ? detailTime.toLocaleString() :
-                'Unknown';
+                    'Unknown';
                 document.getElementById('detailShop').textContent = data.shop_name || 'Finding shop...';
                 document.getElementById('detailMechanic').textContent = data.mechanic_name || 'Not assigned yet';
 

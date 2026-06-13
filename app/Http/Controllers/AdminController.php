@@ -455,4 +455,46 @@ class AdminController extends Controller
 
         return back()->with('success', 'Map location deleted.');
     }
+
+    public function profileChangeRequests()
+    {
+        $requests = DB::table('guest_profiles')
+            ->where('profile_change_requested', true)
+            ->leftJoin('users', 'guest_profiles.motorist_id', '=', 'users.id')
+            ->select(
+                'guest_profiles.id',
+                'guest_profiles.guest_token',
+                'guest_profiles.owner_name',
+                'guest_profiles.contact_number',
+                'guest_profiles.vehicle_make_model',
+                'guest_profiles.vehicle_variant_color',
+                'guest_profiles.plate_temp_number',
+                'guest_profiles.change_request_reason',
+                'guest_profiles.updated_at',
+                'users.name as account_name',
+                'users.email as account_email',
+            )
+            ->orderByDesc('guest_profiles.updated_at')
+            ->get();
+
+        return view('admin.profile-change-requests', compact('requests'));
+    }
+
+    public function unlockProfile(int $id)
+    {
+        $updated = DB::table('guest_profiles')
+            ->where('id', $id)
+            ->update([
+                'profile_locked'           => false,
+                'profile_change_requested' => false,
+                'change_request_reason'    => null,
+                'updated_at'               => now(),
+            ]);
+
+        if (! $updated) {
+            return back()->with('error', 'Profile not found.');
+        }
+
+        return back()->with('success', 'Profile unlocked. The motorist can now edit their info.');
+    }
 }
