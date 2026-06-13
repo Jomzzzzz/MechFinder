@@ -45,13 +45,16 @@
             inset: 0;
             overflow: hidden;
             background: #E8ECF0;
+            display: flex;
+            flex-direction: column;
         }
 
         .phone {
             position: relative;
             max-width: 430px;
             width: 100%;
-            height: 100%;
+            flex: 1 1 auto;
+            min-height: 0;
             overflow: hidden;
             margin: 0 auto;
             display: flex;
@@ -81,7 +84,7 @@
 
 <body>
     <div class="motorist-app">
-        <main class="@yield('main-class', 'px-4 pt-4 pb-8') phone">
+        <main class="phone" style="padding:0;margin-top:0;">
             @yield('content')
         </main>
     </div>

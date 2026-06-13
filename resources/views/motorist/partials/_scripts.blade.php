@@ -1,7 +1,7 @@
 ﻿    <script>
         /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-                                                                                                                                                                                                                                                                               MECHFINDER â€” APP LOGIC
-                                                                                                                                                                                                                                                                               â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+                                                                                                                                                                                                                                                                                       MECHFINDER â€” APP LOGIC
+                                                                                                                                                                                                                                                                                       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -145,9 +145,10 @@
             if (currentRequestId) resumeActiveRequest(currentRequestId);
             const validTabs = ['map', 'requests', 'profile'];
             const validPanels = ['rescuePanel', 'shopsPanel', 'requestsPanel', 'profilePanel'];
-            const savedTab = LS.get('mf_motorist_active_tab');
             const hashState = getMotoristHashState();
 
+            // Only restore from hash (deep link) — never from storage.
+            // Storage-based restore causes panels to re-open after login redirect.
             if (validTabs.includes(hashState.hashValue)) {
                 showTab(hashState.hashValue);
             } else if (validPanels.includes(hashState.hashValue)) {
@@ -161,9 +162,8 @@
                     showTab('profile');
                     openPanel('profilePanel');
                 }
-            } else if (savedTab && validTabs.includes(savedTab)) {
-                showTab(savedTab);
             }
+            // Default: map tab — always on fresh load / login
             window.addEventListener('hashchange', () => {
                 const state = getMotoristHashState();
                 if (validTabs.includes(state.hashValue)) {
@@ -1207,7 +1207,6 @@
                 document.getElementById('nav' + t[0].toUpperCase() + t.slice(1))
                     .classList.toggle('active', t === tab);
             });
-            LS.set('mf_motorist_active_tab', tab);
             // panels that use slide animation
             const panels = ['requestsPanel', 'profilePanel', 'rescuePanel', 'shopsPanel'];
             const currentlyOpen = panels.find(id => document.getElementById(id) && document.getElementById(id).classList
