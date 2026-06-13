@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                                                   MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                                                                                                                                                   ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                                                                                                                                       ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -45,6 +45,7 @@
         }
 
         #mfApp {
+            height: 100vh;
             height: 100svh;
             height: 100dvh;
             position: relative;
@@ -2022,8 +2023,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                                                   MECHFINDER — APP LOGIC
-                                                                                                                                                                                                                                                   ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                                                       MECHFINDER — APP LOGIC
+                                                                                                                                                                                                                                                       ══════════════════════════════════════════════ */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {

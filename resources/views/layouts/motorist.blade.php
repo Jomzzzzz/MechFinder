@@ -32,6 +32,7 @@
             margin: 0;
             padding: 0;
             height: 100%;
+            overflow: hidden;
             background: #E8ECF0;
             font-family: Inter, system-ui, sans-serif;
             overscroll-behavior: none;
@@ -181,6 +182,25 @@
 
         // Kick off profile load immediately
         mfLoadProfile();
+
+        // Keep #mfApp locked to the visible viewport height on all platforms.
+        // Without this: (1) browsers without svh/dvh support collapse the container,
+        // (2) Android keyboard shrinks dvh mid-session and the nav bar ends up mid-screen.
+        (function() {
+            const app = document.getElementById('mfApp');
+            if (!app) return;
+
+            function _setAppHeight() {
+                const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+                app.style.height = Math.round(h) + 'px';
+            }
+            _setAppHeight();
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', _setAppHeight);
+            } else {
+                window.addEventListener('resize', _setAppHeight);
+            }
+        })();
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
