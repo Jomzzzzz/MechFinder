@@ -421,7 +421,12 @@ class MotoristController extends Controller
       ->leftJoin("dispatch_mechanics as dm", "dm.dispatch_request_id", "=", "dispatch_requests.id")
       ->leftJoin("users as mu", "mu.id", "=", "dm.mechanic_id")
       ->where("dispatch_requests.id", $dispatchId)
-      ->where("dispatch_requests.motorist_id", Auth::id())
+      ->where(function ($q) {
+        // Allow if motorist_id matches OR if the request was originally made as guest
+        // but the user is now authenticated (motorist_id may be null for older requests)
+        $q->where("dispatch_requests.motorist_id", Auth::id())
+          ->orWhereNull("dispatch_requests.motorist_id");
+      })
       ->select("dispatch_requests.*", "shops.shop_name", "mu.name as mechanic_name")
       ->orderByDesc("dm.id")
       ->first();

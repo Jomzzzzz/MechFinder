@@ -1,287 +1,292 @@
-@extends('layouts.motorist')
+﻿@extends('layouts.motorist')
+
+@push('styles')
+<style>
+    :root {
+        --brand: #F7941D; --brand-dk: #C87010;
+        --brand-bg: rgba(247,148,29,.09);
+        --surface: #FFFFFF; --surface-2: #F5F6F8;
+        --border: #E4E7EC;
+        --text-1: #111827; --text-2: #6B7280; --text-3: #9CA3AF;
+        --action: #1E293B;
+        --r2: 10px; --r3: 14px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    #chatApp {
+        position: fixed; inset: 0;
+        display: flex; flex-direction: column;
+        background: var(--surface-2);
+        font-family: Inter, system-ui, sans-serif;
+        color: var(--text-1);
+        max-width: 430px; margin: 0 auto;
+    }
+    #chatHeader {
+        flex: 0 0 auto;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 12px 14px 0;
+        z-index: 10;
+    }
+    .ch-row { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; }
+    .ch-back {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: var(--surface-2); border: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 14px; color: var(--text-2); cursor: pointer; flex-shrink: 0;
+        text-decoration: none;
+    }
+    .ch-avatar {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: var(--brand-bg); color: var(--brand);
+        border: 1.5px solid rgba(247,148,29,.25);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px; flex-shrink: 0;
+    }
+    .ch-info { flex: 1; min-width: 0; }
+    .ch-name { font-size: 15px; font-weight: 700; color: var(--text-1); line-height: 1.2; }
+    .ch-sub  { font-size: 11px; color: var(--text-2); margin-top: 1px; }
+    .ch-tabs { display: flex; gap: 6px; padding: 10px 0 12px; border-top: 1px solid var(--border); }
+    .ch-tab {
+        flex: 1; padding: 8px 0; border-radius: var(--r2);
+        font-size: 12px; font-weight: 700;
+        border: 1.5px solid var(--border); background: var(--surface-2); color: var(--text-2);
+        cursor: pointer; transition: all .15s;
+        display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .ch-tab.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+    #chatBox {
+        flex: 1; overflow-y: auto;
+        padding: 16px 14px; display: flex; flex-direction: column; gap: 6px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .msg-sep {
+        text-align: center; font-size: 10px; font-weight: 600;
+        color: var(--text-3); letter-spacing: .06em; text-transform: uppercase; margin: 8px 0;
+    }
+    .msg-row { display: flex; }
+    .msg-row.mine   { justify-content: flex-end; }
+    .msg-row.theirs { justify-content: flex-start; }
+    .msg-wrap { max-width: 78%; display: flex; flex-direction: column; }
+    .msg-row.mine   .msg-wrap { align-items: flex-end; }
+    .msg-row.theirs .msg-wrap { align-items: flex-start; }
+    .msg-sender { font-size: 10px; font-weight: 600; color: var(--text-3); margin-bottom: 3px; display: flex; align-items: center; gap: 4px; }
+    .msg-bubble { padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.5; word-break: break-word; }
+    .msg-row.mine   .msg-bubble { background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
+    .msg-row.theirs .msg-bubble { background: var(--surface); border: 1px solid var(--border); color: var(--text-1); border-bottom-left-radius: 4px; }
+    .msg-time { font-size: 10px; color: var(--text-3); margin-top: 3px; padding: 0 4px; }
+    #chatEmpty {
+        flex: 1; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 10px;
+        color: var(--text-3); padding: 40px 0;
+    }
+    .empty-icon {
+        width: 56px; height: 56px; border-radius: 50%;
+        background: var(--brand-bg); color: var(--brand);
+        display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    #chatClosed {
+        display: none; margin: 8px 14px;
+        background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.2);
+        border-radius: var(--r2); padding: 10px 13px;
+        font-size: 12px; color: #EF4444; text-align: center;
+    }
+    #chatFooter {
+        flex: 0 0 auto; background: var(--surface);
+        border-top: 1px solid var(--border);
+        padding: 10px 14px;
+        padding-bottom: max(10px, env(safe-area-inset-bottom));
+    }
+    .cf-row { display: flex; align-items: flex-end; gap: 8px; }
+    #msgInput {
+        flex: 1; background: var(--surface-2);
+        border: 1.5px solid var(--border); border-radius: 22px;
+        padding: 10px 16px; font-size: 14px; font-family: inherit;
+        color: var(--text-1); outline: none; resize: none; max-height: 120px;
+        line-height: 1.4; transition: border-color .15s;
+    }
+    #msgInput:focus { border-color: var(--brand); }
+    #msgInput::placeholder { color: var(--text-3); }
+    #sendBtn {
+        width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%;
+        background: var(--brand); color: #fff; border: none; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; font-size: 16px;
+        transition: opacity .15s, transform .1s;
+    }
+    #sendBtn:active { opacity: .85; transform: scale(.94); }
+    #sendBtn:disabled { opacity: .35; cursor: not-allowed; }
+</style>
+@endpush
 
 @section('content')
-    <div class="min-h-screen flex flex-col text-white bg-[#0a0a0a]">
-
-        {{-- HEADER --}}
-        <div class="sticky top-0 z-20 bg-gradient-to-b from-[#0d1118] to-[#0a0a0a] border-b border-white/5 px-4 pt-4 pb-0">
-            <div class="flex items-center justify-between gap-3 pb-4">
-                <div class="flex items-center gap-3 min-w-0">
-                    <a href="{{ route('motorist.index') }}#requests"
-                        class="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-lg shrink-0 hover:border-orange-500 transition-colors">
-                        <i class="fa-solid fa-arrow-left"></i>
-                    </a>
-                    <div
-                        class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 border border-white/10 shrink-0 flex items-center justify-center">
-                        <i class="fa-solid fa-store text-white text-lg"></i>
-                    </div>
-                    <div class="min-w-0">
-                        <h1 class="text-[16px] font-extrabold truncate">{{ $dispatch->shop_name ?? 'Shop Chat' }}</h1>
-                        <p class="text-[12px] text-gray-400 truncate flex items-center gap-1">
-                            <i class="fa-solid fa-wrench text-orange-500 text-[10px]"></i>
-                            {{ $dispatch->mechanic_name ?? 'Unassigned' }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {{-- CONVERSATION TABS --}}
-            <div class="pb-4 border-t border-white/5 pt-4">
-                <div class="flex gap-2 mb-3">
-                    <button id="tab-mechanic" type="button" onclick="switchChatTab('mechanic')"
-                        class="px-4 py-2 rounded-full border border-white/10 bg-[#F7941D] text-black text-[13px] font-semibold transition-all hover:shadow-lg">
-                        <i class="fa-solid fa-wrench text-[11px] mr-1"></i>Mechanic
-                    </button>
-                    <button id="tab-shop" type="button" onclick="switchChatTab('shop')"
-                        class="px-4 py-2 rounded-full border border-white/10 bg-transparent text-[13px] text-gray-400 font-semibold transition-all hover:border-orange-500">
-                        <i class="fa-solid fa-store text-[11px] mr-1"></i>Shoph
-                    </button>
-                </div>
-                <p id="chat-mode-text" class="text-[12px] text-gray-500 flex items-center gap-1">
-                    <i class="fa-solid fa-info-circle text-[10px]"></i>
-                    Chat with your assigned mechanic
-                </p>
-            </div>
-        </div>
-
-        {{-- CHAT MESSAGES --}}
-        <div id="chat-box" class="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4"></div>
-
-        {{-- LOCATION CARD --}}
-        <div class="px-4 pb-3 pt-2">
-            <div class="rounded-[16px] p-3 bg-white/[0.03] border border-white/10 backdrop-blur">
-                <div class="text-[10px] text-gray-500 mb-2 font-semibold flex items-center gap-1">
-                    <i class="fa-solid fa-location-dot text-red-500"></i>LIVE LOCATION
-                </div>
-                <div
-                    class="rounded-[12px] h-24 relative flex items-center justify-center border border-white/10 bg-white/[0.02]">
-                    <div class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_12px_#ef4444] animate-pulse"></div>
+<div id="chatApp">
+    <div id="chatHeader">
+        <div class="ch-row">
+            <a href="{{ route('motorist.index') }}" class="ch-back">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div class="ch-avatar"><i class="fa-solid fa-store"></i></div>
+            <div class="ch-info">
+                <div class="ch-name">{{ $dispatch->shop_name ?? 'Chat' }}</div>
+                <div class="ch-sub">
+                    <i class="fa-solid fa-motorcycle" style="font-size:9px;color:var(--brand);"></i>
+                    {{ $dispatch->mechanic_name ?? 'Awaiting mechanic' }}
                 </div>
             </div>
         </div>
-
-        {{-- CHAT CLOSED NOTE --}}
-        <div id="chat-closed-note" class="hidden px-4 pb-4 pt-2 text-center text-sm text-gray-400">
-            <div class="rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3">
-                <i class="fa-solid fa-lock text-red-500 mr-2"></i>Chat is closed after rescue completion
-            </div>
-        </div>
-
-        {{-- MESSAGE INPUT --}}
-        <div id="chat-footer"
-            class="px-4 pb-4 pt-3 border-t border-white/5 bg-gradient-to-t from-[#0a0a0a] to-transparent sticky bottom-0 z-10">
-            <form id="chat-form" class="flex gap-2 items-end">
-                <input type="text" id="message-input" placeholder="Type a message..."
-                    class="flex-1 rounded-[12px] bg-white/5 border border-white/10 px-4 py-3 text-[13px] text-white placeholder:text-gray-600 outline-none focus:border-orange-500 focus:bg-white/8 transition-all"
-                    required>
-                <button type="submit"
-                    class="w-11 h-11 rounded-[10px] bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center flex-shrink-0 font-bold transition-all hover:shadow-lg hover:shadow-orange-500/40 active:scale-95">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
-            </form>
+        <div class="ch-tabs">
+            <button class="ch-tab active" id="tabMechanic" onclick="switchTab('mechanic')">
+                <i class="fa-solid fa-wrench"></i> Mechanic
+            </button>
+            <button class="ch-tab" id="tabShop" onclick="switchTab('shop')">
+                <i class="fa-solid fa-store"></i> Shop
+            </button>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dispatchId = {{ $dispatch->id }};
-            const currentUserId = {{ auth()->id() ?? 'null' }};
-            const chatBox = document.getElementById('chat-box');
-            const chatForm = document.getElementById('chat-form');
-            const messageInput = document.getElementById('message-input');
-            const chatFooter = document.getElementById('chat-footer');
-            const chatClosedNote = document.getElementById('chat-closed-note');
-            const tabMechanic = document.getElementById('tab-mechanic');
-            const tabShop = document.getElementById('tab-shop');
-            const chatModeText = document.getElementById('chat-mode-text');
-            const sendButton = chatForm ? chatForm.querySelector('button[type="submit"]') : null;
-            const dispatchStatus = '{{ $dispatch->status }}';
-            let isLoading = false;
-            let channel = null;
-            let activeConversationType = 'mechanic';
-            const messageIds = new Set();
+    <div id="chatBox">
+        <div id="chatEmpty">
+            <div class="empty-icon"><i class="fa-solid fa-comments"></i></div>
+            <div style="font-size:13px;font-weight:600;color:var(--text-2);">No messages yet</div>
+            <div style="font-size:11px;">Send a message to get started</div>
+        </div>
+    </div>
 
-            function escapeHtml(str) {
-                if (!str) return '';
-                return String(str)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#039;');
+    <div id="chatClosed">
+        <i class="fa-solid fa-lock" style="margin-right:5px;"></i>Chat is closed — rescue has ended
+    </div>
+
+    <div id="chatFooter">
+        <div class="cf-row">
+            <textarea id="msgInput" rows="1" placeholder="Type a message…"></textarea>
+            <button id="sendBtn" type="button"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+(function () {
+    const DISPATCH_ID  = {{ $dispatch->id }};
+    const CURRENT_USER = {{ auth()->id() ?? 'null' }};
+    const CSRF         = '{{ csrf_token() }}';
+    const STATUS       = '{{ $dispatch->status }}';
+    const chatBox      = document.getElementById('chatBox');
+    const chatEmpty    = document.getElementById('chatEmpty');
+    const chatClosed   = document.getElementById('chatClosed');
+    const chatFooter   = document.getElementById('chatFooter');
+    const msgInput     = document.getElementById('msgInput');
+    const sendBtn      = document.getElementById('sendBtn');
+    let activeTab = 'mechanic';
+    const seenIds = new Set();
+
+    window.switchTab = function(tab) {
+        activeTab = tab;
+        document.getElementById('tabMechanic').classList.toggle('active', tab === 'mechanic');
+        document.getElementById('tabShop').classList.toggle('active', tab === 'shop');
+        loadMessages();
+    };
+
+    function apiConvType() { return activeTab === 'shop' ? 'motorist' : 'mechanic'; }
+
+    function esc(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    }
+    function fmtTime(val) {
+        if (!val) return '';
+        let d = new Date(val);
+        if (isNaN(d) && typeof val==='string') d = new Date(val.replace(' ','T'));
+        return isNaN(d) ? '' : d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+    }
+    function fmtDate(val) {
+        if (!val) return '';
+        const d = new Date(typeof val==='string' ? val.replace(' ','T') : val);
+        if (isNaN(d)) return '';
+        const today = new Date(), yesterday = new Date(today);
+        yesterday.setDate(today.getDate()-1);
+        if (d.toDateString()===today.toDateString()) return 'Today';
+        if (d.toDateString()===yesterday.toDateString()) return 'Yesterday';
+        return d.toLocaleDateString([],{weekday:'short',month:'short',day:'numeric'});
+    }
+
+    function renderMessages(msgs) {
+        chatBox.innerHTML = '';
+        seenIds.clear();
+        if (!msgs.length) { chatBox.appendChild(chatEmpty); chatEmpty.style.display='flex'; return; }
+        chatEmpty.style.display = 'none';
+        let lastDate = null;
+        msgs.forEach(m => {
+            const d = fmtDate(m.created_at);
+            if (d !== lastDate) {
+                const sep = document.createElement('div');
+                sep.className = 'msg-sep'; sep.textContent = d;
+                chatBox.appendChild(sep); lastDate = d;
             }
-
-            function formatTime(value) {
-                if (!value) return '';
-                let date = new Date(value);
-                if (isNaN(date.getTime()) && typeof value === 'string') {
-                    date = new Date(value.replace(' ', 'T'));
-                }
-                if (isNaN(date.getTime())) return value;
-                return date.toLocaleTimeString([], {
-                    hour: 'numeric',
-                    minute: '2-digit'
-                });
-            }
-
-            function getApiConversationType() {
-                // Shop tab shows motorist↔shop chat, mechanic tab shows motorist↔mechanic chat.
-                return activeConversationType === 'shop' ? 'motorist' : 'mechanic';
-            }
-
-            function updateTabStyles() {
-                if (activeConversationType === 'shop') {
-                    tabShop.classList.add('bg-[#F7941D]', 'text-black');
-                    tabShop.classList.remove('bg-transparent', 'text-gray-400');
-                    tabMechanic.classList.remove('bg-[#F7941D]', 'text-black');
-                    tabMechanic.classList.add('bg-transparent', 'text-gray-400');
-                    chatModeText.textContent = '🏪 Chat with your shop';
-                } else {
-                    tabMechanic.classList.add('bg-[#F7941D]', 'text-black');
-                    tabMechanic.classList.remove('bg-transparent', 'text-gray-400');
-                    tabShop.classList.remove('bg-[#F7941D]', 'text-black');
-                    tabShop.classList.add('bg-transparent', 'text-gray-400');
-                    chatModeText.textContent = '🔧 Chat with your assigned mechanic';
-                }
-            }
-
-            function switchChatTab(tab) {
-                activeConversationType = tab === 'shop' ? 'shop' : 'mechanic';
-                updateTabStyles();
-                const params = new URLSearchParams(window.location.search);
-                params.set('conversation_type', tab);
-                history.replaceState(null, '', window.location.pathname + '?' + params.toString());
-                loadMessages();
-            }
-
-            window.switchChatTab = switchChatTab;
-
-            function appendMessage(msg, scroll = true) {
-                if (messageIds.has(msg.id)) {
-                    return;
-                }
-                messageIds.add(msg.id);
-                const isMine = msg.sender_type === 'motorist';
-                const bubble = document.createElement('div');
-                bubble.className = `flex ${isMine ? 'justify-end' : 'justify-start'} animate-fadeIn`;
-
-                const senderLabel = isMine ? 'You' : (msg.sender_name || 'Sender');
-                const senderIcon = isMine ? '👤' : (msg.sender_type === 'shop' ? '🏪' : '🔧');
-
-                bubble.innerHTML = `
-            <div class="max-w-[85%]">
-                <div class="mb-2 px-2 text-[10px] font-medium ${isMine ? 'text-right text-gray-500' : 'text-left text-gray-400'}">
-                    ${senderIcon} ${escapeHtml(senderLabel)} · ${escapeHtml(formatTime(msg.created_at))}
-                </div>
-                <div class="rounded-[12px] px-4 py-3 text-[14px] leading-relaxed break-words font-[500] ${
-                    isMine
-                        ? 'bg-gradient-to-br from-[#F7941D] to-[#ff9e2a] text-black shadow-lg shadow-orange-500/20'
-                        : 'bg-white/8 backdrop-blur border border-white/10 text-white'
-                }">
-                    ${escapeHtml(msg.message)}
-                </div>
-            </div>
-        `;
-
-                chatBox.appendChild(bubble);
-                if (scroll) {
-                    chatBox.scrollTop = chatBox.scrollHeight;
-                }
-            }
-
-            function renderMessages(messages) {
-                chatBox.innerHTML = '';
-                messageIds.clear();
-                messages.forEach(msg => appendMessage(msg, false));
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }
-
-            function loadMessages() {
-                if (isLoading) return;
-                if (dispatchStatus === 'completed' || dispatchStatus === 'cancelled') {
-                    chatClosedNote.classList.remove('hidden');
-                    if (chatFooter) chatFooter.classList.add('hidden');
-                }
-                const conversationType = getApiConversationType();
-                isLoading = true;
-
-                fetch(`/api/chat/${dispatchId}?conversation_type=${conversationType}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.success) return;
-                        renderMessages(data.messages);
-                    })
-                    .catch(err => console.error('Load messages error:', err))
-                    .finally(() => {
-                        isLoading = false;
-                    });
-            }
-
-            function subscribeDispatchChannel() {
-                if (!window.Echo || !window.Echo.private) {
-                    setTimeout(subscribeDispatchChannel, 200);
-                    return;
-                }
-
-                if (channel) {
-                    window.Echo.leave(`dispatch.${dispatchId}`);
-                }
-
-                channel = window.Echo.private(`dispatch.${dispatchId}`);
-                channel.listen('.message.sent', (event) => {
-                    if (event.message?.dispatch_id !== dispatchId) {
-                        return;
-                    }
-                    const expectedType = getApiConversationType();
-                    if (event.message?.conversation_type && event.message.conversation_type !==
-                        expectedType) {
-                        return;
-                    }
-                    appendMessage(event.message);
-                });
-            }
-
-            chatForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const message = messageInput.value.trim();
-                if (!message) return;
-
-                const conversationType = getApiConversationType();
-                fetch('/api/messages', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            dispatch_id: dispatchId,
-                            message: message,
-                            sender_type: 'motorist',
-                            motorist_id: currentUserId,
-                            conversation_type: conversationType,
-                        })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            messageInput.value = '';
-                            loadMessages();
-                        } else {
-                            alert(data.message || 'Failed to send message.');
-                        }
-                    })
-                    .catch(() => {
-                        alert('Something went wrong.');
-                    });
-            });
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const initialType = urlParams.get('conversation_type') === 'shop' ? 'shop' : 'mechanic';
-            activeConversationType = initialType;
-            updateTabStyles();
-            loadMessages();
-            subscribeDispatchChannel();
+            appendBubble(m, false);
         });
-    </script>
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendBubble(msg, scroll=true) {
+        if (seenIds.has(msg.id)) return;
+        seenIds.add(msg.id);
+        const mine = msg.sender_type === 'motorist';
+        const name = mine ? 'You' : (msg.sender_name || (msg.sender_type==='shop' ? 'Shop' : 'Mechanic'));
+        const icon = mine ? 'fa-user' : (msg.sender_type==='shop' ? 'fa-store' : 'fa-user-gear');
+        const row = document.createElement('div');
+        row.className = `msg-row ${mine?'mine':'theirs'}`;
+        row.innerHTML = `<div class="msg-wrap">
+            <div class="msg-sender"><i class="fa-solid ${esc(icon)}" style="font-size:9px;"></i>${esc(name)}</div>
+            <div class="msg-bubble">${esc(msg.message)}</div>
+            <div class="msg-time">${esc(fmtTime(msg.created_at))}</div>
+        </div>`;
+        chatBox.appendChild(row);
+        if (scroll) chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function loadMessages() {
+        fetch(`/api/chat/${DISPATCH_ID}?conversation_type=${apiConvType()}`)
+            .then(r => r.json())
+            .then(d => { if (d.success) renderMessages(d.messages); })
+            .catch(()=>{});
+    }
+
+    function sendMessage() {
+        const text = msgInput.value.trim();
+        if (!text) return;
+        sendBtn.disabled = true;
+        msgInput.value = ''; autoResize();
+        fetch('/api/messages', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','X-CSRF-TOKEN':CSRF},
+            body: JSON.stringify({dispatch_id:DISPATCH_ID, message:text, sender_type:'motorist', motorist_id:CURRENT_USER, conversation_type:apiConvType()})
+        }).then(r=>r.json()).then(d=>{ if(d.success) loadMessages(); }).catch(()=>{}).finally(()=>{ sendBtn.disabled=false; });
+    }
+
+    sendBtn.addEventListener('click', sendMessage);
+    msgInput.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} });
+    function autoResize() { msgInput.style.height='auto'; msgInput.style.height=Math.min(msgInput.scrollHeight,120)+'px'; }
+    msgInput.addEventListener('input', autoResize);
+
+    if (['completed','cancelled'].includes(STATUS)) {
+        chatClosed.style.display = 'block';
+        chatFooter.style.display = 'none';
+    }
+
+    function subscribeChannel() {
+        if (!window.Pusher) { setTimeout(subscribeChannel,300); return; }
+        const pusher = new Pusher(window.pusherKey, {cluster:window.pusherCluster, forceTLS:true});
+        pusher.subscribe('dispatch-status.'+DISPATCH_ID).bind('message.sent', event => {
+            const m = event.message;
+            if (!m||m.dispatch_id!==DISPATCH_ID) return;
+            if (m.conversation_type&&m.conversation_type!==apiConvType()) return;
+            appendBubble(m);
+        });
+    }
+
+    loadMessages();
+    subscribeChannel();
+})();
+</script>
 @endsection

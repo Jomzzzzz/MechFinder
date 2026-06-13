@@ -107,6 +107,10 @@
                                 </span>
                             </div>
                         </div>
+                        <a id="barMsgBtn" onclick="event.stopPropagation()" href="#" target="_self"
+                            style="width:36px;height:36px;background:var(--brand);border:none;color:#fff;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;padding:0;text-decoration:none;flex-shrink:0;">
+                            <i class="fa-solid fa-comment"></i>
+                        </a>
                     </div>
                     {{-- Sub message --}}
                     <div id="barSubMsg" style="font-size:11px;color:var(--text-3);margin-top:5px;"></div>

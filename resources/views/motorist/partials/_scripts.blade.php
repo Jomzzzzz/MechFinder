@@ -1,7 +1,7 @@
 ﻿    <script>
         /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-                                                                                                                                                                                                                                                                                           MECHFINDER â€” APP LOGIC
-                                                                                                                                                                                                                                                                                           â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+                                                                                                                                                                                                                                                                                               MECHFINDER â€” APP LOGIC
+                                                                                                                                                                                                                                                                                               â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -1113,6 +1113,9 @@
             document.documentElement.style.setProperty('--bar-h', '106px');
             activeText.textContent = STATUS_TITLE[status] ?? status;
             cancelBtn.style.display = status === 'requested' ? 'flex' : 'none';
+            // Wire message button to current request chat
+            const msgBtn = document.getElementById('barMsgBtn');
+            if (msgBtn && currentRequestId) msgBtn.href = '/motorist/chat/' + currentRequestId;
             updateStepTrack(status);
             updateMechanicInfo(status, mechName, mechPhone, mechPlate);
         }
