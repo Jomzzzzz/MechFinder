@@ -444,12 +444,14 @@ class MotoristController extends Controller
 
     $dispatch = DB::table('dispatch_requests')->where('id', $dispatchId)->firstOrFail();
     if ($dispatch->motorist_id) {
-      if (!Auth::check() || Auth::user()->role !== 'motorist' || $dispatch->motorist_id !== Auth::id()) {
+      if (!Auth::check() || Auth::user()->role !== 'motorist' || (int) $dispatch->motorist_id !== (int) Auth::id()) {
         abort(403);
       }
     } else {
+      // Null motorist_id: allow authenticated motorist OR valid guest token
       $guestToken = request()->query('guest_token');
-      if (!$guestToken || $dispatch->guest_token !== $guestToken) {
+      $isAuthMotorist = Auth::check() && Auth::user()->role === 'motorist';
+      if (!$isAuthMotorist && (!$guestToken || $dispatch->guest_token !== $guestToken)) {
         abort(403);
       }
     }
@@ -504,14 +506,20 @@ class MotoristController extends Controller
 
     $dispatch = DB::table('dispatch_requests')->where('id', $validated['dispatch_id'])->firstOrFail();
     if ($dispatch->motorist_id) {
-      if (!Auth::check() || Auth::user()->role !== 'motorist' || $dispatch->motorist_id !== Auth::id()) {
+      if (!Auth::check() || Auth::user()->role !== 'motorist' || (int) $dispatch->motorist_id !== (int) Auth::id()) {
         abort(403);
       }
       $validated['motorist_id'] = Auth::id();
     } else {
-      $guestToken = $validated['guest_token'] ?? null;
-      if (!$guestToken || $dispatch->guest_token !== $guestToken) {
-        abort(403);
+      // Null motorist_id: allow authenticated motorist OR valid guest token
+      $isAuthMotorist = Auth::check() && Auth::user()->role === 'motorist';
+      if ($isAuthMotorist) {
+        $validated['motorist_id'] = Auth::id();
+      } else {
+        $guestToken = $validated['guest_token'] ?? null;
+        if (!$guestToken || $dispatch->guest_token !== $guestToken) {
+          abort(403);
+        }
       }
     }
 
@@ -572,7 +580,7 @@ class MotoristController extends Controller
       "created_at" => now()->toIso8601String(),
     ];
 
-    broadcast(new DispatchMessageSent($validated["dispatch_id"], $messageData));
+    broadcast(new DispatchMessageSent($validated["dispatch_id"], $messageData))->toOthers();
 
     return response()->json([
       "success" => true,
