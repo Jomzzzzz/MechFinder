@@ -9,447 +9,450 @@ use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
-  public function dashboard(Request $request)
-  {
-    $totalShops = DB::table("shops")->count();
-    $totalMechanics = DB::table("users")->where("role", "mechanic")->count();
-    $totalRequests = DB::table("dispatch_requests")->count();
-    $totalReviews = DB::table("reviews")->count();
-    $totalMotoristRequesters = DB::table("dispatch_requests")
-      ->whereNotNull('motorist_id')
-      ->distinct('motorist_id')
-      ->count('motorist_id');
+    public function dashboard(Request $request)
+    {
+        $totalShops = DB::table('shops')->count();
+        $totalMechanics = DB::table('users')->where('role', 'mechanic')->count();
+        $totalRequests = DB::table('dispatch_requests')->count();
+        $totalReviews = DB::table('reviews')->count();
+        $totalMotoristRequesters = DB::table('dispatch_requests')
+            ->whereNotNull('motorist_id')
+            ->distinct('motorist_id')
+            ->count('motorist_id');
 
-    $startDate = now()->subMonths(5)->startOfMonth();
-    $months = collect(range(0, 5))->map(function ($offset) {
-      return now()->subMonths(5 - $offset)->format('M Y');
-    })->toArray();
+        $startDate = now()->subMonths(5)->startOfMonth();
+        $months = collect(range(0, 5))->map(function ($offset) {
+            return now()->subMonths(5 - $offset)->format('M Y');
+        })->toArray();
 
-    $requestsByMonth = DB::table('dispatch_requests')
-      ->select(DB::raw("DATE_FORMAT(created_at, '%b %Y') as month"), DB::raw('COUNT(*) as total'))
-      ->where('created_at', '>=', $startDate)
-      ->groupBy('month')
-      ->orderByRaw('MIN(created_at)')
-      ->pluck('total', 'month')
-      ->toArray();
+        $requestsByMonth = DB::table('dispatch_requests')
+            ->select(DB::raw("DATE_FORMAT(created_at, '%b %Y') as month"), DB::raw('COUNT(*) as total'))
+            ->where('created_at', '>=', $startDate)
+            ->groupBy('month')
+            ->orderByRaw('MIN(created_at)')
+            ->pluck('total', 'month')
+            ->toArray();
 
-    $shopsByMonth = DB::table('shops')
-      ->select(DB::raw("DATE_FORMAT(created_at, '%b %Y') as month"), DB::raw('COUNT(*) as total'))
-      ->where('created_at', '>=', $startDate)
-      ->groupBy('month')
-      ->orderByRaw('MIN(created_at)')
-      ->pluck('total', 'month')
-      ->toArray();
+        $shopsByMonth = DB::table('shops')
+            ->select(DB::raw("DATE_FORMAT(created_at, '%b %Y') as month"), DB::raw('COUNT(*) as total'))
+            ->where('created_at', '>=', $startDate)
+            ->groupBy('month')
+            ->orderByRaw('MIN(created_at)')
+            ->pluck('total', 'month')
+            ->toArray();
 
-    $requestsMonthlyCounts = array_map(function ($month) use ($requestsByMonth) {
-      return $requestsByMonth[$month] ?? 0;
-    }, $months);
+        $requestsMonthlyCounts = array_map(function ($month) use ($requestsByMonth) {
+            return $requestsByMonth[$month] ?? 0;
+        }, $months);
 
-    $shopsMonthlyCounts = array_map(function ($month) use ($shopsByMonth) {
-      return $shopsByMonth[$month] ?? 0;
-    }, $months);
+        $shopsMonthlyCounts = array_map(function ($month) use ($shopsByMonth) {
+            return $shopsByMonth[$month] ?? 0;
+        }, $months);
 
-    $shopId = $request->query('shop');
+        $shopId = $request->query('shop');
 
-    $recentRequests = DB::table("dispatch_requests")
-      ->leftJoin("shops", "dispatch_requests.shop_id", "=", "shops.id")
-      ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
-      ->select(
-        "dispatch_requests.id",
-        "dispatch_requests.status",
-        "dispatch_requests.issue_type",
-        "dispatch_requests.created_at",
-        "shops.shop_name",
-        DB::raw(
-          'COALESCE(users.name, dispatch_requests.guest_name, "Guest") as motorist_name'
-        )
-      )
-      ->latest("dispatch_requests.created_at");
+        $recentRequests = DB::table('dispatch_requests')
+            ->leftJoin('shops', 'dispatch_requests.shop_id', '=', 'shops.id')
+            ->leftJoin('users', 'dispatch_requests.motorist_id', '=', 'users.id')
+            ->select(
+                'dispatch_requests.id',
+                'dispatch_requests.status',
+                'dispatch_requests.issue_type',
+                'dispatch_requests.created_at',
+                'shops.shop_name',
+                DB::raw(
+                    'COALESCE(users.name, dispatch_requests.guest_name, "Guest") as motorist_name'
+                )
+            )
+            ->latest('dispatch_requests.created_at');
 
-    if ($shopId) {
-      $recentRequests->where('dispatch_requests.shop_id', $shopId);
+        if ($shopId) {
+            $recentRequests->where('dispatch_requests.shop_id', $shopId);
+        }
+
+        $recentRequests = $recentRequests->limit(20)->get();
+
+        $shops = DB::table('shops')
+            ->leftJoin('users', 'shops.owner_id', '=', 'users.id')
+            ->select(
+                'shops.*',
+                'users.name as owner_name',
+                'users.email as owner_email'
+            )
+            ->get();
+
+        return view(
+            'admin.dashboard',
+            compact(
+                'totalShops',
+                'totalMechanics',
+                'totalRequests',
+                'totalReviews',
+                'totalMotoristRequesters',
+                'requestsMonthlyCounts',
+                'shopsMonthlyCounts',
+                'months',
+                'recentRequests',
+                'shops',
+                'shopId'
+            )
+        );
     }
 
-    $recentRequests = $recentRequests->limit(20)->get();
+    public function users()
+    {
+        $users = DB::table('users')
+            ->leftJoin('shops', 'users.shop_id', '=', 'shops.id')
+            ->whereIn('users.role', ['shop', 'mechanic', 'motorist'])
+            ->select('users.*', 'shops.shop_name')
+            ->orderBy('users.created_at', 'desc')
+            ->get();
 
-    $shops = DB::table("shops")
-      ->leftJoin("users", "shops.owner_id", "=", "users.id")
-      ->select(
-        "shops.*",
-        "users.name as owner_name",
-        "users.email as owner_email"
-      )
-      ->get();
+        $shops = $users->where('role', 'shop');
+        $mechanics = $users->where('role', 'mechanic');
+        $motorists = $users->where('role', 'motorist');
 
-    return view(
-      "admin.dashboard",
-      compact(
-        "totalShops",
-        "totalMechanics",
-        "totalRequests",
-        "totalReviews",
-        "totalMotoristRequesters",
-        "requestsMonthlyCounts",
-        "shopsMonthlyCounts",
-        "months",
-        "recentRequests",
-        "shops",
-        "shopId"
-      )
-    );
-  }
+        $counts = [
+            'shop' => $shops->count(),
+            'mechanic' => $mechanics->count(),
+            'motorist' => $motorists->count(),
+        ];
 
-  public function users()
-  {
-    $users = DB::table("users")
-      ->leftJoin("shops", "users.shop_id", "=", "shops.id")
-      ->whereIn("users.role", ["shop", "mechanic", "motorist"])
-      ->select("users.*", "shops.shop_name")
-      ->orderBy("users.created_at", "desc")
-      ->get();
-
-    $shops = $users->where("role", "shop");
-    $mechanics = $users->where("role", "mechanic");
-    $motorists = $users->where("role", "motorist");
-
-    $counts = [
-      "shop" => $shops->count(),
-      "mechanic" => $mechanics->count(),
-      "motorist" => $motorists->count(),
-    ];
-
-    return view("admin.users", compact(
-      "users",
-      "counts",
-      "shops",
-      "mechanics",
-      "motorists"
-    ));
-  }
-
-  public function shops()
-  {
-    $shops = DB::table("shops")
-      ->join("shop_statuses", "shops.status_id", "=", "shop_statuses.id")
-      ->leftJoin("users", "shops.owner_id", "=", "users.id")
-      ->leftJoin("reviews", "shops.id", "=", "reviews.shop_id")
-      ->select(
-        "shops.*",
-        "shop_statuses.slug as status",
-        "shop_statuses.label as status_label",
-        "users.name as owner_name",
-        "users.email as owner_email",
-        DB::raw("COALESCE(AVG(reviews.rating), 0) as avg_rating"),
-        DB::raw("COUNT(reviews.id) as review_count")
-      )
-      ->groupBy(
-        "shops.id",
-        "shops.owner_id",
-        "shops.shop_name",
-        "shops.address",
-        "shops.phone",
-        "shops.email",
-        "shops.latitude",
-        "shops.longitude",
-        "shops.location",
-        "shops.status_id",
-        "shops.created_at",
-        "shops.updated_at",
-        "shop_statuses.slug",
-        "shop_statuses.label",
-        "users.name",
-        "users.email"
-      )
-      ->get();
-
-    return view("admin.shops", compact("shops"));
-  }
-
-  public function createShop()
-  {
-    $shopStatuses = DB::table("shop_statuses")->orderBy("label")->get();
-    return view("admin.shops.create", compact("shopStatuses"));
-  }
-
-  public function storeShop(Request $request)
-  {
-    $validated = $request->validate([
-      "shop_name" => "required|string|max:255",
-      "address" => "required|string|max:255",
-      "phone" => "nullable|string|max:50",
-      "email" => ["nullable", "email", "max:255", Rule::unique("shops", "email")],
-      "latitude" => "required|numeric|between:-90,90",
-      "longitude" => "required|numeric|between:-180,180",
-      "status_id" => "required|exists:shop_statuses,id",
-    ]);
-
-    DB::table("shops")->insert([
-      "shop_name" => $validated["shop_name"],
-      "address" => $validated["address"],
-      "phone" => $validated["phone"],
-      "email" => $validated["email"],
-      "latitude" => $validated["latitude"],
-      "longitude" => $validated["longitude"],
-      "location" => $validated["address"],
-      "status_id" => $validated["status_id"],
-      "created_at" => now(),
-      "updated_at" => now(),
-    ]);
-
-    return redirect()->route("admin.shops")->with("success", "Shop created successfully.");
-  }
-
-  public function editShop(int $id)
-  {
-    $shop = DB::table("shops")->find($id);
-    if (!$shop) {
-      return back()->with("error", "Shop not found.");
+        return view('admin.users', compact(
+            'users',
+            'counts',
+            'shops',
+            'mechanics',
+            'motorists'
+        ));
     }
 
-    $shopStatuses = DB::table("shop_statuses")->orderBy("label")->get();
-    return view("admin.shops.edit", compact("shop", "shopStatuses"));
-  }
+    public function shops()
+    {
+        $shops = DB::table('shops')
+            ->join('shop_statuses', 'shops.status_id', '=', 'shop_statuses.id')
+            ->leftJoin('users', 'shops.owner_id', '=', 'users.id')
+            ->leftJoin('reviews', 'shops.id', '=', 'reviews.shop_id')
+            ->select(
+                'shops.*',
+                'shop_statuses.slug as status',
+                'shop_statuses.label as status_label',
+                'users.name as owner_name',
+                'users.email as owner_email',
+                DB::raw('COALESCE(AVG(reviews.rating), 0) as avg_rating'),
+                DB::raw('COUNT(reviews.id) as review_count')
+            )
+            ->groupBy(
+                'shops.id',
+                'shops.owner_id',
+                'shops.shop_name',
+                'shops.address',
+                'shops.phone',
+                'shops.email',
+                'shops.latitude',
+                'shops.longitude',
+                'shops.location',
+                'shops.status_id',
+                'shops.created_at',
+                'shops.updated_at',
+                'shop_statuses.slug',
+                'shop_statuses.label',
+                'users.name',
+                'users.email'
+            )
+            ->get();
 
-  public function updateShop(Request $request, int $id)
-  {
-    $shop = DB::table("shops")->find($id);
-    if (!$shop) {
-      return back()->with("error", "Shop not found.");
+        return view('admin.shops', compact('shops'));
     }
 
-    $validated = $request->validate([
-      "shop_name" => "required|string|max:255",
-      "address" => "required|string|max:255",
-      "phone" => "nullable|string|max:50",
-      "email" => [
-        "nullable",
-        "email",
-        "max:255",
-        Rule::unique("shops", "email")->ignore($id),
-      ],
-      "latitude" => "required|numeric|between:-90,90",
-      "longitude" => "required|numeric|between:-180,180",
-      "status_id" => "required|exists:shop_statuses,id",
-    ]);
+    public function createShop()
+    {
+        $shopStatuses = DB::table('shop_statuses')->orderBy('label')->get();
 
-    DB::table("shops")
-      ->where("id", $id)
-      ->update([
-        "shop_name" => $validated["shop_name"],
-        "address" => $validated["address"],
-        "phone" => $validated["phone"],
-        "email" => $validated["email"],
-        "latitude" => $validated["latitude"],
-        "longitude" => $validated["longitude"],
-        "location" => $validated["address"],
-        "status_id" => $validated["status_id"],
-        "updated_at" => now(),
-      ]);
+        return view('admin.shops.create', compact('shopStatuses'));
+    }
 
-    return redirect()->route("admin.shops")->with("success", "Shop updated successfully.");
-  }
-
-  public function geocodeAddress(Request $request)
-  {
-    $request->validate([
-      "address" => "required|string|max:500",
-    ]);
-
-    $address = trim($request->address);
-    $apiKey = env('GOOGLE_MAPS_API_KEY');
-
-    if ($apiKey) {
-      $response = Http::get('https://maps.googleapis.com/maps/api/geocode/json', [
-        'address' => $address,
-        'key' => $apiKey,
-      ]);
-
-      if (!$response->successful()) {
-        return response()->json(['error' => 'Geocoding service unavailable.'], 500);
-      }
-
-      $result = $response->json();
-      if (isset($result['status']) && $result['status'] === 'OK' && !empty($result['results'])) {
-        $location = $result['results'][0]['geometry']['location'];
-        return response()->json([
-          'lat' => $location['lat'],
-          'lng' => $location['lng'],
-          'formatted_address' => $result['results'][0]['formatted_address'],
+    public function storeShop(Request $request)
+    {
+        $validated = $request->validate([
+            'shop_name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:50',
+            'email' => ['nullable', 'email', 'max:255', Rule::unique('shops', 'email')],
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'status_id' => 'required|exists:shop_statuses,id',
         ]);
-      }
 
-      return response()->json(['error' => $result['error_message'] ?? 'Address not found.'], 422);
+        DB::table('shops')->insert([
+            'shop_name' => $validated['shop_name'],
+            'address' => $validated['address'],
+            'phone' => $validated['phone'],
+            'email' => $validated['email'],
+            'latitude' => $validated['latitude'],
+            'longitude' => $validated['longitude'],
+            'location' => $validated['address'],
+            'status_id' => $validated['status_id'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('admin.shops')->with('success', 'Shop created successfully.');
     }
 
-    // Fallback to OpenStreetMap Nominatim if Google API key is not configured.
-    $response = Http::get('https://nominatim.openstreetmap.org/search', [
-      'q' => $address,
-      'format' => 'json',
-      'limit' => 1,
-    ]);
+    public function editShop(int $id)
+    {
+        $shop = DB::table('shops')->find($id);
+        if (! $shop) {
+            return back()->with('error', 'Shop not found.');
+        }
 
-    if (!$response->successful()) {
-      return response()->json(['error' => 'Geocoding service unavailable.'], 500);
+        $shopStatuses = DB::table('shop_statuses')->orderBy('label')->get();
+
+        return view('admin.shops.edit', compact('shop', 'shopStatuses'));
     }
 
-    $result = $response->json();
-    if (!empty($result) && isset($result[0])) {
-      return response()->json([
-        'lat' => (float) $result[0]['lat'],
-        'lng' => (float) $result[0]['lon'],
-        'formatted_address' => $result[0]['display_name'],
-      ]);
+    public function updateShop(Request $request, int $id)
+    {
+        $shop = DB::table('shops')->find($id);
+        if (! $shop) {
+            return back()->with('error', 'Shop not found.');
+        }
+
+        $validated = $request->validate([
+            'shop_name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:50',
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('shops', 'email')->ignore($id),
+            ],
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'status_id' => 'required|exists:shop_statuses,id',
+        ]);
+
+        DB::table('shops')
+            ->where('id', $id)
+            ->update([
+                'shop_name' => $validated['shop_name'],
+                'address' => $validated['address'],
+                'phone' => $validated['phone'],
+                'email' => $validated['email'],
+                'latitude' => $validated['latitude'],
+                'longitude' => $validated['longitude'],
+                'location' => $validated['address'],
+                'status_id' => $validated['status_id'],
+                'updated_at' => now(),
+            ]);
+
+        return redirect()->route('admin.shops')->with('success', 'Shop updated successfully.');
     }
 
-    return response()->json(['error' => 'Address not found.'], 422);
-  }
+    public function geocodeAddress(Request $request)
+    {
+        $request->validate([
+            'address' => 'required|string|max:500',
+        ]);
 
-  public function requests(Request $request)
-  {
-    $status = $request->query("status");
+        $address = trim($request->address);
+        $apiKey = env('GOOGLE_MAPS_API_KEY');
 
-    $query = DB::table("dispatch_requests")
-      ->leftJoin("shops", "dispatch_requests.shop_id", "=", "shops.id")
-      ->leftJoin("users", "dispatch_requests.motorist_id", "=", "users.id")
-      ->select(
-        "dispatch_requests.*",
-        "shops.shop_name",
-        DB::raw(
-          'COALESCE(users.name, dispatch_requests.guest_name, "Guest") as motorist_name'
-        )
-      );
+        if ($apiKey) {
+            $response = Http::get('https://maps.googleapis.com/maps/api/geocode/json', [
+                'address' => $address,
+                'key' => $apiKey,
+            ]);
 
-    if ($status) {
-      $query->where("dispatch_requests.status", $status);
+            if (! $response->successful()) {
+                return response()->json(['error' => 'Geocoding service unavailable.'], 500);
+            }
+
+            $result = $response->json();
+            if (isset($result['status']) && $result['status'] === 'OK' && ! empty($result['results'])) {
+                $location = $result['results'][0]['geometry']['location'];
+
+                return response()->json([
+                    'lat' => $location['lat'],
+                    'lng' => $location['lng'],
+                    'formatted_address' => $result['results'][0]['formatted_address'],
+                ]);
+            }
+
+            return response()->json(['error' => $result['error_message'] ?? 'Address not found.'], 422);
+        }
+
+        // Fallback to OpenStreetMap Nominatim if Google API key is not configured.
+        $response = Http::get('https://nominatim.openstreetmap.org/search', [
+            'q' => $address,
+            'format' => 'json',
+            'limit' => 1,
+        ]);
+
+        if (! $response->successful()) {
+            return response()->json(['error' => 'Geocoding service unavailable.'], 500);
+        }
+
+        $result = $response->json();
+        if (! empty($result) && isset($result[0])) {
+            return response()->json([
+                'lat' => (float) $result[0]['lat'],
+                'lng' => (float) $result[0]['lon'],
+                'formatted_address' => $result[0]['display_name'],
+            ]);
+        }
+
+        return response()->json(['error' => 'Address not found.'], 422);
     }
 
-    $data = $query->latest("dispatch_requests.created_at")->get();
+    public function requests(Request $request)
+    {
+        $status = $request->query('status');
 
-    return view("admin.requests", compact("data", "status"));
-  }
+        $query = DB::table('dispatch_requests')
+            ->leftJoin('shops', 'dispatch_requests.shop_id', '=', 'shops.id')
+            ->leftJoin('users', 'dispatch_requests.motorist_id', '=', 'users.id')
+            ->select(
+                'dispatch_requests.*',
+                'shops.shop_name',
+                DB::raw(
+                    'COALESCE(users.name, dispatch_requests.guest_name, "Guest") as motorist_name'
+                )
+            );
 
-  public function updateUserRole(Request $request, int $id)
-  {
-    $request->validate([
-      "role" => "required|in:admin,shop,mechanic,motorist",
-    ]);
+        if ($status) {
+            $query->where('dispatch_requests.status', $status);
+        }
 
-    DB::table("users")
-      ->where("id", $id)
-      ->update([
-        "role" => $request->role,
-        "updated_at" => now(),
-      ]);
+        $data = $query->latest('dispatch_requests.created_at')->get();
 
-    return back()->with("success", "User role updated.");
-  }
-
-  public function deleteUser(int $id)
-  {
-    $user = DB::table("users")->find($id);
-
-    if (!$user) {
-      return back()->with("error", "User not found.");
+        return view('admin.requests', compact('data', 'status'));
     }
 
-    DB::table("users")->where("id", $id)->delete();
+    public function updateUserRole(Request $request, int $id)
+    {
+        $request->validate([
+            'role' => 'required|in:admin,shop,mechanic,motorist',
+        ]);
 
-    return back()->with("success", "User deleted successfully.");
-  }
+        DB::table('users')
+            ->where('id', $id)
+            ->update([
+                'role' => $request->role,
+                'updated_at' => now(),
+            ]);
 
-  public function deleteUsers(Request $request)
-  {
-    $validated = $request->validate([
-      "user_ids" => "required|array|min:1",
-      "user_ids.*" => "integer|distinct",
-    ]);
-
-    $userIds = array_filter($validated["user_ids"]);
-
-    if (empty($userIds)) {
-      return back()->with("error", "No users selected for deletion.");
+        return back()->with('success', 'User role updated.');
     }
 
-    $deletedCount = DB::table("users")->whereIn("id", $userIds)->delete();
+    public function deleteUser(int $id)
+    {
+        $user = DB::table('users')->find($id);
 
-    return back()->with("success", "$deletedCount user(s) deleted successfully.");
-  }
+        if (! $user) {
+            return back()->with('error', 'User not found.');
+        }
 
-  public function deleteShop(int $id)
-  {
-    DB::table("shops")->where("id", $id)->delete();
+        DB::table('users')->where('id', $id)->delete();
 
-    return back()->with("success", "Shop deleted.");
-  }
-
-  public function maps()
-  {
-    $maps = DB::table("map_locations")
-      ->orderBy("created_at", "desc")
-      ->get();
-
-    return view("admin.maps.index", compact("maps"));
-  }
-
-  public function createMap()
-  {
-    return view("admin.maps.create");
-  }
-
-  public function storeMap(Request $request)
-  {
-    $validated = $request->validate([
-      "title" => "required|string|max:255",
-      "address" => "nullable|string|max:255",
-      "description" => "nullable|string",
-      "latitude" => "required|numeric|between:-90,90",
-      "longitude" => "required|numeric|between:-180,180",
-    ]);
-
-    DB::table("map_locations")->insert(array_merge($validated, [
-      "created_at" => now(),
-      "updated_at" => now(),
-    ]));
-
-    return redirect()->route("admin.maps")->with("success", "Map location added.");
-  }
-
-  public function editMap(int $id)
-  {
-    $map = DB::table("map_locations")->find($id);
-
-    if (!$map) {
-      return back()->with("error", "Map location not found.");
+        return back()->with('success', 'User deleted successfully.');
     }
 
-    return view("admin.maps.edit", compact("map"));
-  }
+    public function deleteUsers(Request $request)
+    {
+        $validated = $request->validate([
+            'user_ids' => 'required|array|min:1',
+            'user_ids.*' => 'integer|distinct',
+        ]);
 
-  public function updateMap(Request $request, int $id)
-  {
-    $validated = $request->validate([
-      "title" => "required|string|max:255",
-      "address" => "nullable|string|max:255",
-      "description" => "nullable|string",
-      "latitude" => "required|numeric|between:-90,90",
-      "longitude" => "required|numeric|between:-180,180",
-    ]);
+        $userIds = array_filter($validated['user_ids']);
 
-    $updated = DB::table("map_locations")
-      ->where("id", $id)
-      ->update(array_merge($validated, ["updated_at" => now()]));
+        if (empty($userIds)) {
+            return back()->with('error', 'No users selected for deletion.');
+        }
 
-    if (!$updated) {
-      return back()->with("error", "Map location not found.");
+        $deletedCount = DB::table('users')->whereIn('id', $userIds)->delete();
+
+        return back()->with('success', "$deletedCount user(s) deleted successfully.");
     }
 
-    return redirect()->route("admin.maps")->with("success", "Map location updated.");
-  }
+    public function deleteShop(int $id)
+    {
+        DB::table('shops')->where('id', $id)->delete();
 
-  public function deleteMap(int $id)
-  {
-    DB::table("map_locations")->where("id", $id)->delete();
+        return back()->with('success', 'Shop deleted.');
+    }
 
-    return back()->with("success", "Map location deleted.");
-  }
+    public function maps()
+    {
+        $maps = DB::table('map_locations')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.maps.index', compact('maps'));
+    }
+
+    public function createMap()
+    {
+        return view('admin.maps.create');
+    }
+
+    public function storeMap(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+        ]);
+
+        DB::table('map_locations')->insert(array_merge($validated, [
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]));
+
+        return redirect()->route('admin.maps')->with('success', 'Map location added.');
+    }
+
+    public function editMap(int $id)
+    {
+        $map = DB::table('map_locations')->find($id);
+
+        if (! $map) {
+            return back()->with('error', 'Map location not found.');
+        }
+
+        return view('admin.maps.edit', compact('map'));
+    }
+
+    public function updateMap(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'address' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+        ]);
+
+        $updated = DB::table('map_locations')
+            ->where('id', $id)
+            ->update(array_merge($validated, ['updated_at' => now()]));
+
+        if (! $updated) {
+            return back()->with('error', 'Map location not found.');
+        }
+
+        return redirect()->route('admin.maps')->with('success', 'Map location updated.');
+    }
+
+    public function deleteMap(int $id)
+    {
+        DB::table('map_locations')->where('id', $id)->delete();
+
+        return back()->with('success', 'Map location deleted.');
+    }
 }

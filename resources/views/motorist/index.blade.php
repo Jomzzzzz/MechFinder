@@ -5,8 +5,8 @@
 @section('content')
     <style>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                                       MECHFINDER — PROFESSIONAL LIGHT THEME
-                                                                                                                                                                                                                                       ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                                           MECHFINDER — PROFESSIONAL LIGHT THEME
+                                                                                                                                                                                                                                           ══════════════════════════════════════════════ */
         :root {
             --nav-h: 60px;
             --bar-h: 78px;
@@ -1318,6 +1318,7 @@
             font-size: 30px;
             margin: 0 auto 16px;
         }
+
         /* Smooth swap for the request list */
         #requestsList {
             transition: opacity .28s ease, transform .28s ease;
@@ -1423,52 +1424,79 @@
         </div>
 
         {{-- ══ REQUEST DETAILS MODAL ══ --}}
-        <div id="detailsModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.18);backdrop-filter:blur(10px);z-index:1000;overflow-y:auto;padding:20px;">
-            <div style="max-width:560px;width:100%;margin:40px auto;border-radius:24px;overflow:hidden;background:#FFFFFF;border:1px solid rgba(15,23,42,0.08);box-shadow:0 24px 60px rgba(15,23,42,0.12);">
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;padding:22px 22px 16px;background:#FFFFFF;">
+        <div id="detailsModal"
+            style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.18);backdrop-filter:blur(10px);z-index:1000;overflow-y:auto;padding:20px;">
+            <div
+                style="max-width:560px;width:100%;margin:40px auto;border-radius:24px;overflow:hidden;background:#FFFFFF;border:1px solid rgba(15,23,42,0.08);box-shadow:0 24px 60px rgba(15,23,42,0.12);">
+                <div
+                    style="display:flex;justify-content:space-between;align-items:center;gap:14px;padding:22px 22px 16px;background:#FFFFFF;">
                     <div>
-                        
-                        <h2 style="margin:0;font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.02em;">Request details</h2>
+
+                        <h2 style="margin:0;font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.02em;">Request
+                            details</h2>
                     </div>
-                    <button onclick="closeDetailsModal()" style="width:36px;height:36px;background:#F8FAFC;border:1px solid #E5E7EB;color:#111827;font-size:16px;cursor:pointer;border-radius:12px;display:grid;place-items:center;transition:background 0.2s;" onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='#F8FAFC'">
+                    <button onclick="closeDetailsModal()"
+                        style="width:36px;height:36px;background:#F8FAFC;border:1px solid #E5E7EB;color:#111827;font-size:16px;cursor:pointer;border-radius:12px;display:grid;place-items:center;transition:background 0.2s;"
+                        onmouseover="this.style.background='#EFF6FF'" onmouseout="this.style.background='#F8FAFC'">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
                 <div style="display:grid;gap:16px;padding:20px 22px 22px;">
                     <div style="display:grid;gap:8px;">
-                        <div style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Issue</div>
-                        <div id="detailIssueType" style="font-size:20px;font-weight:700;color:#111827;line-height:1.2;"></div>
+                        <div
+                            style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">
+                            Issue</div>
+                        <div id="detailIssueType" style="font-size:20px;font-weight:700;color:#111827;line-height:1.2;">
+                        </div>
                     </div>
                     <div style="display:grid;gap:8px;">
-                        <div style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Location</div>
+                        <div
+                            style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">
+                            Location</div>
                         <div id="detailLocation" style="font-size:15px;color:#475569;line-height:1.6;"></div>
                     </div>
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
                         <div style="border:1px solid #E5E7EB;border-radius:18px;padding:16px;background:#F8FAFC;">
-                            <div style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">Status</div>
-                            <div id="detailStatus" style="font-size:14px;font-weight:700;color:#047857;line-height:1.4;"></div>
+                            <div
+                                style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">
+                                Status</div>
+                            <div id="detailStatus" style="font-size:14px;font-weight:700;color:#047857;line-height:1.4;">
+                            </div>
                         </div>
                         <div style="border:1px solid #E5E7EB;border-radius:18px;padding:16px;background:#F8FAFC;">
-                            <div style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">Time</div>
-                            <div id="detailTime" style="font-size:14px;font-weight:700;color:#475569;line-height:1.4;"></div>
+                            <div
+                                style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px;">
+                                Time</div>
+                            <div id="detailTime" style="font-size:14px;font-weight:700;color:#475569;line-height:1.4;">
+                            </div>
                         </div>
                     </div>
                     <div style="display:grid;gap:12px;">
-                        <div style="padding:18px;border:1px solid #E5E7EB;border-radius:20px;background:#F8FAFC;display:flex;justify-content:space-between;align-items:center;gap:12px;">
-                            <span style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Shop</span>
+                        <div
+                            style="padding:18px;border:1px solid #E5E7EB;border-radius:20px;background:#F8FAFC;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                            <span
+                                style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Shop</span>
                             <span id="detailShop" style="font-size:15px;color:#111827;font-weight:700;"></span>
                         </div>
-                        <div style="padding:18px;border:1px solid #E5E7EB;border-radius:20px;background:#F8FAFC;display:flex;justify-content:space-between;align-items:center;gap:12px;">
-                            <span style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Mechanic</span>
+                        <div
+                            style="padding:18px;border:1px solid #E5E7EB;border-radius:20px;background:#F8FAFC;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                            <span
+                                style="font-size:11px;color:#6B7280;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Mechanic</span>
                             <span id="detailMechanic" style="font-size:15px;color:#111827;font-weight:700;"></span>
                         </div>
                     </div>
                 </div>
-                <div style="display:flex;flex-wrap:wrap;gap:12px;padding:18px 22px 22px;background:#FFFFFF;border-top:1px solid #E5E7EB;">
-                    <button onclick="closeDetailsModal()" style="flex:1;min-width:140px;padding:14px 18px;background:#FFFFFF;border:1px solid #D1D5DB;border-radius:16px;color:#111827;font-size:14px;font-weight:700;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='#FFFFFF'">
+                <div
+                    style="display:flex;flex-wrap:wrap;gap:12px;padding:18px 22px 22px;background:#FFFFFF;border-top:1px solid #E5E7EB;">
+                    <button onclick="closeDetailsModal()"
+                        style="flex:1;min-width:140px;padding:14px 18px;background:#FFFFFF;border:1px solid #D1D5DB;border-radius:16px;color:#111827;font-size:14px;font-weight:700;cursor:pointer;transition:background 0.2s;"
+                        onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='#FFFFFF'">
                         Close
                     </button>
-                    <button onclick="goToMessage()" style="flex:1;min-width:140px;padding:14px 18px;background:#2563EB;border:none;border-radius:16px;color:#FFFFFF;font-size:14px;font-weight:700;cursor:pointer;transition:transform 0.18s,box-shadow 0.18s;box-shadow:0 12px 30px rgba(37,99,235,0.18);" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 18px 40px rgba(37,99,235,0.24)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 12px 30px rgba(37,99,235,0.18)'">
+                    <button onclick="goToMessage()"
+                        style="flex:1;min-width:140px;padding:14px 18px;background:#2563EB;border:none;border-radius:16px;color:#FFFFFF;font-size:14px;font-weight:700;cursor:pointer;transition:transform 0.18s,box-shadow 0.18s;box-shadow:0 12px 30px rgba(37,99,235,0.18);"
+                        onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 18px 40px rgba(37,99,235,0.24)'"
+                        onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 12px 30px rgba(37,99,235,0.18)'">
                         Message
                     </button>
                 </div>
@@ -1518,55 +1546,91 @@
 
         {{-- TRANSACTION COMPLETE MODAL --}}
         {{-- ═══ COMPLETION & REVIEW MODAL ═══ --}}
-        <div id="reviewNotificationOverlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 99999; padding: 20px;">
+        <div id="reviewNotificationOverlay"
+            style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 99999; padding: 20px;">
         </div>
-        <div id="reviewModal" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 36px 28px; z-index: 100000; display: none; box-shadow: 0 25px 80px rgba(0,0,0,0.9); max-height: 90vh; overflow-y: auto;">
+        <div id="reviewModal"
+            style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 36px 28px; z-index: 100000; display: none; box-shadow: 0 25px 80px rgba(0,0,0,0.9); max-height: 90vh; overflow-y: auto;">
             <!-- Success checkmark -->
             <div style="text-align: center; margin-bottom: 28px;">
-                <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #2FB344 0%, #1fa02a 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 32px; color: white; box-shadow: 0 8px 20px rgba(47, 179, 68, 0.3);">
+                <div
+                    style="width: 64px; height: 64px; background: linear-gradient(135deg, #2FB344 0%, #1fa02a 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 32px; color: white; box-shadow: 0 8px 20px rgba(47, 179, 68, 0.3);">
                     <i class="fa-solid fa-check"></i>
                 </div>
             </div>
 
             <!-- Title and description -->
-            <h2 style="font-size: 24px; font-weight: 800; color: #fff; text-align: center; margin: 0 0 10px; letter-spacing: -0.5px;">Rescue Complete</h2>
-            <p style="font-size: 13px; color: #999; text-align: center; margin: 0 0 36px; line-height: 1.6;">Please rate the mechanic and shop to help us maintain quality service</p>
+            <h2
+                style="font-size: 24px; font-weight: 800; color: #fff; text-align: center; margin: 0 0 10px; letter-spacing: -0.5px;">
+                Rescue Complete</h2>
+            <p style="font-size: 13px; color: #999; text-align: center; margin: 0 0 36px; line-height: 1.6;">Please rate
+                the mechanic and shop to help us maintain quality service</p>
 
             <!-- Rating stars -->
             <div style="margin-bottom: 32px;">
-                <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; font-weight: 600;">Rate Experience</label>
+                <label
+                    style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; font-weight: 600;">Rate
+                    Experience</label>
                 <div style="display: flex; justify-content: center; gap: 14px; margin-bottom: 12px;">
-                    <button onclick="window.setReviewRating(1)" class="rating-star" data-rating="1" style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
-                    <button onclick="window.setReviewRating(2)" class="rating-star" data-rating="2" style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
-                    <button onclick="window.setReviewRating(3)" class="rating-star" data-rating="3" style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
-                    <button onclick="window.setReviewRating(4)" class="rating-star" data-rating="4" style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
-                    <button onclick="window.setReviewRating(5)" class="rating-star" data-rating="5" style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
+                    <button onclick="window.setReviewRating(1)" class="rating-star" data-rating="1"
+                        style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
+                    <button onclick="window.setReviewRating(2)" class="rating-star" data-rating="2"
+                        style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
+                    <button onclick="window.setReviewRating(3)" class="rating-star" data-rating="3"
+                        style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
+                    <button onclick="window.setReviewRating(4)" class="rating-star" data-rating="4"
+                        style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
+                    <button onclick="window.setReviewRating(5)" class="rating-star" data-rating="5"
+                        style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">★</button>
                 </div>
-                <p id="ratingLabel" style="font-size: 12px; color: #777; text-align: center; margin: 0; font-weight: 500;">Select rating</p>
+                <p id="ratingLabel"
+                    style="font-size: 12px; color: #777; text-align: center; margin: 0; font-weight: 500;">Select rating
+                </p>
             </div>
 
             <!-- Comments -->
             <div style="margin-bottom: 28px;">
-                <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;">Comments (optional)</label>
-                <textarea id="reviewCommentField" placeholder="Tell us about your experience..." maxlength="500" style="width: 100%; height: 90px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ddd; padding: 12px; border-radius: 8px; font-family: inherit; font-size: 13px; resize: none; outline: none; box-sizing: border-box;"></textarea>
-                <div style="font-size: 11px; color: #666; margin-top: 6px; text-align: right;"><span id="charCountDisplay">0</span>/500</div>
+                <label
+                    style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;">Comments
+                    (optional)</label>
+                <textarea id="reviewCommentField" placeholder="Tell us about your experience..." maxlength="500"
+                    style="width: 100%; height: 90px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ddd; padding: 12px; border-radius: 8px; font-family: inherit; font-size: 13px; resize: none; outline: none; box-sizing: border-box;"></textarea>
+                <div style="font-size: 11px; color: #666; margin-top: 6px; text-align: right;"><span
+                        id="charCountDisplay">0</span>/500</div>
             </div>
 
             <!-- Service tags -->
             <div style="margin-bottom: 28px;">
-                <label style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;">What went well? (optional)</label>
+                <label
+                    style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;">What
+                    went well? (optional)</label>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                    <button onclick="window.toggleTag('Professional')" class="tag-btn" data-tag="Professional" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 11px;"></i><span>Professional</span></button>
-                    <button onclick="window.toggleTag('Timely')" class="tag-btn" data-tag="Timely" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 11px;"></i><span>Timely</span></button>
-                    <button onclick="window.toggleTag('Friendly')" class="tag-btn" data-tag="Friendly" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 11px;"></i><span>Friendly</span></button>
-                    <button onclick="window.toggleTag('Fair Price')" class="tag-btn" data-tag="Fair Price" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 11px;"></i><span>Fair Price</span></button>
+                    <button onclick="window.toggleTag('Professional')" class="tag-btn" data-tag="Professional"
+                        style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i
+                            class="fa-solid fa-check"
+                            style="opacity: 0; font-size: 11px;"></i><span>Professional</span></button>
+                    <button onclick="window.toggleTag('Timely')" class="tag-btn" data-tag="Timely"
+                        style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i
+                            class="fa-solid fa-check"
+                            style="opacity: 0; font-size: 11px;"></i><span>Timely</span></button>
+                    <button onclick="window.toggleTag('Friendly')" class="tag-btn" data-tag="Friendly"
+                        style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i
+                            class="fa-solid fa-check"
+                            style="opacity: 0; font-size: 11px;"></i><span>Friendly</span></button>
+                    <button onclick="window.toggleTag('Fair Price')" class="tag-btn" data-tag="Fair Price"
+                        style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i
+                            class="fa-solid fa-check" style="opacity: 0; font-size: 11px;"></i><span>Fair
+                            Price</span></button>
                 </div>
             </div>
 
             <!-- Buttons -->
             <div style="display: flex; gap: 10px;">
-                <button onclick="window.submitReview()" id="submitBtn" style="flex: 1; background: linear-gradient(135deg, #F7941D 0%, #ff8c00 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(247, 148, 29, 0.3);">Submit Review</button>
-                <button onclick="window.skipReview()" style="flex: 1; background: transparent; color: #999; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease;">Skip</button>
+                <button onclick="window.submitReview()" id="submitBtn"
+                    style="flex: 1; background: linear-gradient(135deg, #F7941D 0%, #ff8c00 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(247, 148, 29, 0.3);">Submit
+                    Review</button>
+                <button onclick="window.skipReview()"
+                    style="flex: 1; background: transparent; color: #999; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease;">Skip</button>
             </div>
         </div>
 
@@ -1878,7 +1942,7 @@
         <div id="requestsPanel" class="panel">
 
             <div class="ph">
-            
+
                 <div>
                     <div class="ph-title">My Requests</div>
                     <div class="ph-subtitle">Recent rescue history from this device</div>
@@ -1920,8 +1984,8 @@
 @section('scripts')
     <script>
         /* ══════════════════════════════════════════════
-                                                                                                                                                                                                                                       MECHFINDER — APP LOGIC
-                                                                                                                                                                                                                                       ══════════════════════════════════════════════ */
+                                                                                                                                                                                                                                           MECHFINDER — APP LOGIC
+                                                                                                                                                                                                                                           ══════════════════════════════════════════════ */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -2013,7 +2077,7 @@
             shopId: null,
             motoristId: null,
         };
-        
+
         /* ── REVIEW STATE ── */
         let currentReviewRating = 0;
         let selectedServiceTags = new Set();
@@ -2039,7 +2103,7 @@
             subscribeToShopStatus();
             if (currentRequestId) resumeActiveRequest(currentRequestId);
             const validTabs = ['map', 'requests', 'profile'];
-            const validPanels = ['rescuePanel','shopsPanel','requestsPanel','profilePanel'];
+            const validPanels = ['rescuePanel', 'shopsPanel', 'requestsPanel', 'profilePanel'];
             const savedTab = LS.get('mf_motorist_active_tab');
             const hashState = getMotoristHashState();
 
@@ -2668,12 +2732,17 @@
                         if (['completed', 'declined', 'cancelled'].includes(d.status)) {
                             stopStatusPolling();
                             setTimeout(() => {
-                                if (!document.getElementById('reviewModal') || document.getElementById('reviewModal').style.display === 'none') {
+                                if (!document.getElementById('reviewModal') || document.getElementById(
+                                        'reviewModal').style.display === 'none') {
                                     LS.del('mf_current_request_id');
                                     currentRequestId = null;
                                     currentDispatchShopId = null;
                                     currentMotoristId = null;
-                                    reviewContext = { requestId: null, shopId: null, motoristId: null };
+                                    reviewContext = {
+                                        requestId: null,
+                                        shopId: null,
+                                        motoristId: null
+                                    };
                                     if (pusherClient) pusherClient.disconnect();
                                     document.getElementById('reqBadge').classList.remove('show');
                                 }
@@ -2712,10 +2781,12 @@
                 }) => {
                     console.log('[Pusher dispatch.status] received status:', status);
                     _lastKnownStatus = status;
-                    
+
                     // For completed status, fetch request data first to set shop_id and motorist_id
                     if (['completed', 'declined', 'cancelled'].includes(status)) {
-                        console.log('[Pusher dispatch.status] final status detected, fetching request data for requestId:', requestId);
+                        console.log(
+                            '[Pusher dispatch.status] final status detected, fetching request data for requestId:',
+                            requestId);
                         fetch(`/motorist/request/${requestId}`)
                             .then(r => {
                                 console.log('[Pusher dispatch.status] fetch response status:', r.status);
@@ -2724,8 +2795,9 @@
                             .then(d => {
                                 console.log('[Pusher dispatch.status] request data received:', d);
                                 console.log('[Pusher dispatch.status] shop_id from response:', d?.shop_id);
-                                console.log('[Pusher dispatch.status] motorist_id from response:', d?.motorist_id);
-                                
+                                console.log('[Pusher dispatch.status] motorist_id from response:', d
+                                    ?.motorist_id);
+
                                 if (status === 'completed') {
                                     currentDispatchShopId = d?.shop_id || null;
                                     currentMotoristId = d?.motorist_id || currentUserId || null;
@@ -2734,8 +2806,10 @@
                                         shopId: currentDispatchShopId,
                                         motoristId: currentMotoristId,
                                     };
-                                    console.log('[Pusher dispatch.status] set currentDispatchShopId:', currentDispatchShopId);
-                                    console.log('[Pusher dispatch.status] set currentMotoristId:', currentMotoristId);
+                                    console.log('[Pusher dispatch.status] set currentDispatchShopId:',
+                                        currentDispatchShopId);
+                                    console.log('[Pusher dispatch.status] set currentMotoristId:',
+                                        currentMotoristId);
                                 }
                                 showStatusStrip(status);
                             })
@@ -2746,7 +2820,7 @@
                     } else {
                         showStatusStrip(status);
                     }
-                    
+
                     if (['accepted', 'en_route', 'arrived'].includes(status) && !_dispatchShopLat) {
                         fetch(`/motorist/request/${requestId}`)
                             .then(r => r.json())
@@ -2783,12 +2857,17 @@
                     if (['completed', 'declined', 'cancelled'].includes(status)) {
                         stopStatusPolling();
                         setTimeout(() => {
-                            if (!document.getElementById('reviewModal') || document.getElementById('reviewModal').style.display === 'none') {
+                            if (!document.getElementById('reviewModal') || document.getElementById(
+                                    'reviewModal').style.display === 'none') {
                                 LS.del('mf_current_request_id');
                                 currentRequestId = null;
                                 currentDispatchShopId = null;
                                 currentMotoristId = null;
-                                reviewContext = { requestId: null, shopId: null, motoristId: null };
+                                reviewContext = {
+                                    requestId: null,
+                                    shopId: null,
+                                    motoristId: null
+                                };
                                 if (pusherClient) pusherClient.disconnect();
                                 document.getElementById('reqBadge').classList.remove('show');
                             }
@@ -3067,13 +3146,18 @@
             });
             LS.set('mf_motorist_active_tab', tab);
             // panels that use slide animation
-            const panels = ['requestsPanel','profilePanel','rescuePanel','shopsPanel'];
-            const currentlyOpen = panels.find(id => document.getElementById(id) && document.getElementById(id).classList.contains('open'));
+            const panels = ['requestsPanel', 'profilePanel', 'rescuePanel', 'shopsPanel'];
+            const currentlyOpen = panels.find(id => document.getElementById(id) && document.getElementById(id).classList
+                .contains('open'));
 
             function openTarget() {
                 if (tab === 'map') {
                     // nothing to open; keep map visible
-                    setTimeout(() => { try { map.invalidateSize(); } catch {} }, 50);
+                    setTimeout(() => {
+                        try {
+                            map.invalidateSize();
+                        } catch {}
+                    }, 50);
                     return;
                 }
                 if (tab === 'requests') {
@@ -3092,14 +3176,18 @@
             // If nothing is open, just open the target (fast path)
             if (!currentlyOpen) {
                 // cancel any pending timer
-                if (tabTransitionTimer) { clearTimeout(tabTransitionTimer); tabTransitionTimer = null; }
+                if (tabTransitionTimer) {
+                    clearTimeout(tabTransitionTimer);
+                    tabTransitionTimer = null;
+                }
                 openTarget();
                 if (tab === 'map') setTimeout(() => map.invalidateSize(), window.MF_TAB_TRANS_MS + 50);
                 return;
             }
 
             // If the target panel is already open, do nothing
-            if ((tab === 'requests' && currentlyOpen === 'requestsPanel') || (tab === 'profile' && currentlyOpen === 'profilePanel')) {
+            if ((tab === 'requests' && currentlyOpen === 'requestsPanel') || (tab === 'profile' && currentlyOpen ===
+                    'profilePanel')) {
                 return;
             }
 
@@ -3162,22 +3250,22 @@
             renderProfileSummary();
         }
 
-        function saveMoto() {
+        async function saveMoto() {
             const patch = {
                 vehicle_make_model: document.getElementById('pMakeModel').value.trim(),
                 vehicle_variant_color: document.getElementById('pColor').value.trim(),
                 plate_temp_number: document.getElementById('pPlate').value.trim(),
             };
-            mfSaveProfile(patch);
+            await mfSaveProfile(patch);
             closeSubPanel('editMotoPanel');
         }
 
-        function saveContact() {
+        async function saveContact() {
             const patch = {
                 owner_name: document.getElementById('pName').value.trim(),
                 contact_number: document.getElementById('pContact').value.trim(),
             };
-            mfSaveProfile(patch);
+            await mfSaveProfile(patch);
             closeSubPanel('editContactPanel');
         }
 
@@ -3197,14 +3285,19 @@
         }
 
         function saveRequestHistory(entry) {
-            const identity = typeof mfIdentity === 'function' ? mfIdentity() : { guest_token: null };
+            const identity = typeof mfIdentity === 'function' ? mfIdentity() : {
+                guest_token: null
+            };
             const token = identity.guest_token || getRequestTokenEntry(entry.id) || null;
             if (token) {
                 saveRequestToken(entry.id, token);
             }
             const h = JSON.parse(LS.get('mf_request_history') ?? '[]');
-            const next = [
-                { ...entry, guest_token: token, time: new Date().toISOString() },
+            const next = [{
+                    ...entry,
+                    guest_token: token,
+                    time: new Date().toISOString()
+                },
                 ...h.filter(item => `${item.id}` !== `${entry.id}`)
             ];
             LS.set('mf_request_history', JSON.stringify(next.slice(0, 10)));
@@ -3218,7 +3311,10 @@
             const next = h.map(entry => {
                 if (`${entry.id}` === `${requestId}` && entry.guest_token !== guestToken) {
                     updated = true;
-                    return { ...entry, guest_token: guestToken };
+                    return {
+                        ...entry,
+                        guest_token: guestToken
+                    };
                 }
                 return entry;
             });
@@ -3250,7 +3346,8 @@
                         issueType = d.issue_type ?? issueType;
                     }
                 } catch {}
-                return buildRequestCard(entry.id, shopName, issueType, status, entry.time, entry.guest_token);
+                return buildRequestCard(entry.id, shopName, issueType, status, entry.time, entry
+                    .guest_token);
             }));
             list.innerHTML = cards.join('');
         }
@@ -3302,7 +3399,8 @@
 
         function escapeHtml(str) {
             if (!str) return '';
-            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         function parseTimestamp(value) {
@@ -3316,7 +3414,10 @@
 
         function formatTime(value) {
             const date = parseTimestamp(value);
-            return date ? date.toLocaleString([], { hour: 'numeric', minute: '2-digit' }) : value || '';
+            return date ? date.toLocaleString([], {
+                hour: 'numeric',
+                minute: '2-digit'
+            }) : value || '';
         }
 
         /* ── REQUEST DETAILS MODAL ── */
@@ -3336,9 +3437,11 @@
 
                 document.getElementById('detailIssueType').textContent = data.issue_type || 'No issue';
                 document.getElementById('detailLocation').textContent = data.location || 'No location';
-                document.getElementById('detailStatus').textContent = (STATUS_TEXT[data.status] || data.status || 'Unknown');
+                document.getElementById('detailStatus').textContent = (STATUS_TEXT[data.status] || data.status ||
+                    'Unknown');
                 const detailTime = parseTimestamp(data.created_at);
-                document.getElementById('detailTime').textContent = detailTime ? detailTime.toLocaleString() : 'Unknown';
+                document.getElementById('detailTime').textContent = detailTime ? detailTime.toLocaleString() :
+                'Unknown';
                 document.getElementById('detailShop').textContent = data.shop_name || 'Finding shop...';
                 document.getElementById('detailMechanic').textContent = data.mechanic_name || 'Not assigned yet';
 
@@ -3368,9 +3471,11 @@
 
                 document.getElementById('detailIssueType').textContent = data.issue_type || 'No issue';
                 document.getElementById('detailLocation').textContent = data.location || 'No location';
-                document.getElementById('detailStatus').textContent = (STATUS_TEXT[data.status] || data.status || 'Unknown');
+                document.getElementById('detailStatus').textContent = (STATUS_TEXT[data.status] || data.status ||
+                    'Unknown');
                 const detailTime = parseTimestamp(data.created_at);
-                document.getElementById('detailTime').textContent = detailTime ? detailTime.toLocaleString() : 'Unknown';
+                document.getElementById('detailTime').textContent = detailTime ? detailTime.toLocaleString() :
+                'Unknown';
                 document.getElementById('detailShop').textContent = data.shop_name || 'Finding shop...';
                 document.getElementById('detailMechanic').textContent = data.mechanic_name || 'Not assigned yet';
 
@@ -3391,7 +3496,7 @@
         /* ══════════════════════════════════════════════
            REVIEW SYSTEM - COMPLETELY REWRITTEN
            ══════════════════════════════════════════════ */
-        
+
         window.reviewData = {
             rating: 0,
             tags: new Set(),
@@ -3411,7 +3516,11 @@
                 return;
             }
 
-            window.reviewData = { rating: 0, tags: new Set(), comment: '' };
+            window.reviewData = {
+                rating: 0,
+                tags: new Set(),
+                comment: ''
+            };
             if (ratingLabel) {
                 ratingLabel.textContent = 'Select rating';
                 ratingLabel.style.color = '#777';
@@ -3444,7 +3553,9 @@
             modal.style.zIndex = '100000';
             document.body.style.overflow = 'hidden';
 
-            overlay.addEventListener('click', window.hideReviewModal, { once: true });
+            overlay.addEventListener('click', window.hideReviewModal, {
+                once: true
+            });
             console.log('[showReviewModal] MODAL DISPLAYED');
         };
 
@@ -3459,11 +3570,11 @@
         window.setReviewRating = function(rating) {
             console.log('[setReviewRating] rating:', rating);
             window.reviewData.rating = rating;
-            
+
             const labels = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
             document.getElementById('ratingLabel').textContent = labels[rating] || 'Select rating';
             document.getElementById('ratingLabel').style.color = rating > 0 ? '#F7941D' : '#888';
-            
+
             // Update stars
             document.querySelectorAll('.rating-star').forEach((btn, idx) => {
                 if (idx + 1 <= rating) {
@@ -3480,7 +3591,7 @@
             console.log('[toggleTag] tag:', tag);
             const btn = document.querySelector(`[data-tag="${tag}"]`);
             if (!btn) return;
-            
+
             if (window.reviewData.tags.has(tag)) {
                 window.reviewData.tags.delete(tag);
                 btn.style.background = 'rgba(255,255,255,0.04)';
@@ -3504,12 +3615,12 @@
             console.log('[submitReview] currentRequestId:', currentRequestId);
             console.log('[submitReview] currentMotoristId:', currentMotoristId);
             console.log('[submitReview] currentUserId:', currentUserId);
-            
+
             if (window.reviewData.rating === 0) {
                 showToast('Please select a rating', 'warning');
                 return;
             }
-            
+
             // Try to get shop_id, it might not be set during modal opening
             let shopId = currentDispatchShopId || reviewContext.shopId;
             let requestId = currentRequestId || reviewContext.requestId;
@@ -3530,13 +3641,13 @@
                     console.error('[submitReview] failed to fetch shop_id:', e);
                 }
             }
-            
+
             if (!shopId) {
                 console.error('Shop ID still not set:', shopId);
                 showToast('Error: Shop information missing. Please try again.', 'error');
                 return;
             }
-            
+
             const payload = {
                 dispatch_id: requestId || null,
                 shop_id: shopId,
@@ -3545,25 +3656,26 @@
                 comment: document.getElementById('reviewCommentField').value || '',
                 services: Array.from(window.reviewData.tags).join(', ')
             };
-            
+
             console.log('[submitReview] payload:', payload);
-            
+
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.textContent = 'Submitting...';
-            
+
             try {
                 const response = await fetch(reviewEndpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': window.csrfToken || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        'X-CSRF-TOKEN': window.csrfToken || document.querySelector(
+                            'meta[name="csrf-token"]')?.getAttribute('content') || ''
                     },
                     body: JSON.stringify(payload)
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     console.log('[submitReview] success');
                     showToast('Thank you! Your review has been submitted.', 'success');
@@ -3596,6 +3708,5 @@
                 });
             }
         });
-
     </script>
 @endsection

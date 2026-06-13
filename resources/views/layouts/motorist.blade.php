@@ -21,8 +21,10 @@
 
     @vite(['resources/css/app.css'])
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer">
 
     <style>
         html,
@@ -87,7 +89,8 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js" crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
     <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
 
     <script>
@@ -95,11 +98,13 @@
         window.pusherCluster = '{{ config('broadcasting.connections.pusher.options.cluster') }}';
         window.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-        // In-memory profile cache populated from DB on page load.
-        // Only the guest_token is persisted to localStorage as identifier.
+        // Profile is always fetched fresh from DB — nothing is cached in localStorage.
         window._mfProfile = null;
+        window._mfAuthUserId = {{ Auth::check() && Auth::user()->role === 'motorist' ? Auth::id() : 'null' }};
 
         function _mfGetToken() {
+            // Auth users are identified server-side via session — no token needed.
+            if (window._mfAuthUserId) return null;
             let token = localStorage.getItem('mf_guest_token');
             if (!token) {
                 token = 'mf_' + Math.random().toString(36).slice(2, 12);
@@ -109,39 +114,41 @@
         }
 
         async function mfLoadProfile() {
-            const token = _mfGetToken();
             try {
-                const res = await fetch('/api/motorist/guest-profile?guest_token=' + encodeURIComponent(token));
+                const token = _mfGetToken();
+                const url = token ?
+                    '/api/motorist/guest-profile?guest_token=' + encodeURIComponent(token) :
+                    '/api/motorist/guest-profile';
+                const res = await fetch(url);
                 const data = await res.json();
                 window._mfProfile = data.profile || {};
-                window._mfProfile.guest_token = token;
+                if (token && !window._mfProfile.guest_token) {
+                    window._mfProfile.guest_token = token;
+                }
             } catch {
-                window._mfProfile = {
+                const token = _mfGetToken();
+                window._mfProfile = token ? {
                     guest_token: token
-                };
+                } : {};
             }
             window.dispatchEvent(new Event('mfProfileLoaded'));
         }
 
         async function mfSaveProfile(patch) {
             const token = _mfGetToken();
-            // Merge into cache immediately for responsive UI
-            window._mfProfile = Object.assign(window._mfProfile || {}, patch, {
+            const body = token ? Object.assign({
                 guest_token: token
+            }, patch) : patch;
+            await fetch('/api/motorist/guest-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': window.csrfToken
+                },
+                body: JSON.stringify(body),
             });
-            try {
-                await fetch('/api/motorist/guest-profile', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': window.csrfToken
-                    },
-                    body: JSON.stringify(Object.assign({
-                        guest_token: token
-                    }, patch)),
-                });
-            } catch {
-                /* non-critical — cached in memory */ }
+            // Always re-fetch from DB after save — never trust local state
+            await mfLoadProfile();
         }
 
         function mfIdentity() {
