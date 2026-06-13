@@ -1,7 +1,7 @@
 ﻿    <script>
         /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-                                                                                                                                                                                                                                                                                       MECHFINDER â€” APP LOGIC
-                                                                                                                                                                                                                                                                                       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+                                                                                                                                                                                                                                                                                           MECHFINDER â€” APP LOGIC
+                                                                                                                                                                                                                                                                                           â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
         /* Plain headline text for the active bar */
         const STATUS_TITLE = {
@@ -124,17 +124,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Measure the rescue bar BEFORE initMap so Leaflet gets the correct
-            // #map height on first render and doesn't leave a grey strip.
-            const _barPre = document.getElementById('rescueBar');
-            if (_barPre) {
-                const h = Math.ceil(_barPre.getBoundingClientRect().height);
-                // +10 = the 10px gap between bar bottom edge and mapArea bottom (bar is bottom:10px inside #mapArea)
-                if (h > 0) document.documentElement.style.setProperty('--bar-h', (h + 10) + 'px');
-            }
             initMap();
-            // Give the browser one frame to apply the CSS variable before Leaflet
-            // finalises tile positions, then force a size recalculation.
+            // Force Leaflet to recalculate size after layout settles
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     if (map) map.invalidateSize();
@@ -195,13 +186,10 @@
                 _loaderProfileReady = true;
                 _checkLoaderDone();
             }
-            // Keep --bar-h in sync with the bar's actual rendered height
+            // Invalidate Leaflet size whenever the rescue bar resizes
             const _bar = document.getElementById('rescueBar');
             if (_bar && window.ResizeObserver) {
                 new ResizeObserver(() => {
-                    // +10 = the 10px gap between bar bottom edge and mapArea bottom
-                    const bh = Math.ceil(_bar.getBoundingClientRect().height);
-                    if (bh > 0) document.documentElement.style.setProperty('--bar-h', (bh + 10) + 'px');
                     if (map) map.invalidateSize();
                 }).observe(_bar);
             }

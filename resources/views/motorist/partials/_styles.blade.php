@@ -63,7 +63,6 @@
         #map {
             position: absolute;
             inset: 0;
-            bottom: var(--bar-h);
             z-index: 1;
         }
 
