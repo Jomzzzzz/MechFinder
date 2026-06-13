@@ -21,6 +21,8 @@
 
     @vite(['resources/css/app.css'])
 
+    @stack('styles')
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css"
         crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -31,24 +33,29 @@
         body {
             margin: 0;
             padding: 0;
+            width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #E8ECF0;
-            font-family: Inter, system-ui, sans-serif;
             overscroll-behavior: none;
         }
 
+        /* Fixed to viewport — immune to Tailwind resets, browser chrome, and height chain issues */
         .motorist-app {
-            min-height: 100vh;
-            background:
-                radial-gradient(circle at top, rgba(247, 148, 29, 0.12), transparent 28%),
-                linear-gradient(180deg, #11141b 0%, #0b0f14 40%, #050505 100%);
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            background: #E8ECF0;
         }
 
         .phone {
+            position: relative;
             max-width: 430px;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             margin: 0 auto;
-            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .glass {
@@ -183,24 +190,13 @@
         // Kick off profile load immediately
         mfLoadProfile();
 
-        // Keep #mfApp locked to the visible viewport height on all platforms.
-        // Without this: (1) browsers without svh/dvh support collapse the container,
-        // (2) Android keyboard shrinks dvh mid-session and the nav bar ends up mid-screen.
-        (function() {
-            const app = document.getElementById('mfApp');
-            if (!app) return;
-
-            function _setAppHeight() {
-                const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-                app.style.height = Math.round(h) + 'px';
-            }
-            _setAppHeight();
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', _setAppHeight);
-            } else {
-                window.addEventListener('resize', _setAppHeight);
-            }
-        })();
+        // Notify Leaflet when the visible area changes (keyboard open/close on Android)
+        // so the map tiles re-render to fill the correct dimensions.
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                if (typeof map !== 'undefined' && map) map.invalidateSize();
+            });
+        }
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
