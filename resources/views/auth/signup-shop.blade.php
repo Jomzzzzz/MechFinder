@@ -99,6 +99,26 @@
                     </div>
 
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Shop name</label>
+                        <input type="text"
+                               name="shop_name"
+                               value="{{ old('shop_name') }}"
+                               required
+                               placeholder="My Repair Shop"
+                               class="input-smooth w-full px-4 py-3 rounded-lg text-base">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                        <input type="text"
+                               name="address"
+                               value="{{ old('address') }}"
+                               required
+                               placeholder="123 Main Street"
+                               class="input-smooth w-full px-4 py-3 rounded-lg text-base">
+                    </div>
+
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                         <div class="relative">
                             <input id="password"
