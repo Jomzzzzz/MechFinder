@@ -511,7 +511,7 @@
                             placeholder="+63 917 140 3498"></div>
                     <input type="hidden" name="latitude" value="{{ old('latitude', $shop->latitude ?? 14.8386) }}">
                     <input type="hidden" name="longitude" value="{{ old('longitude', $shop->longitude ?? 120.2842) }}">
-                    <input type="hidden" name="status" value="{{ old('status', $shop->status ?? 'closed') }}">
+                    <input type="hidden" name="status_id" value="{{ old('status_id', $shop->status_id ?? 4) }}">
                     <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Save Shop
                         Info</button>
                 </form>
@@ -1328,6 +1328,18 @@
 @endsection
 
 @section('body_after')
+    @if (session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                try {
+                    showToast(@json(session('success')), 'success');
+                } catch (e) {
+                    console.log('Toast failed:', e);
+                }
+            });
+        </script>
+    @endif
+
     {{-- Combined Dispatch + Mechanic Picker Popup --}}
     <div id="dispatch-popup"
         style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.55); align-items:center; justify-content:center; padding:16px;">
