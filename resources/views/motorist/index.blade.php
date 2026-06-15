@@ -287,119 +287,63 @@
                 </div>
             </div>
 
-          {{-- REVIEW MODAL --}}
-<div id="reviewNotificationOverlay" class="review-overlay"></div>
+     {{-- TRANSACTION COMPLETE MODAL --}}
+            {{-- â•â•â• COMPLETION & REVIEW MODAL â•â•â• --}}
+            <div id="reviewNotificationOverlay"
+                style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 99998; backdrop-filter: blur(2px);"></div>
+            <div id="reviewModal"
+                style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: none; z-index: 99999; flex-direction: column; align-items: flex-end; justify-content: center; padding: 0; padding-bottom: max(16px, env(safe-area-inset-bottom));" class="flex-display-hidden">
+                    <h2 style="font-size: 22px; font-weight: 800; color: #111827; text-align: center; margin: 0 0 6px; letter-spacing: -0.5px;">Rescue Complete!</h2>
+                    
+                    <!-- Description -->
+                    <p style="font-size: 14px; color: #6B7280; text-align: center; margin: 0 0 24px; line-height: 1.5;">Help us improve by rating your experience</p>
 
-<div id="reviewModal" class="review-modal">
+                    <!-- Rating Section -->
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; font-size: 11px; color: #374151; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px;">How was your experience?</label>
+                    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 10px;">
+                        <button onclick="window.setReviewRating(1)" class="rating-star" data-rating="1"
+                            style="background: none; border: none; font-size: 40px; color: #D1D5DB; cursor: pointer; transition: all 0.2s ease; padding: 0; line-height: 1;">â˜…</button>
+                        <button onclick="window.setReviewRating(2)" class="rating-star" data-rating="2"
+                            style="background: none; border: none; font-size: 40px; color: #D1D5DB; cursor: pointer; transition: all 0.2s ease; padding: 0; line-height: 1;">â˜…</button>
+                        <button onclick="window.setReviewRating(3)" class="rating-star" data-rating="3"
+                            style="background: none; border: none; font-size: 40px; color: #D1D5DB; cursor: pointer; transition: all 0.2s ease; padding: 0; line-height: 1;">â˜…</button>
+                        <button onclick="window.setReviewRating(4)" class="rating-star" data-rating="4"
+                            style="background: none; border: none; font-size: 40px; color: #D1D5DB; cursor: pointer; transition: all 0.2s ease; padding: 0; line-height: 1;">â˜…</button>
+                        <button onclick="window.setReviewRating(5)" class="rating-star" data-rating="5"
+                            style="background: none; border: none; font-size: 40px; color: #D1D5DB; cursor: pointer; transition: all 0.2s ease; padding: 0; line-height: 1;">â˜…</button>
+                    </div>
+                        <p id="ratingLabel" style="font-size: 12px; color: #9CA3AF; text-align: center; margin: 0; font-weight: 500;">Select a rating</p>
+                    </div>
 
-    <div class="review-card">
+                    <!-- Comments -->
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; font-size: 11px; color: #374151; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Comments (optional)</label>
+                        <textarea id="reviewCommentField" placeholder="What went well? Any suggestions?" maxlength="300" style="width: 100%; height: 80px; background: #F8FAFC; border: 1px solid #E5E7EB; color: #111827; padding: 10px 12px; border-radius: 10px; font-family: inherit; font-size: 13px; resize: none; outline: none; box-sizing: border-box; line-height: 1.5;"></textarea>
+                        <div style="font-size: 11px; color: #9CA3AF; margin-top: 6px; text-align: right;"><span id="charCountDisplay">0</span>/300</div>
+                    </div>
 
-        <!-- Success Icon -->
-        <div class="review-icon">
-            <i class="fa-solid fa-circle-check"></i>
-        </div>
+                    <!-- Service Highlights -->
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; font-size: 11px; color: #374151; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px;">Highlights (optional)</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <button onclick="window.toggleTag('Professional')" class="tag-btn" data-tag="Professional" style="background: #F3F4F6; border: 1px solid #E5E7EB; color: #374151; padding: 9px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: 500;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 10px;"></i><span>Professional</span></button>
+                            <button onclick="window.toggleTag('Timely')" class="tag-btn" data-tag="Timely" style="background: #F3F4F6; border: 1px solid #E5E7EB; color: #374151; padding: 9px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: 500;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 10px;"></i><span>Timely</span></button>
+                            <button onclick="window.toggleTag('Friendly')" class="tag-btn" data-tag="Friendly" style="background: #F3F4F6; border: 1px solid #E5E7EB; color: #374151; padding: 9px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: 500;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 10px;"></i><span>Friendly</span></button>
+                            <button onclick="window.toggleTag('Fair Price')" class="tag-btn" data-tag="Fair Price" style="background: #F3F4F6; border: 1px solid #E5E7EB; color: #374151; padding: 9px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 5px; font-weight: 500;"><i class="fa-solid fa-check" style="opacity: 0; font-size: 10px;"></i><span>Fair Price</span></button>
+                        </div>
+                    </div>
 
-        <!-- Title -->
-        <h2 class="review-title">
-            Rescue Completed
-        </h2>
-
-        <p class="review-subtitle">
-            Thank you for using MechFinder.
-            Your feedback helps improve our rescue service.
-        </p>
-
-
-        <!-- Rating -->
-
-        <div class="review-section">
-
-            <label class="review-label">
-                Rate your experience
-            </label>
-
-            <div class="rating-stars">
-
-                <button onclick="window.setReviewRating(1)" class="rating-star" data-rating="1">★</button>
-
-                <button onclick="window.setReviewRating(2)" class="rating-star" data-rating="2">★</button>
-
-                <button onclick="window.setReviewRating(3)" class="rating-star" data-rating="3">★</button>
-
-                <button onclick="window.setReviewRating(4)" class="rating-star" data-rating="4">★</button>
-
-                <button onclick="window.setReviewRating(5)" class="rating-star" data-rating="5">★</button>
-
+                    <!-- Buttons -->
+                    <div style="display: grid; gap: 10px;">
+                        <button onclick="window.submitReview()" id="submitBtn" style="width: 100%; background: linear-gradient(135deg, #F7941D 0%, #ff8c00 100%); color: white; border: none; padding: 12px 16px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(247, 148, 29, 0.2);">Submit Review</button>
+                        <button onclick="window.skipReview()" style="width: 100%; background: #F3F4F6; color: #374151; border: 1px solid #E5E7EB; padding: 12px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s ease;">Skip for now</button>
+                    </div>
+                </div>
             </div>
 
-            <p id="ratingLabel" class="rating-text">
-                Select your rating
-            </p>
 
-        </div>
-
-
-        <!-- Comment -->
-
-        <div class="review-section">
-
-            <label class="review-label">
-                Comment (Optional)
-            </label>
-
-            <textarea
-                id="reviewCommentField"
-                maxlength="300"
-                placeholder="Share your experience..."
-            ></textarea>
-
-            <div class="char-counter">
-                <span id="charCountDisplay">0</span>/300
-            </div>
-
-        </div>
-
-
-        <!-- Tags -->
-
-        <div class="review-section">
-
-            <label class="review-label">
-                Highlights
-            </label>
-
-            <div class="tag-grid">
-
-                <button onclick="toggleTag('Professional')" class="tag-btn" data-tag="Professional">Professional</button>
-
-                <button onclick="toggleTag('Timely')" class="tag-btn" data-tag="Timely">Timely</button>
-
-                <button onclick="toggleTag('Friendly')" class="tag-btn" data-tag="Friendly">Friendly</button>
-
-                <button onclick="toggleTag('Fair Price')" class="tag-btn" data-tag="Fair Price">Fair Price</button>
-
-            </div>
-
-        </div>
-
-
-        <!-- Buttons -->
-
-        <div class="review-buttons">
-
-            <button id="submitBtn" onclick="submitReview()" class="submit-btn">
-                Submit Review
-            </button>
-
-            <button onclick="skipReview()" class="skip-btn">
-                Skip
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
+make the transac modal above this, improve the ui and responsiveness of the layout make sure its responsive to all screen devices of mobile android and iphone, improve the text spcing, typograhy and organize it more, make it simple clean ui, also fix the issue of show behavior, show only after rescue complete, hide this modal after skip or submit by motorist.
 
             {{-- SEARCH OVERLAY --}}
             <div id="searchOverlay">
