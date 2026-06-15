@@ -342,9 +342,6 @@
                 </div>
             </div>
 
-
-make the transac modal above this, improve the ui and responsiveness of the layout make sure its responsive to all screen devices of mobile android and iphone, improve the text spcing, typograhy and organize it more, make it simple clean ui, also fix the issue of show behavior, show only after rescue complete, hide this modal after skip or submit by motorist.
-
             {{-- SEARCH OVERLAY --}}
             <div id="searchOverlay">
                 <div class="radar-wrap">
