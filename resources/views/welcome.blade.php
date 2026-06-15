@@ -193,6 +193,14 @@
                 tracking — all in one place.
             </p>
 
+             <!-- Registration CTA -->
+            <div class="flex flex-col items-center gap-2 text-slate-400 animate-bounce">
+                <span class="text-sm font-medium">Register here</span>
+                <svg class="w-5 h-5 text-[#FF8A00]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+            </div>
+            
             <!-- CTA Buttons -->
             <div class="flex flex-col sm:flex-row flex-wrap gap-2.5 sm:gap-3 mb-8 sm:mb-10">
                 <a href="{{ route('signup') }}"

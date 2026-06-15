@@ -1731,8 +1731,8 @@
                 comment: ''
             };
             if (ratingLabel) {
-                ratingLabel.textContent = 'Select rating';
-                ratingLabel.style.color = '#777';
+                ratingLabel.textContent = 'Select a rating';
+                ratingLabel.style.color = '#9CA3AF';
             }
             if (commentField) {
                 commentField.value = '';
@@ -1742,14 +1742,14 @@
             }
 
             document.querySelectorAll('.rating-star').forEach(btn => {
-                btn.style.color = '#444';
-                btn.style.fontSize = '36px';
+                btn.style.color = '#D1D5DB';
+                btn.style.fontSize = '40px';
             });
 
             document.querySelectorAll('.tag-btn').forEach(btn => {
-                btn.style.background = 'rgba(255,255,255,0.04)';
-                btn.style.borderColor = 'rgba(255,255,255,0.1)';
-                btn.style.color = '#999';
+                btn.style.background = '#F3F4F6';
+                btn.style.borderColor = '#E5E7EB';
+                btn.style.color = '#374151';
                 const icon = btn.querySelector('i');
                 if (icon) icon.style.opacity = '0';
             });
@@ -1757,9 +1757,9 @@
             overlay.style.display = 'block';
             overlay.style.pointerEvents = 'auto';
             overlay.style.opacity = '1';
-            overlay.style.zIndex = '99999';
-            modal.style.display = 'block';
-            modal.style.zIndex = '100000';
+            overlay.style.zIndex = '99998';
+            modal.style.display = 'flex';
+            modal.style.zIndex = '99999';
             document.body.style.overflow = 'hidden';
 
             overlay.addEventListener('click', window.hideReviewModal, {
@@ -1781,8 +1781,8 @@
             window.reviewData.rating = rating;
 
             const labels = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
-            document.getElementById('ratingLabel').textContent = labels[rating] || 'Select rating';
-            document.getElementById('ratingLabel').style.color = rating > 0 ? '#F7941D' : '#888';
+            document.getElementById('ratingLabel').textContent = labels[rating] || 'Select a rating';
+            document.getElementById('ratingLabel').style.color = rating > 0 ? '#F7941D' : '#9CA3AF';
 
             // Update stars
             document.querySelectorAll('.rating-star').forEach((btn, idx) => {
@@ -1790,8 +1790,8 @@
                     btn.style.color = '#F7941D';
                     btn.style.fontSize = '40px';
                 } else {
-                    btn.style.color = '#444';
-                    btn.style.fontSize = '36px';
+                    btn.style.color = '#D1D5DB';
+                    btn.style.fontSize = '40px';
                 }
             });
         };
@@ -1803,14 +1803,14 @@
 
             if (window.reviewData.tags.has(tag)) {
                 window.reviewData.tags.delete(tag);
-                btn.style.background = 'rgba(255,255,255,0.04)';
-                btn.style.borderColor = 'rgba(255,255,255,0.1)';
-                btn.style.color = '#999';
+                btn.style.background = '#F3F4F6';
+                btn.style.borderColor = '#E5E7EB';
+                btn.style.color = '#374151';
                 const icon = btn.querySelector('i');
                 if (icon) icon.style.opacity = '0';
             } else {
                 window.reviewData.tags.add(tag);
-                btn.style.background = 'rgba(247, 148, 29, 0.15)';
+                btn.style.background = '#FEF3E2';
                 btn.style.borderColor = '#F7941D';
                 btn.style.color = '#F7941D';
                 const icon = btn.querySelector('i');

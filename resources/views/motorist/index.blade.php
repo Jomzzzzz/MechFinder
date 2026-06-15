@@ -287,97 +287,119 @@
                 </div>
             </div>
 
-            {{-- TRANSACTION COMPLETE MODAL --}}
-            {{-- â•â•â• COMPLETION & REVIEW MODAL â•â•â• --}}
-            <div id="reviewNotificationOverlay"
-                style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; z-index: 99999; padding: 20px;">
+          {{-- REVIEW MODAL --}}
+<div id="reviewNotificationOverlay" class="review-overlay"></div>
+
+<div id="reviewModal" class="review-modal">
+
+    <div class="review-card">
+
+        <!-- Success Icon -->
+        <div class="review-icon">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+
+        <!-- Title -->
+        <h2 class="review-title">
+            Rescue Completed
+        </h2>
+
+        <p class="review-subtitle">
+            Thank you for using MechFinder.
+            Your feedback helps improve our rescue service.
+        </p>
+
+
+        <!-- Rating -->
+
+        <div class="review-section">
+
+            <label class="review-label">
+                Rate your experience
+            </label>
+
+            <div class="rating-stars">
+
+                <button onclick="window.setReviewRating(1)" class="rating-star" data-rating="1">★</button>
+
+                <button onclick="window.setReviewRating(2)" class="rating-star" data-rating="2">★</button>
+
+                <button onclick="window.setReviewRating(3)" class="rating-star" data-rating="3">★</button>
+
+                <button onclick="window.setReviewRating(4)" class="rating-star" data-rating="4">★</button>
+
+                <button onclick="window.setReviewRating(5)" class="rating-star" data-rating="5">★</button>
+
             </div>
-            <div id="reviewModal"
-                style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 36px 28px; z-index: 100000; display: none; box-shadow: 0 25px 80px rgba(0,0,0,0.9); max-height: 90vh; overflow-y: auto;">
-                <!-- Success checkmark -->
-                <div style="text-align: center; margin-bottom: 28px;">
-                    <div
-                        style="width: 64px; height: 64px; background: linear-gradient(135deg, #2FB344 0%, #1fa02a 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 32px; color: white; box-shadow: 0 8px 20px rgba(47, 179, 68, 0.3);">
-                        <i class="fa-solid fa-check"></i>
-                    </div>
-                </div>
 
-                <!-- Title and description -->
-                <h2
-                    style="font-size: 24px; font-weight: 800; color: #fff; text-align: center; margin: 0 0 10px; letter-spacing: -0.5px;">
-                    Rescue Complete</h2>
-                <p style="font-size: 13px; color: #999; text-align: center; margin: 0 0 36px; line-height: 1.6;">Please
-                    rate
-                    the mechanic and shop to help us maintain quality service</p>
+            <p id="ratingLabel" class="rating-text">
+                Select your rating
+            </p>
 
-                <!-- Rating stars -->
-                <div style="margin-bottom: 32px;">
-                    <label
-                        style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; font-weight: 600;">Rate
-                        Experience</label>
-                    <div style="display: flex; justify-content: center; gap: 14px; margin-bottom: 12px;">
-                        <button onclick="window.setReviewRating(1)" class="rating-star" data-rating="1"
-                            style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">â˜…</button>
-                        <button onclick="window.setReviewRating(2)" class="rating-star" data-rating="2"
-                            style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">â˜…</button>
-                        <button onclick="window.setReviewRating(3)" class="rating-star" data-rating="3"
-                            style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">â˜…</button>
-                        <button onclick="window.setReviewRating(4)" class="rating-star" data-rating="4"
-                            style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">â˜…</button>
-                        <button onclick="window.setReviewRating(5)" class="rating-star" data-rating="5"
-                            style="background: none; border: none; font-size: 36px; color: #444; cursor: pointer; transition: all 0.2s ease; padding: 4px;">â˜…</button>
-                    </div>
-                    <p id="ratingLabel"
-                        style="font-size: 12px; color: #777; text-align: center; margin: 0; font-weight: 500;">Select
-                        rating
-                    </p>
-                </div>
+        </div>
 
-                <!-- Comments -->
-                <div style="margin-bottom: 28px;">
-                    <label
-                        style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;">Comments
-                        (optional)</label>
-                    <textarea id="reviewCommentField" placeholder="Tell us about your experience..." maxlength="500"
-                        style="width: 100%; height: 90px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ddd; padding: 12px; border-radius: 8px; font-family: inherit; font-size: 13px; resize: none; outline: none; box-sizing: border-box;"></textarea>
-                    <div style="font-size: 11px; color: #666; margin-top: 6px; text-align: right;"><span
-                            id="charCountDisplay">0</span>/500</div>
-                </div>
 
-                <!-- Service tags -->
-                <div style="margin-bottom: 28px;">
-                    <label
-                        style="display: block; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: 600;">What
-                        went well? (optional)</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                        <button onclick="window.toggleTag('Professional')" class="tag-btn" data-tag="Professional"
-                            style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i
-                                class="fa-solid fa-check"
-                                style="opacity: 0; font-size: 11px;"></i><span>Professional</span></button>
-                        <button onclick="window.toggleTag('Timely')" class="tag-btn" data-tag="Timely"
-                            style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i
-                                class="fa-solid fa-check"
-                                style="opacity: 0; font-size: 11px;"></i><span>Timely</span></button>
-                        <button onclick="window.toggleTag('Friendly')" class="tag-btn" data-tag="Friendly"
-                            style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i
-                                class="fa-solid fa-check"
-                                style="opacity: 0; font-size: 11px;"></i><span>Friendly</span></button>
-                        <button onclick="window.toggleTag('Fair Price')" class="tag-btn" data-tag="Fair Price"
-                            style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #999; padding: 10px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 6px;"><i
-                                class="fa-solid fa-check" style="opacity: 0; font-size: 11px;"></i><span>Fair
-                                Price</span></button>
-                    </div>
-                </div>
+        <!-- Comment -->
 
-                <!-- Buttons -->
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="window.submitReview()" id="submitBtn"
-                        style="flex: 1; background: linear-gradient(135deg, #F7941D 0%, #ff8c00 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(247, 148, 29, 0.3);">Submit
-                        Review</button>
-                    <button onclick="window.skipReview()"
-                        style="flex: 1; background: transparent; color: #999; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s ease;">Skip</button>
-                </div>
+        <div class="review-section">
+
+            <label class="review-label">
+                Comment (Optional)
+            </label>
+
+            <textarea
+                id="reviewCommentField"
+                maxlength="300"
+                placeholder="Share your experience..."
+            ></textarea>
+
+            <div class="char-counter">
+                <span id="charCountDisplay">0</span>/300
             </div>
+
+        </div>
+
+
+        <!-- Tags -->
+
+        <div class="review-section">
+
+            <label class="review-label">
+                Highlights
+            </label>
+
+            <div class="tag-grid">
+
+                <button onclick="toggleTag('Professional')" class="tag-btn" data-tag="Professional">Professional</button>
+
+                <button onclick="toggleTag('Timely')" class="tag-btn" data-tag="Timely">Timely</button>
+
+                <button onclick="toggleTag('Friendly')" class="tag-btn" data-tag="Friendly">Friendly</button>
+
+                <button onclick="toggleTag('Fair Price')" class="tag-btn" data-tag="Fair Price">Fair Price</button>
+
+            </div>
+
+        </div>
+
+
+        <!-- Buttons -->
+
+        <div class="review-buttons">
+
+            <button id="submitBtn" onclick="submitReview()" class="submit-btn">
+                Submit Review
+            </button>
+
+            <button onclick="skipReview()" class="skip-btn">
+                Skip
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
             {{-- SEARCH OVERLAY --}}
             <div id="searchOverlay">
@@ -393,7 +415,7 @@
                         shop</div>
                     <div style="font-size:13px;color:var(--text-2);line-height:1.6;">Finding the closest available shop in
                         your
-                        areaâ€¦</div>
+                        area</div>
                 </div>
             </div>
 
@@ -457,7 +479,7 @@
 
                     {{-- Description --}}
                     <div class="resc-section">
-                        <div class="resc-label">Notes <span class="resc-label-opt">â€” optional</span></div>
+                        <div class="resc-label">Notes <span class="resc-label-opt"> optional</span></div>
                         <textarea id="dispatchDesc" class="mf-input" rows="3" placeholder="Describe your situationâ€¦"
                             style="resize:none;"></textarea>
                     </div>
